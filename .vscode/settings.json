@@ -19,7 +19,6 @@
   "[javascriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-
   "[jsonc]": {
     "editor.defaultFormatter": "vscode.json-language-features"
   },
@@ -29,4 +28,7 @@
   "[html]": {
     "editor.defaultFormatter": "vscode.html-language-features"
   },
+  "cSpell.words": [
+    "OPFS"
+  ],
 }
