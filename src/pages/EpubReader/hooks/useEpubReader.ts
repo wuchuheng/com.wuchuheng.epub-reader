@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Book, Rendition } from 'epubjs';
 import * as OPFSManager from '../../../services/OPFSManager';
 import { logger } from '../../../utils/logger';
+import { EpubLocation, LocationUtils } from '../../../types/epub';
+import { getBookByBookId } from '../../../services/EPUBMetadataService';
 
 /**
  * Hook for managing EPUB.js book lifecycle and rendering
@@ -29,20 +31,12 @@ export const useEpubReader = (bookId: string) => {
         setIsLoading(true);
         setError(null);
 
-        // 3.1 Get book file from OPFS
-        const bookFile = await OPFSManager.getBookFile(bookId);
-
-        // 3.2 Create book instance
-        const bookInstance = new Book(bookFile);
-
-        bookRef.current = bookInstance;
-        setBook(bookInstance);
-
-        // 3.3 Wait for book to be ready
-        await bookInstance.ready;
+        const book = await getBookByBookId(bookId);
+        bookRef.current = book;
+        setBook(book);
 
         // 3.4 Generate locations for pagination
-        const locations = await bookInstance.locations.generate(1500);
+        const locations = await book.locations.generate(1500);
         setTotalPages(locations.length || 0);
       } catch (err) {
         logger.error('Failed to load book:', err);
@@ -81,9 +75,9 @@ export const useEpubReader = (bookId: string) => {
       setRendition(renditionInstance);
 
       // 4.2 Location change handler
-      renditionInstance.on('relocated', (location: any) => {
+      renditionInstance.on('relocated', (location: EpubLocation) => {
         setCurrentLocation(location.start.href);
-        setCurrentPage(location.start.displayed.page || 0);
+        setCurrentPage(location.start.displayed?.page || 0);
       });
 
       // 4.3 Load saved location
@@ -120,7 +114,7 @@ export const useEpubReader = (bookId: string) => {
 
   const goToPage = (page: number) => {
     if (bookRef.current && bookRef.current.locations) {
-      const cfi = (bookRef.current.locations as any).cfiFromPage(page);
+      const cfi = (bookRef.current.locations as unknown as LocationUtils).cfiFromPage(page);
       if (cfi && renditionRef.current) {
         renditionRef.current.display(cfi);
       }
@@ -139,7 +133,7 @@ export const useEpubReader = (bookId: string) => {
     if (currentLocation) {
       saveReadingPosition();
     }
-  }, [currentLocation, bookId]);
+  }, [currentLocation]);
 
   return {
     book,

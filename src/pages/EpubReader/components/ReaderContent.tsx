@@ -19,6 +19,7 @@ interface ReaderInstance {
 
 interface ReaderContentProps {
   bookId: string;
+  book: Book | null;
   reader: ReaderInstance;
   navigation: BookNavigationResult;
   isTocOpen: boolean;
@@ -35,6 +36,7 @@ export const ReaderContent: React.FC<ReaderContentProps> = ({
   navigation,
   isTocOpen,
   setIsTocOpen,
+  book,
 }) => {
   const handleTocNavigate = (href: string) => {
     reader.goToChapter?.(href);
@@ -42,7 +44,7 @@ export const ReaderContent: React.FC<ReaderContentProps> = ({
   };
 
   return (
-    <div className="flex-1 flex relative">
+    <div className="flex-1 flex relative overflow-hidden">
       <TOCSidebar
         tableOfContents={navigation.tableOfContents}
         currentChapter={navigation.currentChapter}
@@ -52,7 +54,7 @@ export const ReaderContent: React.FC<ReaderContentProps> = ({
       />
 
       <div className="flex-1 flex flex-col">
-        <ReaderView bookId={bookId} />
+        <ReaderView bookId={bookId} book={book} />
         <ReaderFooter reader={reader} navigation={navigation} />
       </div>
     </div>

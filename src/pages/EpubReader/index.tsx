@@ -22,7 +22,7 @@ export const EpubReader: React.FC = () => {
   if (!bookId) return <InvalidBookError />;
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="h-screen bg-white flex flex-col">
       <ReaderHeader
         isTocOpen={isTocOpen}
         setIsTocOpen={setIsTocOpen}
@@ -31,6 +31,7 @@ export const EpubReader: React.FC = () => {
       />
       <ReaderContent
         bookId={bookId}
+        book={reader.book}
         reader={reader}
         navigation={navigation}
         isTocOpen={isTocOpen}

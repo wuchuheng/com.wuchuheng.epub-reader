@@ -1,6 +1,7 @@
 import ePub, { Book } from 'epubjs';
 import { EPUBMetaData } from '../types/book';
 import { logger } from '../utils/logger';
+import * as OPFSManager from './OPFSManager';
 
 /**
  * Extract comprehensive metadata from EPUB file
@@ -145,3 +146,18 @@ export async function extractCoverBlob(book: Book): Promise<Blob | undefined> {
     return undefined;
   }
 }
+
+/**
+ * Get a book instance by its ID
+ * @param bookId
+ * @returns
+ */
+export const getBookByBookId = async (bookId: string): Promise<Book> => {
+  // 3.1 Get book file from OPFS
+  const bookFile = await OPFSManager.getBookFile(bookId);
+
+  // 3.2 Create book instance
+  const book = new Book(bookFile);
+
+  return book;
+};

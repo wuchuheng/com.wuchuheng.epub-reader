@@ -1,5 +1,6 @@
 import React from 'react';
 import { useEpubReader } from '../hooks/useEpubReader';
+import { Book } from 'epubjs';
 
 /**
  * Main EPUB reader view component
@@ -7,11 +8,12 @@ import { useEpubReader } from '../hooks/useEpubReader';
  */
 interface ReaderViewProps {
   bookId: string;
+  book: Book | null;
 }
 
-export const ReaderView: React.FC<ReaderViewProps> = ({ bookId }) => {
+export const ReaderView: React.FC<ReaderViewProps> = ({ bookId, book }) => {
   // 1. Use the epub reader hook
-  const { containerRef, isLoading, error } = useEpubReader(bookId);
+  const { containerRef, isLoading, error } = useEpubReader(bookId, book);
 
   // 2. Loading state
   if (isLoading) {
@@ -48,13 +50,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({ bookId }) => {
   return (
     <div className="flex-1 relative bg-white">
       {/* EPUB.js will render into this container */}
-      <div
-        ref={containerRef}
-        className="w-full h-full"
-        style={{
-          minHeight: 'calc(100vh - 4rem)', // Account for navigation bar
-        }}
-      />
+      <div ref={containerRef} className="w-full h-full" />
 
       {/* Reader overlay for interactions */}
       <div className="absolute inset-0 pointer-events-none">

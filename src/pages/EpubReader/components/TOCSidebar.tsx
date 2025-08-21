@@ -76,7 +76,7 @@ export const TOCSidebar: React.FC<TOCSidebarProps> = ({
       {/* Sidebar */}
       <div
         className={`
-          fixed top-0 left-0 h-full w-64 bg-white shadow-lg
+          fixed top-0 left-0 h-screen w-64 bg-white shadow-lg
           transform transition-transform duration-300 z-40
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
@@ -103,7 +103,7 @@ export const TOCSidebar: React.FC<TOCSidebarProps> = ({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="h-[calc(100vh-4rem)] overflow-y-auto p-4">
           {tableOfContents.length === 0 ? (
             <div className="text-center text-gray-500 py-8">
               <p>No table of contents available</p>
