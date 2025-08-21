@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { BookMetadata } from '../../types/book';
+import { getCoverBase64ByPath } from '../../services/OPFSManager';
 
 interface BookCardProps {
   /** Book metadata to display */
@@ -15,10 +16,13 @@ interface BookCardProps {
  * Shows book cover, title, author, and basic actions
  */
 export const BookCard: React.FC<BookCardProps> = ({ book, onOpen, onDelete }) => {
-  // 1. Input handling - validate book data
-  if (!book || !book.id) {
-    return null;
-  }
+  const [coverPath, setCoverPath] = useState<string | undefined>();
+
+  useEffect(() => {
+    getCoverBase64ByPath(book.coverPath).then((base64Str) => {
+      setCoverPath(base64Str);
+    });
+  }, [book.coverPath]);
 
   // 2. Core processing - format display data
   const displayName = book.name || 'Untitled Book';
@@ -26,14 +30,18 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onOpen, onDelete }) =>
   const displayProgress = book.progress || 0;
   const displaySize = book.size || 'Unknown size';
 
+  if (!book || !book.id) {
+    return null;
+  }
+
   // 3. Output handling - render book card
   return (
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden">
       {/* Book cover */}
       <div className="aspect-[3/4] bg-gray-200 relative">
-        {book.coverPath ? (
+        {coverPath ? (
           <img
-            src={book.coverPath}
+            src={coverPath}
             alt={displayName}
             className="w-full h-full object-cover"
             onError={(e) => {

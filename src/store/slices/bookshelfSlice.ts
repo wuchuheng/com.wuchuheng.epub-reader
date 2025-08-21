@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { BookshelfState, UploadProgress } from '../../types/book';
-import { OPFSManager } from '../../services/OPFSManager';
+import * as OPFSManager from '../../services/OPFSManager';
 
 // 1. Input handling - validate parameters
 const validateFile = (file: File): void => {
@@ -26,9 +26,8 @@ export const initializeBookshelf = createAsyncThunk(
       }
 
       // 2. Core processing - initialize and load books
-      const opfs = OPFSManager.getInstance();
-      await opfs.initialize();
-      const books = await opfs.getAllBooks();
+      await OPFSManager.initialize();
+      const books = await OPFSManager.getAllBooks();
 
       // 3. Output handling - return books
       return books;
@@ -46,8 +45,7 @@ export const uploadBook = createAsyncThunk(
       validateFile(file);
 
       // 2. Core processing - upload book
-      const opfs = OPFSManager.getInstance();
-      const bookMetadata = await opfs.uploadBook(file);
+      const bookMetadata = await OPFSManager.uploadBook(file);
 
       // 3. Output handling - return new book
       return bookMetadata;
@@ -67,8 +65,7 @@ export const deleteBook = createAsyncThunk(
       }
 
       // 2. Core processing - delete book
-      const opfs = OPFSManager.getInstance();
-      await opfs.deleteBook(bookId);
+      await OPFSManager.deleteBook(bookId);
 
       // 3. Output handling - return deleted book ID
       return bookId;
@@ -81,8 +78,7 @@ export const deleteBook = createAsyncThunk(
 export const loadBooks = createAsyncThunk('bookshelf/loadBooks', async (_, { rejectWithValue }) => {
   try {
     // 2. Core processing - load all books
-    const opfs = OPFSManager.getInstance();
-    const books = await opfs.getAllBooks();
+    const books = await OPFSManager.getAllBooks();
 
     // 3. Output handling - return books
     return books;

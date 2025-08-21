@@ -9,7 +9,7 @@ import {
 } from '../../store/slices/bookshelfSlice';
 import { BookCard } from '../../components/BookCard';
 import { UploadZone } from '../../components/UploadZone';
-import { OPFSManager } from '../../services/OPFSManager';
+import * as OPFSManager from '../../services/OPFSManager';
 
 /**
  * Main bookshelf page component

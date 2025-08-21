@@ -35,7 +35,7 @@ export interface BookMetadata {
   /** Book author (optional) */
   author?: string;
   /** Path to cover image in OPFS (optional) */
-  coverPath?: string;
+  coverPath: string;
   /** Creation timestamp */
   createdAt: number;
   /** Last read timestamp (optional) */
@@ -122,6 +122,4 @@ export interface OPFSDirectoryStructure {
   root: FileSystemDirectoryHandle;
   /** Books directory handle */
   booksDir: FileSystemDirectoryHandle;
-  /** Covers directory handle */
-  coversDir: FileSystemDirectoryHandle;
 }

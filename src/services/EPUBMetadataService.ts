@@ -1,116 +1,147 @@
-import ePub from 'epubjs';
+import ePub, { Book } from 'epubjs';
 import { EPUBMetaData } from '../types/book';
+import { logger } from '../utils/logger';
 
 /**
- * Service for extracting metadata from EPUB files
- * Handles title, author, cover image extraction and processing
+ * Extract comprehensive metadata from EPUB file
  */
-export class EPUBMetadataService {
-  /**
-   * Extract comprehensive metadata from EPUB file
-   */
-  public static async extractMetadata(file: File): Promise<EPUBMetaData> {
-    try {
-      // 1. Input handling - validate file
-      if (!file || !file.name.toLowerCase().endsWith('.epub')) {
-        throw new Error('Invalid EPUB file');
-      }
+export async function extractMetadata(file: File): Promise<EPUBMetaData> {
+  try {
+    logger.log('Starting EPUB metadata extraction for:', file.name);
 
-      // 2. Core processing - load and parse EPUB
-      const arrayBuffer = await file.arrayBuffer();
-      const book = ePub(arrayBuffer);
-
-      // 3. Output handling - extract metadata
-      const metadata = await book.loaded.metadata;
-      const cover = await this.extractCoverImage(book);
-      const spine = await book.loaded.spine;
-
-      return {
-        title: (metadata as any).title || file.name.replace(/\.epub$/i, ''),
-        author: this.formatAuthors((metadata as any).creator),
-        description: (metadata as any).description,
-        publisher: (metadata as any).publisher,
-        publishedDate: (metadata as any).date,
-        language: (metadata as any).language,
-        isbn: this.extractISBN((metadata as any).identifier),
-        chapterCount: (spine as any).items?.length || 0,
-        coverPath: cover,
-      };
-    } catch (error) {
-      console.error('Failed to extract EPUB metadata:', error);
-      return {
-        title: file.name.replace(/\.epub$/i, ''),
-        author: 'Unknown Author',
-        chapterCount: 0,
-      };
-    }
-  }
-
-  /**
-   * Format author information from EPUB metadata
-   */
-  private static formatAuthors(creator: string | string[]): string {
-    if (!creator) return 'Unknown Author';
-
-    if (Array.isArray(creator)) {
-      return creator.join(', ');
+    // 1. Input handling - validate file
+    if (!file || !file.name.toLowerCase().endsWith('.epub')) {
+      throw new Error('Invalid EPUB file');
     }
 
-    return creator;
+    // 2. Core processing - load and parse EPUB
+    const arrayBuffer = await file.arrayBuffer();
+    const book = ePub(arrayBuffer);
+
+    // 3. Output handling - extract metadata
+    const metadata = await book.loaded.metadata;
+    const cover = await extractCoverImage(book);
+    const spine = await book.loaded.spine;
+
+    logger.log('Extracted metadata:', {
+      title: metadata.title,
+      author: metadata.creator,
+      coverPath: cover,
+      chapterCount: spine?.length,
+    });
+
+    return {
+      title: metadata.title || file.name.replace(/\.epub$/i, ''),
+      author: formatAuthors(metadata.creator),
+      description: metadata.description,
+      publisher: metadata.publisher,
+      publishedDate: metadata.pubdate,
+      language: metadata.language,
+      isbn: extractISBN(metadata.identifier),
+      chapterCount: spine.length || 0,
+      coverPath: cover,
+    };
+  } catch (error) {
+    logger.error('Failed to extract EPUB metadata:', error);
+    return {
+      title: file.name.replace(/\.epub$/i, ''),
+      author: 'Unknown Author',
+      chapterCount: 0,
+    };
+  }
+}
+
+/**
+ * Extract ISBN from identifier field
+ */
+function extractISBN(identifier: string | string[]): string | undefined {
+  if (!identifier) return undefined;
+
+  const identifiers = Array.isArray(identifier) ? identifier : [identifier];
+  const isbn = identifiers.find((id) => id && id.toLowerCase().includes('isbn'));
+  return isbn;
+}
+
+function formatAuthors(creator: string | string[]): string {
+  if (!creator) return 'Unknown Author';
+
+  if (Array.isArray(creator)) {
+    return creator.join(', ');
   }
 
-  /**
-   * Extract ISBN from identifier field
-   */
-  private static extractISBN(identifier: string | string[]): string | undefined {
-    if (!identifier) return undefined;
+  return creator;
+}
 
-    const identifiers = Array.isArray(identifier) ? identifier : [identifier];
-    const isbn = identifiers.find((id) => id && id.toLowerCase().includes('isbn'));
-    return isbn;
-  }
+export async function extractCoverImage(book: Book): Promise<string | undefined> {
+  try {
+    logger.log('Starting cover image extraction...');
 
-  /**
-   * Extract cover image from EPUB
-   */
-  private static async extractCoverImage(book: any): Promise<string | undefined> {
-    try {
-      // Try to get cover image
-      const cover = (book as any).cover;
-      if (cover) {
-        return cover;
-      }
-
-      // Try to find cover in manifest
-      const manifest = await (book as any).loaded.manifest;
-      const coverItem = manifest?.find(
-        (item: any) =>
-          item?.properties?.includes('cover-image') || item?.id?.toLowerCase().includes('cover')
-      );
-
-      if (coverItem) {
-        return coverItem.href;
-      }
-
-      return undefined;
-    } catch {
-      return undefined;
+    // Try to get cover image
+    const cover = book.loaded.cover;
+    if (cover) {
+      logger.log('Found cover via book.cover:', cover);
+      return cover;
     }
+
+    return undefined;
+  } catch (error) {
+    logger.error('Error extracting cover image:', error);
+    return undefined;
   }
+}
 
-  /**
-   * Convert cover image to blob for storage
-   */
-  public static async extractCoverBlob(book: any): Promise<Blob | undefined> {
-    try {
-      const coverUrl = await this.extractCoverImage(book);
-      if (!coverUrl) return undefined;
-
-      // Get cover as blob
-      const coverBlob = await (book as any).resources?.get(coverUrl);
-      return coverBlob || undefined;
-    } catch {
+export async function getCoverFormat(book: Book): Promise<string | undefined> {
+  try {
+    const coverBlob = await extractCoverBlob(book);
+    if (!coverBlob) {
+      logger.warn('No cover blob found, skipping format extraction');
       return undefined;
     }
+
+    const imageFormat = coverBlob.type.split('/')[1];
+    logger.log('Extracted cover image format:', imageFormat);
+    return imageFormat;
+  } catch (err) {
+    logger.error('Error extracting cover format:', err);
+    return undefined;
+  }
+}
+
+/**
+ * Convert cover image to blob for storage
+ */
+export async function extractCoverBlob(book: Book): Promise<Blob | undefined> {
+  try {
+    // Get the cover URL using epub.js proper API
+    const coverUrl = await book.coverUrl();
+    if (!coverUrl) {
+      logger.warn('No cover URL found, skipping blob extraction');
+      return undefined;
+    }
+
+    logger.log('Extracting cover blob from URL:', coverUrl);
+
+    // Fetch the actual image data as a blob
+    const response = await fetch(coverUrl);
+    if (!response.ok) {
+      logger.warn('Failed to fetch cover image:', response.status);
+      return undefined;
+    }
+
+    const blob = await response.blob();
+    if (!blob || blob.size === 0) {
+      logger.warn('Empty or invalid cover blob');
+      return undefined;
+    }
+
+    logger.log('Successfully extracted cover blob:', {
+      size: blob.size,
+      type: blob.type,
+    });
+
+    return blob;
+  } catch (err) {
+    logger.error('Error extracting cover blob:', err);
+    return undefined;
   }
 }
