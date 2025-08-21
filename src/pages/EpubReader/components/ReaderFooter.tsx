@@ -1,34 +1,23 @@
 import React from 'react';
-import { Book, Rendition } from 'epubjs';
+import { Rendition } from 'epubjs';
 import { BookNavigationResult } from '../../../types/epub';
-
-/**
- * Reader instance interface combining book state with navigation methods
- */
-interface ReaderInstance {
-  book: Book | null;
-  rendition: Rendition | null;
-  isLoading: boolean;
-  error: string | null;
-  currentLocation: string | null;
-  goToChapter?: (href: string) => void;
-}
+import * as Icons from '../../../components/icons';
 
 interface ReaderFooterProps {
-  reader: ReaderInstance;
   navigation: BookNavigationResult;
+  rendition: Rendition | null;
+  currentLocation: string | null;
+  goToChapter?: (href: string) => void;
 }
 
 /**
  * Reader footer component with progress bar and navigation controls
  * Implements the bottom navigation area from DESIGN.md
  */
-export const ReaderFooter: React.FC<ReaderFooterProps> = ({ reader, navigation }) => {
-  if (reader.isLoading || reader.error) return null;
-
+export const ReaderFooter: React.FC<ReaderFooterProps> = (props) => {
   const progress =
-    navigation.totalPages > 0
-      ? Math.round(((navigation.currentPage + 1) / navigation.totalPages) * 100)
+    props.navigation.totalPages > 0
+      ? Math.round(((props.navigation.currentPage + 1) / props.navigation.totalPages) * 100)
       : 0;
 
   return (
@@ -39,7 +28,7 @@ export const ReaderFooter: React.FC<ReaderFooterProps> = ({ reader, navigation }
           <div className="flex-1 mr-4">
             <div className="flex items-center justify-between text-sm text-gray-600 mb-1">
               <span>
-                Page {navigation.currentPage + 1} of {navigation.totalPages}
+                Page {props.navigation.currentPage + 1} of {props.navigation.totalPages}
               </span>
               <span>{progress}%</span>
             </div>
@@ -54,34 +43,20 @@ export const ReaderFooter: React.FC<ReaderFooterProps> = ({ reader, navigation }
           {/* Navigation Buttons */}
           <div className="flex items-center gap-2">
             <button
-              onClick={navigation.goToPrevPage}
-              disabled={navigation.isAtStart}
+              onClick={props.navigation.goToPrevPage}
+              disabled={props.navigation.isAtStart}
               className="p-2 text-gray-600 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
               title="Previous Page"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
+              <Icons.LeftArrow />
             </button>
             <button
-              onClick={navigation.goToNextPage}
-              disabled={navigation.isAtEnd}
+              onClick={props.navigation.goToNextPage}
+              disabled={props.navigation.isAtEnd}
               className="p-2 text-gray-600 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
               title="Next Page"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
+              <Icons.RightArrow />
             </button>
           </div>
         </div>

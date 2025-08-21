@@ -41,13 +41,6 @@ export const useBookLoader = (bookId: string) => {
     if (bookId) {
       loadBook();
     }
-
-    // 3. Cleanup
-    return () => {
-      if (book) {
-        book.destroy();
-      }
-    };
   }, [bookId, book]);
 
   return {

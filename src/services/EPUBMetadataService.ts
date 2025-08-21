@@ -158,6 +158,7 @@ export const getBookByBookId = async (bookId: string): Promise<Book> => {
 
   // 3.2 Create book instance
   const book = new Book(bookFile);
+  console.log('Created book instance:', book);
 
   return book;
 };

@@ -1,40 +1,29 @@
 import React from 'react';
-import { useEpubReader } from '../hooks/useEpubReader';
-import { Book } from 'epubjs';
 
 /**
  * Main EPUB reader view component
  * Handles the actual EPUB rendering and display
  */
 interface ReaderViewProps {
-  bookId: string;
-  book: Book | null;
+  error: string | null;
+  containerRef: React.RefObject<HTMLDivElement>;
 }
 
-export const ReaderView: React.FC<ReaderViewProps> = ({ bookId, book }) => {
+/**
+ * @param props
+ * @returns
+ */
+export const ReaderView: React.FC<ReaderViewProps> = (props) => {
   // 1. Use the epub reader hook
-  const { containerRef, isLoading, error } = useEpubReader(bookId, book);
-
-  // 2. Loading state
-  if (isLoading) {
-    return (
-      <div className="flex-1 flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading book...</p>
-        </div>
-      </div>
-    );
-  }
 
   // 3. Error state
-  if (error) {
+  if (props.error) {
     return (
       <div className="flex-1 flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="text-red-500 text-6xl mb-4">⚠️</div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Failed to Load Book</h3>
-          <p className="text-gray-600 mb-4">{error}</p>
+          <p className="text-gray-600 mb-4">{props.error}</p>
           <button
             onClick={() => window.history.back()}
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
@@ -50,7 +39,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({ bookId, book }) => {
   return (
     <div className="flex-1 relative bg-white">
       {/* EPUB.js will render into this container */}
-      <div ref={containerRef} className="w-full h-full" />
+      <div ref={props.containerRef} className="w-full h-full" />
 
       {/* Reader overlay for interactions */}
       <div className="absolute inset-0 pointer-events-none">
