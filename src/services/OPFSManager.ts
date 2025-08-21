@@ -13,7 +13,7 @@ export function isSupported(): boolean {
 /**
  * Initialize OPFS directory structure
  */
-export async function initialize(): Promise<void> {
+export async function initialize(): Promise<OPFSDirectoryStructure> {
   if (!isSupported()) {
     throw new Error('OPFS is not supported in this browser');
   }
@@ -31,18 +31,24 @@ export async function initialize(): Promise<void> {
 
     // Ensure config.json exists
     await ensureConfigExists();
+    return directoryStructure;
   } catch (error) {
     throw new Error(`Failed to initialize OPFS: ${error}`);
   }
 }
 
+const getDirectoryStructure = async (): Promise<OPFSDirectoryStructure> => {
+  if (!directoryStructure) {
+    return await initialize();
+  }
+  return directoryStructure!;
+};
+
 /**
  * Ensure config.json exists with default structure
  */
 async function ensureConfigExists(): Promise<void> {
-  if (!directoryStructure) {
-    throw new Error('OPFS not initialized');
-  }
+  const directoryStructure = await getDirectoryStructure();
 
   try {
     await directoryStructure.root.getFileHandle('config.json');
@@ -66,10 +72,7 @@ async function ensureConfigExists(): Promise<void> {
  * Upload and save an EPUB book with metadata extraction and cover image
  */
 export async function uploadBook(file: File): Promise<BookMetadata> {
-  if (!directoryStructure) {
-    throw new Error('OPFS not initialized');
-  }
-
+  const directoryStructure = await getDirectoryStructure();
   // Validate file type
   if (!file.name.toLowerCase().endsWith('.epub')) {
     throw new Error('Only EPUB files are supported');
@@ -152,9 +155,7 @@ export async function uploadBook(file: File): Promise<BookMetadata> {
  * Save configuration to config.json
  */
 async function saveConfig(config: OPFSConfig): Promise<void> {
-  if (!directoryStructure) {
-    throw new Error('OPFS not initialized');
-  }
+  const directoryStructure = await getDirectoryStructure();
 
   try {
     const fileHandle = await directoryStructure.root.getFileHandle('config.json', {
@@ -172,9 +173,7 @@ async function saveConfig(config: OPFSConfig): Promise<void> {
  * Delete a book and its directory
  */
 export async function deleteBook(bookId: string): Promise<void> {
-  if (!directoryStructure) {
-    throw new Error('OPFS not initialized');
-  }
+  const directoryStructure = await getDirectoryStructure();
 
   try {
     // Remove entire book directory
@@ -198,9 +197,7 @@ export async function deleteBook(bookId: string): Promise<void> {
  * Get book file as ArrayBuffer
  */
 export async function getBookFile(bookId: string): Promise<ArrayBuffer> {
-  if (!directoryStructure) {
-    throw new Error('OPFS not initialized');
-  }
+  const directoryStructure = await getDirectoryStructure();
 
   try {
     // Get book directory and find the epub file
@@ -286,9 +283,7 @@ let directoryStructure: OPFSDirectoryStructure | null = null;
  * Load configuration from config.json with error recovery
  */
 async function loadConfig(): Promise<OPFSConfig> {
-  if (!directoryStructure) {
-    throw new Error('OPFS not initialized');
-  }
+  const directoryStructure = await getDirectoryStructure();
 
   try {
     const fileHandle = await directoryStructure.root.getFileHandle('config.json');

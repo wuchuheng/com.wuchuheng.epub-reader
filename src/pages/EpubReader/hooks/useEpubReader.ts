@@ -31,20 +31,19 @@ export const useEpubReader = (bookId: string) => {
 
         // 3.1 Get book file from OPFS
         const bookFile = await OPFSManager.getBookFile(bookId);
-        
+
         // 3.2 Create book instance
         const bookInstance = new Book(bookFile);
-        
+
         bookRef.current = bookInstance;
         setBook(bookInstance);
 
         // 3.3 Wait for book to be ready
         await bookInstance.ready;
-        
+
         // 3.4 Generate locations for pagination
         const locations = await bookInstance.locations.generate(1500);
         setTotalPages(locations.length || 0);
-
       } catch (err) {
         logger.error('Failed to load book:', err);
         setError(err instanceof Error ? err.message : 'Failed to load book');
@@ -94,7 +93,6 @@ export const useEpubReader = (bookId: string) => {
       } else {
         renditionInstance.display();
       }
-
     } catch (err) {
       logger.error('Failed to create rendition:', err);
       setError('Failed to initialize reader');
@@ -136,4 +134,26 @@ export const useEpubReader = (bookId: string) => {
     }
   };
 
-  // Auto-save position on location
+  // Auto-save position on location change
+  useEffect(() => {
+    if (currentLocation) {
+      saveReadingPosition();
+    }
+  }, [currentLocation, bookId]);
+
+  return {
+    book,
+    rendition,
+    containerRef,
+    isLoading,
+    error,
+    currentLocation,
+    totalPages,
+    currentPage,
+    goToNextPage,
+    goToPrevPage,
+    goToChapter,
+    goToPage,
+    saveReadingPosition,
+  };
+};

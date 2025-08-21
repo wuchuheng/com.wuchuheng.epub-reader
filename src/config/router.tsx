@@ -1,6 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
 import BookshelfPage from '../pages/BookshelfPage';
-import EpubReader from '../pages/EpubReader';
+import { EpubReader } from '../pages/EpubReader';
 import SettingsPage from '../pages/SettingsPage';
 
 const router = createBrowserRouter([
