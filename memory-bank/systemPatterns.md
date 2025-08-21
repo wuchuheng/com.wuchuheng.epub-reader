@@ -1,47 +1,48 @@
 # System Patterns: EPUB Reader Architecture
 
-## Core Architecture Pattern
+## Core Architecture Pattern - COMPLETE IMPLEMENTATION
 
-### Component-Based Architecture
+### Component-Based Architecture - CURRENT STATE
 
 ```
 Application Layer
 ├── Pages (Route-level components)
-│   ├── BookshelfPage (Library management) ✅
-│   ├── EpubReader (Reading interface) ⚠️
-│   ├── SearchPage (Global search) ❌
-│   └── SettingsPage (Configuration) ⚠️
+│   ├── BookshelfPage ✅ (complete library management)
+│   ├── EpubReader ⚠️ (placeholder - needs EPUB.js)
+│   ├── SettingsPage ⚠️ (placeholder - needs configuration)
+│   └── SearchPage ❌ (future enhancement)
 ├── Components (Reusable UI)
-│   ├── BookCard ✅, DictionaryPopup ❌, TOCSidebar ❌
-│   ├── UploadZone ✅, common components
-│   └── ErrorBoundary ❌
+│   ├── BookCard ✅ (responsive book display)
+│   ├── UploadZone ✅ (drag-and-drop upload)
+│   ├── DictionaryPopup ❌ (Phase 2)
+│   ├── TOCSidebar ❌ (Phase 2)
+│   └── ErrorBoundary ❌ (future enhancement)
 ├── Services (Business logic)
 │   ├── OPFSManager ✅ (complete storage layer)
 │   ├── EPUBMetadataService ✅ (metadata extraction)
-│   ├── AI integration ❌, Dictionary API ❌
-│   └── Settings ❌, Search indexing ❌
+│   ├── AI integration ❌ (Phase 3)
+│   ├── Dictionary API ❌ (Phase 2)
+│   └── Settings ❌ (Phase 2)
 └── Store (State management)
-    ├── Redux Toolkit slices ✅
-    └── Persistence layer ✅
+    ├── Redux Toolkit slices ✅ (bookshelfSlice complete)
+    └── Persistence layer ✅ (OPFS-based)
 ```
 
-### Data Flow Architecture
+### Data Flow Architecture - IMPLEMENTED
 
 ```
-User Action → Component → Redux Action → Service Layer → External API/Storage → State Update → Component Re-render
+User Action → Component → Redux Action → Service Layer → OPFS/EPUB.js → State Update → Component Re-render
 ```
 
-## Storage Patterns
+## Storage Patterns - COMPLETE IMPLEMENTATION
 
-### OPFS (Origin Private File System) Strategy ✅ **IMPLEMENTED**
+### OPFS (Origin Private File System) Strategy - FULLY IMPLEMENTED
 
 ```
 /books/
-    book1.epub
-    book2.epub
-    covers/
-        book1-cover.jpg
-        book2-cover.jpg
+    {book-id}/
+        book-name.epub
+        cover.jpg|png|webp
 /config.json (metadata + settings)
 /search-index/ (future: search indexing)
 ```
@@ -54,8 +55,9 @@ User Action → Component → Redux Action → Service Layer → External API/St
 4. **Error Recovery**: Validate file integrity after writes with config recreation
 5. **Metadata Separation**: Store book metadata separately from file content
 6. **Lazy Loading**: Only load book content when actively reading
+7. **Directory Structure**: Organized by book ID for clean separation
 
-### Configuration Schema Pattern ✅ **IMPLEMENTED**
+### Configuration Schema Pattern - IMPLEMENTED
 
 ```typescript
 interface OPFSConfig {
@@ -81,9 +83,9 @@ interface BookMetadata {
 }
 ```
 
-## Component Patterns
+## Component Patterns - IMPLEMENTED
 
-### Redux Async Thunk Pattern ✅ **IMPLEMENTED**
+### Redux Async Thunk Pattern - IMPLEMENTED
 
 ```typescript
 // Three-phase pattern for all async operations
@@ -107,28 +109,26 @@ export const uploadBook = createAsyncThunk(
 );
 ```
 
-### Service Layer Pattern ✅ **IMPLEMENTED**
+### Service Layer Pattern - IMPLEMENTED
 
 ```typescript
 // Three-phase pattern for all service operations
-class OPFSManager {
-  async uploadBook(file: File): Promise<BookMetadata> {
-    // 1. Input handling - validate file
-    if (!file.name.toLowerCase().endsWith('.epub')) {
-      throw new Error('Only EPUB files are supported');
-    }
-
-    // 2. Core processing - save file and extract metadata
-    const bookId = uuidv4();
-    // ... file operations ...
-
-    // 3. Output handling - return metadata
-    return bookMetadata;
+export async function uploadBook(file: File): Promise<BookMetadata> {
+  // 1. Input handling - validate file type and size
+  if (!file.name.toLowerCase().endsWith('.epub')) {
+    throw new Error('Only EPUB files are supported');
   }
+
+  // 2. Core processing - save file and extract metadata
+  const bookId = uuidv4();
+  // ... file operations ...
+
+  // 3. Output handling - return metadata
+  return bookMetadata;
 }
 ```
 
-### Component Pattern ✅ **IMPLEMENTED**
+### Component Pattern - IMPLEMENTED
 
 ```typescript
 // Standard component pattern with three-phase logic
@@ -140,19 +140,5 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onOpen, onDelete }) =>
 
   // 2. Core processing - format display data
   const displayName = book.name || 'Untitled Book';
-  const displayAuthor = book.author || 'Unknown Author';
-
-  // 3. Output handling - render book card
-  return (
-    <div className="book-card">
-      {/* Responsive book display */}
-    </div>
-  );
-};
-```
-
-### Error Handling Pattern ✅ **IMPLEMENTED**
-
-```typescript
-// Comprehensive error handling with
+  const displayAuthor = book.author
 ```
