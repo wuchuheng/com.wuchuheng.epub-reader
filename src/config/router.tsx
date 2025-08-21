@@ -1,14 +1,20 @@
 import { createBrowserRouter } from 'react-router-dom';
-import HomePage from '../pages/Home';
+import BookshelfPage from '../pages/BookshelfPage';
+import EpubReader from '../pages/EpubReader';
+import SettingsPage from '../pages/SettingsPage';
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <HomePage />,
+    element: <BookshelfPage />,
   },
   {
-    path: '/about',
-    element: <HomePage />,
+    path: '/reader/:bookId',
+    element: <EpubReader />,
+  },
+  {
+    path: '/settings',
+    element: <SettingsPage />,
   },
 ]);
 

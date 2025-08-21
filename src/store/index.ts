@@ -1,11 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { useDispatch, useSelector } from 'react-redux';
-import counterReducer from './slices/counterSlice';
+import bookshelfReducer from './slices/bookshelfSlice';
 
 // 2. Define the store using the root reducer
 const store = configureStore({
   reducer: {
-    counter: counterReducer,
+    bookshelf: bookshelfReducer,
   },
 });
 
