@@ -59,7 +59,16 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
     if (menuVisible) setMenuVisible(false);
     if (tocVisible) setTocVisible(false);
   };
-  const { containerRef, onNext, onPrev, tableOfContents, onChapterSelect } = useReader({
+  const {
+    containerRef,
+    goToNext: onNext,
+    goToPrev: onPrev,
+    tableOfContents,
+    goToSelectChapter,
+    currentPage,
+    totalPages,
+    currentChapterHref,
+  } = useReader({
     book: props.book,
   });
 
@@ -68,11 +77,9 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
       <ReaderHeader visible={menuVisible} onOpenToc={onToggleToc} />
       <TOCSidebar
         isOpen={tocVisible}
-        currentChapter={null}
-        onChapterSelect={onChapterSelect}
-        onToggle={function (): void {
-          setTocVisible(false);
-        }}
+        currentChapter={currentChapterHref}
+        onChapterSelect={goToSelectChapter}
+        onToggle={() => setTocVisible(false)}
         tableOfContents={tableOfContents}
       />
 
@@ -83,8 +90,8 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
 
       <ReaderFooter
         visible={menuVisible}
-        currentPage={2}
-        totalPages={100}
+        currentPage={currentPage}
+        totalPages={totalPages}
         onNext={onNext}
         onPrev={onPrev}
       />

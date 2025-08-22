@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { TocItem } from '../../../types/epub';
-import { Book } from 'epubjs';
 
 /**
  * Table of Contents sidebar component
@@ -36,15 +35,11 @@ export const TOCSidebar: React.FC<TOCSidebarProps> = (props) => {
       <div key={item.href} className="w-full">
         <button
           onClick={() => props.onChapterSelect(item.href)}
-          className={`
-            w-full text-left px-3 py-2 text-sm rounded transition-colors
-            ${level > 0 ? 'ml-4' : ''}
-            ${
-              props.currentChapter === item.href
-                ? 'bg-blue-100 text-blue-700 font-medium'
-                : 'text-gray-700 hover:bg-gray-100'
-            }
-          `}
+          className={`w-full rounded px-3 py-2 text-left text-sm transition-colors ${level > 0 ? 'ml-4' : ''} ${
+            props.currentChapter?.startsWith(item.href)
+              ? 'bg-blue-100 font-medium text-blue-700'
+              : 'text-gray-700 hover:bg-gray-100'
+          } `}
           style={{ paddingLeft: `${12 + level * 16}px` }}
         >
           {item.label}
@@ -59,14 +54,10 @@ export const TOCSidebar: React.FC<TOCSidebarProps> = (props) => {
   return (
     <>
       <div
-        className={`
-          fixed top-0 left-0 h-screen w-64 bg-white shadow-lg
-          transform transition-transform duration-300 z-40
-          ${props.isOpen ? 'translate-x-0' : '-translate-x-full'}
-        `}
+        className={`fixed left-0 top-0 z-40 h-screen w-64 transform bg-white shadow-lg transition-transform duration-300 ${props.isOpen ? 'translate-x-0' : '-translate-x-full'} `}
       >
         {/* Header */}
-        <div className="p-4 border-b">
+        <div className="border-b p-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900">Table of Contents</h3>
             <button
@@ -74,7 +65,7 @@ export const TOCSidebar: React.FC<TOCSidebarProps> = (props) => {
               className="p-1 text-gray-500 hover:text-gray-700"
               aria-label="Close table of contents"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -89,7 +80,7 @@ export const TOCSidebar: React.FC<TOCSidebarProps> = (props) => {
         {/* Content */}
         <div className="h-[calc(100vh-4rem)] overflow-y-auto p-4">
           {props.tableOfContents.length === 0 ? (
-            <div className="text-center text-gray-500 py-8">
+            <div className="py-8 text-center text-gray-500">
               <p>No table of contents available</p>
             </div>
           ) : (
@@ -101,7 +92,7 @@ export const TOCSidebar: React.FC<TOCSidebarProps> = (props) => {
       {/* Overlay for mobile */}
       {props.isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
+          className="fixed inset-0 z-30 bg-black bg-opacity-50 md:hidden"
           onClick={props.onToggle}
         />
       )}

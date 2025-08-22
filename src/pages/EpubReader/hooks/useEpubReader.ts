@@ -1,7 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
-import { Book, Rendition } from 'epubjs';
+import { Book } from 'epubjs';
 import { logger } from '../../../utils/logger';
-import { EpubLocation, LocationUtils, TocItem } from '../../../types/epub';
+import { TocItem } from '../../../types/epub';
+import Section from 'epubjs/types/section';
+import { useParams } from 'react-router-dom';
+
+// Latest reading location
+const latestReadingLocation = {
+  prefix: 'latestReadingLocation_',
+  getCfi: (key: string): string | null =>
+    localStorage.getItem(`${latestReadingLocation.prefix}${key}`),
+  setCfi: (key: string, cfi: string): void => {
+    localStorage.setItem(`${latestReadingLocation.prefix}${key}`, cfi);
+  },
+};
 
 // Type for the location object from rendition's 'relocated' event
 type RenditionLocation = {
@@ -31,174 +43,34 @@ type RenditionLocation = {
   atEnd: boolean;
 };
 
-type EpubReaderResult = {
-  rendition: Rendition | null;
-  containerRef: React.RefObject<HTMLDivElement>;
-  isLoading: boolean;
-  error: string | null;
-  currentLocation: string | null;
-  totalPages: number;
-  currentPage: number;
-  goToNextPage: () => void;
-  goToPrevPage: () => void;
-  goToChapter: (href: string) => void;
-  goToPage: (page: number) => void;
-  saveReadingPosition: () => void;
-};
-
-/**
- * Hook for managing EPUB.js book lifecycle and rendering
- * Handles book loading, rendition creation, and navigation
- */
-export const useEpubReader = (book: Book): EpubReaderResult => {
-  // 1. State management
-  const [rendition, setRendition] = useState<Rendition | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string>('');
-  const [currentLocation, setCurrentLocation] = useState<string>('');
-  const [totalPages, setTotalPages] = useState(0);
-  const [currentPage, setCurrentPage] = useState(0);
-
-  // 2. Refs
-  const renditionRef = useRef<Rendition | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // 3. Book loading
-  useEffect(() => {
-    const loadBook = async () => {
-      try {
-        setIsLoading(true);
-        setError('');
-
-        // 3.4 Generate locations for pagination
-        if (!book.locations) return;
-
-        const generatedLocations = await book.locations.generate(1500);
-        setTotalPages(generatedLocations.length || 0);
-      } catch (err) {
-        logger.error('Failed to load book:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load book');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadBook();
-  }, []);
-
-  // 4. Rendition creation
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    try {
-      // 4.1 Create rendition
-      const renditionInstance = book.renderTo(containerRef.current, {
-        width: '100%',
-        height: '100%',
-        spread: 'auto',
-        minSpreadWidth: 800,
-        manager: 'continuous',
-        allowScriptedContent: true,
-      });
-
-      renditionRef.current = renditionInstance;
-      setRendition(renditionInstance);
-
-      // 4.2 Location change handler
-      renditionInstance.on('relocated', (location: EpubLocation) => {
-        setCurrentLocation(location.start.href);
-        setCurrentPage(location.start.displayed?.page || 0);
-      });
-
-      // 4.3 Load saved location
-      const savedLocation = localStorage.getItem(`reading-position-`);
-      if (savedLocation) {
-        renditionInstance.display(savedLocation);
-      } else {
-        renditionInstance.display();
-      }
-    } catch (err) {
-      logger.error('Failed to create rendition:', err);
-      setError('Failed to initialize reader');
-    }
-  }, [book]);
-
-  // 5. Navigation methods
-  const goToNextPage = () => {
-    if (renditionRef.current) {
-      renditionRef.current.next();
-    }
-  };
-
-  const goToPrevPage = () => {
-    if (renditionRef.current) {
-      renditionRef.current.prev();
-    }
-  };
-
-  const goToChapter = (href: string) => {
-    if (renditionRef.current) {
-      renditionRef.current.display(href);
-    }
-  };
-
-  const goToPage = (page: number) => {
-    if (book.locations) {
-      const cfi = (book.locations as unknown as LocationUtils).cfiFromPage(page);
-      if (cfi && renditionRef.current) {
-        renditionRef.current.display(cfi);
-      }
-    }
-  };
-
-  // 6. Save reading position
-  const saveReadingPosition = () => {
-    if (currentLocation) {
-      localStorage.setItem(`reading-position`, currentLocation);
-    }
-  };
-
-  // Auto-save position on location change
-  useEffect(() => {
-    if (currentLocation) {
-      saveReadingPosition();
-    }
-  }, [currentLocation]);
-
-  return {
-    rendition,
-    containerRef,
-    isLoading,
-    error,
-    currentLocation,
-    totalPages,
-    currentPage,
-    goToNextPage,
-    goToPrevPage,
-    goToChapter,
-    goToPage,
-    saveReadingPosition,
-  };
-};
-
 type UseReaderReturn = {
   containerRef: React.RefObject<HTMLDivElement>;
   tableOfContents: TocItem[];
-  onNext: () => void;
-  onPrev: () => void;
-  onChapterSelect: (href: string) => void;
+  totalPages: number;
+  currentPage: number;
+  currentChapterHref: string;
+  goToNext: () => void;
+  goToPrev: () => void;
+  goToSelectChapter: (href: string) => void;
 };
 
 type UseReaderProps = {
   book: Book;
 };
+
 export const useReader = (props: UseReaderProps): UseReaderReturn => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const onNextRef = useRef<() => void>(() => {});
-  const onPrevRef = useRef<() => void>(() => {});
-  const onChapterSelectRef = useRef<(href: string) => void>(() => {});
+  const goToNextRef = useRef<() => void>(() => {});
+  const goToPrevRef = useRef<() => void>(() => {});
+  const goToSelectChapterRef = useRef<(href: string) => void>(() => {});
+  const [totalPages, setTotalPages] = useState<number>(0);
+  const [currentPage, setCurrentPage] = useState<number>(0);
   const [tableOfContents, setTableOfContents] = useState<TocItem[]>([]);
   const currentRenditionLocationRef = useRef<RenditionLocation | null>(null); // Ref to store the latest location object
+  const [currentChapterHref, setCurrentChapterHref] = useState<string>('');
+
+  // Access the bookId from the route /reader/:bookId via react-router hooks.
+  const { bookId } = useParams<{ bookId: string }>();
 
   const onRenderBook = async () => {
     logger.log('Rendering book:', props.book);
@@ -207,26 +79,56 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
     const rendition = props.book.renderTo(containerRef.current!, {
       width: '100%',
       height: '100%',
-      spread: 'auto',
+      spread: 'always',
       minSpreadWidth: 800,
       manager: 'continuous',
+      flow: 'paginated',
       allowScriptedContent: true,
     });
 
     // 2.2 Display first page.
-    rendition.display();
-
     // Listen to 'relocated' event to update the location ref
     rendition.on('relocated', (location: RenditionLocation) => {
       currentRenditionLocationRef.current = location;
+
+      // Update current page based on location
+      const percentage = props.book.locations.percentageFromCfi(location.start.cfi);
+      const total = props.book.locations.length();
+      let page = Math.floor(percentage * total) + 1;
+      if (percentage >= 1) {
+        page = total;
+      }
+
+      setCurrentPage(page);
+
+      // Save the current location for this file
+      latestReadingLocation.setCfi(bookId!, location.start.cfi);
     });
+
+    rendition.on('rendered', (section: Section) => {
+      const current = props.book.navigation.get(section.href);
+      if (current) {
+        // Update the current chapter information
+        setCurrentChapterHref(current.href);
+      }
+    });
+
+    const latestCfi = latestReadingLocation.getCfi(bookId!);
+    rendition.display(latestCfi || undefined);
 
     // 2.3 Bind navigation events.
     await props.book.ready;
+
+    const chars = 1600;
+    await props.book.locations.generate(chars);
+
+    const totalPages = props.book.locations.length();
+    setTotalPages(totalPages);
+
     logger.log('Book is ready:', props.book);
 
     // 2.3.1 Bind prev event.
-    onNextRef.current = () => {
+    goToNextRef.current = () => {
       // 1. Check if the latest page is displayed using the ref
       if (currentRenditionLocationRef.current?.atEnd) {
         logger.warn('Reached the end of the book');
@@ -237,7 +139,7 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
     };
 
     // 2.3.2 Bind prev event.
-    onPrevRef.current = () => {
+    goToPrevRef.current = () => {
       // 1. Check if the latest page is displayed using the ref
       if (currentRenditionLocationRef.current?.atStart) {
         logger.log('Reached the start of the book');
@@ -252,15 +154,14 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
     setTableOfContents(toc);
 
     // 2.5 Bind navigation events while the specific chapter selection.
-    // 2.5 Bind navigation events for chapter selection.
-    onChapterSelectRef.current = (href: string) => rendition.display(href);
+    goToSelectChapterRef.current = (href: string) => rendition.display(href);
   };
 
   // Bind the direction keys
   useEffect(() => {
     const keyListener = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') onPrevRef.current?.();
-      if (e.key === 'ArrowRight') onNextRef.current?.();
+      if (e.key === 'ArrowLeft') goToPrevRef.current?.();
+      if (e.key === 'ArrowRight') goToNextRef.current?.();
     };
 
     document.addEventListener('keydown', keyListener);
@@ -276,9 +177,12 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
 
   return {
     containerRef,
-    onNext: onNextRef.current,
-    onPrev: onPrevRef.current,
     tableOfContents,
-    onChapterSelect: onChapterSelectRef.current,
+    totalPages,
+    currentPage,
+    currentChapterHref,
+    goToNext: goToNextRef.current,
+    goToPrev: goToPrevRef.current,
+    goToSelectChapter: goToSelectChapterRef.current,
   };
 };
