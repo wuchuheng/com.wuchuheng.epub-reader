@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Book, Rendition } from 'epubjs';
 import { logger } from '../../../utils/logger';
-import { EpubLocation, LocationUtils } from '../../../types/epub';
+import { EpubLocation, LocationUtils, TocItem } from '../../../types/epub';
 
 // Type for the location object from rendition's 'relocated' event
 type RenditionLocation = {
@@ -183,8 +183,10 @@ export const useEpubReader = (book: Book): EpubReaderResult => {
 
 type UseReaderReturn = {
   containerRef: React.RefObject<HTMLDivElement>;
+  tableOfContents: TocItem[];
   onNext: () => void;
   onPrev: () => void;
+  onChapterSelect: (href: string) => void;
 };
 
 type UseReaderProps = {
@@ -194,9 +196,11 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
   const containerRef = useRef<HTMLDivElement>(null);
   const onNextRef = useRef<() => void>(() => {});
   const onPrevRef = useRef<() => void>(() => {});
+  const onChapterSelectRef = useRef<(href: string) => void>(() => {});
+  const [tableOfContents, setTableOfContents] = useState<TocItem[]>([]);
   const currentRenditionLocationRef = useRef<RenditionLocation | null>(null); // Ref to store the latest location object
 
-  const onRenderBook = () => {
+  const onRenderBook = async () => {
     logger.log('Rendering book:', props.book);
     // 2. Handle logic.
     // 2.1 Render book.
@@ -218,47 +222,49 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
     });
 
     // 2.3 Bind navigation events.
-    props.book.ready.then(() => {
-      logger.log('Book is ready:', props.book);
+    await props.book.ready;
+    logger.log('Book is ready:', props.book);
 
-      // 2.2.1 Bind next event.
-      onNextRef.current = () => {
-        // 1. Check if the latest page is displayed using the ref
-        if (currentRenditionLocationRef.current?.atEnd) {
-          logger.warn('Reached the end of the book');
-          return;
-        }
+    // 2.3.1 Bind prev event.
+    onNextRef.current = () => {
+      // 1. Check if the latest page is displayed using the ref
+      if (currentRenditionLocationRef.current?.atEnd) {
+        logger.warn('Reached the end of the book');
+        return;
+      }
 
-        rendition.next();
-      };
+      rendition.next();
+    };
 
-      onPrevRef.current = () => {
-        // 1. Check if the latest page is displayed using the ref
-        if (currentRenditionLocationRef.current?.atStart) {
-          logger.warn('Reached the start of the book');
-          return;
-        }
+    // 2.3.2 Bind prev event.
+    onPrevRef.current = () => {
+      // 1. Check if the latest page is displayed using the ref
+      if (currentRenditionLocationRef.current?.atStart) {
+        logger.log('Reached the start of the book');
+        return;
+      }
 
-        rendition.prev();
-      };
-    });
+      rendition.prev();
+    };
+
+    // 2.4 Extract and set table of contents
+    const toc = props.book.navigation.toc;
+    setTableOfContents(toc);
+
+    // 2.5 Bind navigation events while the specific chapter selection.
+    // 2.5 Bind navigation events for chapter selection.
+    onChapterSelectRef.current = (href: string) => rendition.display(href);
   };
 
   // Bind the direction keys
   useEffect(() => {
     const keyListener = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') {
-        onPrevRef.current?.();
-      }
-      if (e.key === 'ArrowRight') {
-        onNextRef.current?.();
-      }
+      if (e.key === 'ArrowLeft') onPrevRef.current?.();
+      if (e.key === 'ArrowRight') onNextRef.current?.();
     };
 
     document.addEventListener('keydown', keyListener);
-    return () => {
-      document.removeEventListener('keydown', keyListener);
-    };
+    return () => document.removeEventListener('keydown', keyListener);
   }, []);
 
   useEffect(() => {
@@ -272,5 +278,7 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
     containerRef,
     onNext: onNextRef.current,
     onPrev: onPrevRef.current,
+    tableOfContents,
+    onChapterSelect: onChapterSelectRef.current,
   };
 };

@@ -59,7 +59,9 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
     if (menuVisible) setMenuVisible(false);
     if (tocVisible) setTocVisible(false);
   };
-  const { containerRef, onNext, onPrev } = useReader({ book: props.book });
+  const { containerRef, onNext, onPrev, tableOfContents, onChapterSelect } = useReader({
+    book: props.book,
+  });
 
   return (
     <div className="relative flex h-screen flex-col bg-white">
@@ -67,13 +69,11 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
       <TOCSidebar
         isOpen={tocVisible}
         currentChapter={null}
-        onChapterSelect={function (href: string): void {
-          throw new Error('Function not implemented.');
-        }}
+        onChapterSelect={onChapterSelect}
         onToggle={function (): void {
           setTocVisible(false);
         }}
-        tableOfContents={[]}
+        tableOfContents={tableOfContents}
       />
 
       {/* Toggle button to show menu when hidden */}
