@@ -56,6 +56,7 @@ type UseReaderReturn = {
 
 type UseReaderProps = {
   book: Book;
+  onContentClick?: () => void;
 };
 
 export const useReader = (props: UseReaderProps): UseReaderReturn => {
@@ -111,6 +112,12 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
         // Update the current chapter information
         setCurrentChapterHref(current.href);
       }
+    });
+
+    // Handle content clicks
+    rendition.on('click', () => {
+      logger.log('Content clicked');
+      props.onContentClick?.();
     });
 
     const latestCfi = latestReadingLocation.getCfi(bookId!);

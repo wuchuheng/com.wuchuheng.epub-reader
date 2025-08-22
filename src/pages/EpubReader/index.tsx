@@ -56,8 +56,8 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
   };
 
   const onClickReaderView = () => {
-    if (menuVisible) setMenuVisible(false);
-    if (tocVisible) setTocVisible(false);
+    setMenuVisible(false);
+    setTocVisible(false);
   };
   const {
     containerRef,
@@ -70,6 +70,7 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
     currentChapterHref,
   } = useReader({
     book: props.book,
+    onContentClick: onClickReaderView,
   });
 
   return (
@@ -86,7 +87,7 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
       {/* Toggle button to show menu when hidden */}
       <MenuButton visible={!menuVisible} setVisible={setMenuVisible} />
 
-      <div className="relative h-full w-full" onClick={onClickReaderView} ref={containerRef} />
+      <div className="relative h-full w-full" ref={containerRef} />
 
       <ReaderFooter
         visible={menuVisible}
