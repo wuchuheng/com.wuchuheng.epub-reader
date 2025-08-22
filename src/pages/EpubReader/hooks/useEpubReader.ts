@@ -125,7 +125,7 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
     const totalPages = props.book.locations.length();
     setTotalPages(totalPages);
 
-    logger.log('Book is ready:', props.book);
+    logger.log('Book is ready:');
 
     // 2.3.1 Bind prev event.
     goToNextRef.current = () => {
@@ -170,7 +170,7 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
 
   useEffect(() => {
     if (containerRef.current) {
-      logger.log('Container ref is set:', containerRef.current);
+      logger.log('Container ref is set:');
       onRenderBook();
     }
   }, [props.book, containerRef]);
