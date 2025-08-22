@@ -58,32 +58,6 @@ export const TOCSidebar: React.FC<TOCSidebarProps> = (props) => {
   // 2. Main sidebar content
   return (
     <>
-      {/* Toggle button */}
-      <button
-        onClick={props.onToggle}
-        className={`
-          fixed top-4 left-4 z-50 p-2 bg-white rounded shadow-lg
-          transition-transform duration-300
-          ${props.isOpen ? 'translate-x-64' : 'translate-x-0'}
-        `}
-        aria-label="Toggle table of contents"
-      >
-        <svg
-          className="w-5 h-5 text-gray-600"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M4 6h16M4 12h16M4 18h16"
-          />
-        </svg>
-      </button>
-
-      {/* Sidebar */}
       <div
         className={`
           fixed top-0 left-0 h-screen w-64 bg-white shadow-lg

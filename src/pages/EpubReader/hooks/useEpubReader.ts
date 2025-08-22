@@ -69,6 +69,8 @@ export const useEpubReader = (book: Book): EpubReaderResult => {
         height: '100%',
         spread: 'auto',
         minSpreadWidth: 800,
+        manager: 'continuous',
+        allowScriptedContent: true,
       });
 
       renditionRef.current = renditionInstance;

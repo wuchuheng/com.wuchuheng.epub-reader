@@ -38,11 +38,6 @@ export const ReaderContent: React.FC<ReaderContentProps> = (props) => {
 
       <div className="flex-1 flex flex-col">
         <ReaderView containerRef={containerRef} error={error} />
-        <ReaderFooter
-          navigation={navigation}
-          rendition={rendition}
-          currentLocation={currentLocation}
-        />
       </div>
     </div>
   );

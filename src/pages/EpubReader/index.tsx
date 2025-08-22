@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { ReaderHeader } from './components/ReaderHeader';
-import { ReaderContent } from './components/ReaderContent';
 import { Book } from 'epubjs';
 import { Loading } from './components/Loading';
 import { getBookByBookId } from '../../services/EPUBMetadataService';
+import { MenuButton } from './components/MenuButton';
+import { ReaderFooter } from './components/ReaderFooter';
+import { TOCSidebar } from './components/TOCSidebar';
+import { InvalidBookError } from './components/ErrorRender';
 
 /**
  * Complete EPUB reader page component
@@ -38,45 +41,44 @@ export const EpubReader: React.FC = () => {
 type EpubReaderRenderProps = {
   book: Book;
 };
-type EpubReaderMenuConfig = {
-  isTocOpen: boolean;
-  isFullscreen: boolean;
-};
+const EpubReaderRender: React.FC<EpubReaderRenderProps> = () => {
+  const [menuVisible, setMenuVisible] = useState<boolean>(true);
+  const [tocVisible, setTocVisible] = useState(false);
+  const onToggleToc = () => {
+    if (tocVisible) {
+      setTocVisible(false);
+    } else {
+      setTocVisible(true);
+      if (menuVisible) setMenuVisible(false);
+    }
+  };
 
-const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
-  const [menuConfig, setMenuConfig] = useState<EpubReaderMenuConfig>({
-    isTocOpen: false,
-    isFullscreen: false,
-  });
+  const onClickReaderView = () => {
+    if (menuVisible) setMenuVisible(false);
+    if (tocVisible) setTocVisible(false);
+  };
 
   return (
-    <div className="h-screen bg-white flex flex-col">
-      <ReaderHeader
-        isTocOpen={menuConfig.isTocOpen}
-        setIsTocOpen={(isOpen) => setMenuConfig((prev) => ({ ...prev, isTocOpen: isOpen }))}
-        setIsFullscreen={(isFullscreen) => setMenuConfig((prev) => ({ ...prev, isFullscreen }))}
+    <div className="relative flex h-screen flex-col bg-white text-black">
+      <ReaderHeader visible={menuVisible} onOpenToc={onToggleToc} />
+      <TOCSidebar
+        isOpen={tocVisible}
+        currentChapter={null}
+        onChapterSelect={function (href: string): void {
+          throw new Error('Function not implemented.');
+        }}
+        onToggle={function (): void {
+          setTocVisible(false);
+        }}
+        tableOfContents={[]}
       />
-      <ReaderContent
-        book={props.book}
-        // reader={reader}
-        // navigation={navigation}
-        isTocOpen={menuConfig.isTocOpen}
-        setIsTocOpen={(isOpen) => setMenuConfig((prev) => ({ ...prev, isTocOpen: isOpen }))}
-      />
+
+      {/* Toggle button to show menu when hidden */}
+      <MenuButton visible={!menuVisible} setVisible={setMenuVisible} />
+
+      <div className="relative h-full w-full bg-red-200" onClick={onClickReaderView} />
+
+      <ReaderFooter visible={menuVisible} currentPage={2} totalPages={100} />
     </div>
   );
 };
-
-// Sub-components to keep main function under 70 lines
-type InvalidBookErrorProps = {
-  error?: string | null;
-};
-const InvalidBookError: React.FC<InvalidBookErrorProps> = ({ error }) => (
-  <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-    <div className="text-center">
-      <h1 className="text-2xl font-bold text-gray-900 mb-4">Invalid Book ID</h1>
-      <p className="text-gray-600">Please select a valid book to read.</p>
-      {error && <p className="text-red-600">{error}</p>}
-    </div>
-  </div>
-);

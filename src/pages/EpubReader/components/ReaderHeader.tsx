@@ -2,39 +2,38 @@ import React from 'react';
 import * as Icons from '../../../components/icons';
 
 interface ReaderHeaderProps {
-  isTocOpen: boolean;
-  setIsTocOpen: (open: boolean) => void;
-  setIsFullscreen: (fullscreen: boolean) => void;
+  visible: boolean;
+  onOpenToc: () => void;
 }
 
 /**
  * Reader header component with navigation controls
  * Implements the top menu bar from DESIGN.md specifications
  */
-export const ReaderHeader: React.FC<ReaderHeaderProps> = ({
-  isTocOpen,
-  setIsTocOpen,
-  setIsFullscreen,
-}) => {
+export const ReaderHeader: React.FC<ReaderHeaderProps> = (props) => {
   const handleFullscreen = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen();
-      setIsFullscreen(true);
     } else {
       document.exitFullscreen();
-      setIsFullscreen(false);
     }
   };
 
   return (
-    <div className="bg-white border-b shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+    <header
+      className={`
+        bg-white border-b shadow-sm absolute top-0 left-0 right-0 z-50
+        transform transition-transform duration-300 ease-in-out
+        ${props.visible ? 'translate-y-0' : '-translate-y-full'}
+      `}
+    >
+      <div className="max-w-4xl mx-auto px-4 py-3">
+        <div className="flex items-center justify-between ">
           <div className="flex items-center space-x-4">
             <button
-              onClick={() => setIsTocOpen(!isTocOpen)}
-              className="p-2 text-gray-600 hover:text-gray-900"
+              className="text-gray-600 hover:text-gray-900"
               title="Table of Contents"
+              onClick={props.onOpenToc}
             >
               <Icons.Menu />
             </button>
@@ -69,6 +68,6 @@ export const ReaderHeader: React.FC<ReaderHeaderProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </header>
   );
 };
