@@ -3,6 +3,34 @@ import { Book, Rendition } from 'epubjs';
 import { logger } from '../../../utils/logger';
 import { EpubLocation, LocationUtils } from '../../../types/epub';
 
+// Type for the location object from rendition's 'relocated' event
+type RenditionLocation = {
+  start: {
+    index: number;
+    href: string;
+    cfi: string;
+    location: number;
+    percentage: number;
+    displayed: {
+      page: number;
+      total: number;
+    };
+  };
+  end: {
+    index: number;
+    href: string;
+    cfi: string;
+    location: number;
+    percentage: number;
+    displayed: {
+      page: number;
+      total: number;
+    };
+  };
+  atStart: boolean;
+  atEnd: boolean;
+};
+
 type EpubReaderResult = {
   rendition: Rendition | null;
   containerRef: React.RefObject<HTMLDivElement>;
@@ -150,5 +178,99 @@ export const useEpubReader = (book: Book): EpubReaderResult => {
     goToChapter,
     goToPage,
     saveReadingPosition,
+  };
+};
+
+type UseReaderReturn = {
+  containerRef: React.RefObject<HTMLDivElement>;
+  onNext: () => void;
+  onPrev: () => void;
+};
+
+type UseReaderProps = {
+  book: Book;
+};
+export const useReader = (props: UseReaderProps): UseReaderReturn => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const onNextRef = useRef<() => void>(() => {});
+  const onPrevRef = useRef<() => void>(() => {});
+  const currentRenditionLocationRef = useRef<RenditionLocation | null>(null); // Ref to store the latest location object
+
+  const onRenderBook = () => {
+    logger.log('Rendering book:', props.book);
+    // 2. Handle logic.
+    // 2.1 Render book.
+    const rendition = props.book.renderTo(containerRef.current!, {
+      width: '100%',
+      height: '100%',
+      spread: 'auto',
+      minSpreadWidth: 800,
+      manager: 'continuous',
+      allowScriptedContent: true,
+    });
+
+    // 2.2 Display first page.
+    rendition.display();
+
+    // Listen to 'relocated' event to update the location ref
+    rendition.on('relocated', (location: RenditionLocation) => {
+      currentRenditionLocationRef.current = location;
+    });
+
+    // 2.3 Bind navigation events.
+    props.book.ready.then(() => {
+      logger.log('Book is ready:', props.book);
+
+      // 2.2.1 Bind next event.
+      onNextRef.current = () => {
+        // 1. Check if the latest page is displayed using the ref
+        if (currentRenditionLocationRef.current?.atEnd) {
+          logger.warn('Reached the end of the book');
+          return;
+        }
+
+        rendition.next();
+      };
+
+      onPrevRef.current = () => {
+        // 1. Check if the latest page is displayed using the ref
+        if (currentRenditionLocationRef.current?.atStart) {
+          logger.warn('Reached the start of the book');
+          return;
+        }
+
+        rendition.prev();
+      };
+    });
+  };
+
+  // Bind the direction keys
+  useEffect(() => {
+    const keyListener = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        onPrevRef.current?.();
+      }
+      if (e.key === 'ArrowRight') {
+        onNextRef.current?.();
+      }
+    };
+
+    document.addEventListener('keydown', keyListener);
+    return () => {
+      document.removeEventListener('keydown', keyListener);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      logger.log('Container ref is set:', containerRef.current);
+      onRenderBook();
+    }
+  }, [props.book, containerRef]);
+
+  return {
+    containerRef,
+    onNext: onNextRef.current,
+    onPrev: onPrevRef.current,
   };
 };

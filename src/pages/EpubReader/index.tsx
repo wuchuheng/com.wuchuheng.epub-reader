@@ -8,6 +8,7 @@ import { MenuButton } from './components/MenuButton';
 import { ReaderFooter } from './components/ReaderFooter';
 import { TOCSidebar } from './components/TOCSidebar';
 import { InvalidBookError } from './components/ErrorRender';
+import { useReader } from './hooks/useEpubReader';
 
 /**
  * Complete EPUB reader page component
@@ -32,6 +33,7 @@ export const EpubReader: React.FC = () => {
       setBook(null);
     };
   }, [bookId]);
+
   if (!bookId || error) return <InvalidBookError error={error} />;
   if (!book) return <Loading />;
 
@@ -41,8 +43,8 @@ export const EpubReader: React.FC = () => {
 type EpubReaderRenderProps = {
   book: Book;
 };
-const EpubReaderRender: React.FC<EpubReaderRenderProps> = () => {
-  const [menuVisible, setMenuVisible] = useState<boolean>(true);
+const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
+  const [menuVisible, setMenuVisible] = useState<boolean>(false);
   const [tocVisible, setTocVisible] = useState(false);
   const onToggleToc = () => {
     if (tocVisible) {
@@ -57,9 +59,10 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = () => {
     if (menuVisible) setMenuVisible(false);
     if (tocVisible) setTocVisible(false);
   };
+  const { containerRef, onNext, onPrev } = useReader({ book: props.book });
 
   return (
-    <div className="relative flex h-screen flex-col bg-white text-black">
+    <div className="relative flex h-screen flex-col bg-white">
       <ReaderHeader visible={menuVisible} onOpenToc={onToggleToc} />
       <TOCSidebar
         isOpen={tocVisible}
@@ -76,9 +79,15 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = () => {
       {/* Toggle button to show menu when hidden */}
       <MenuButton visible={!menuVisible} setVisible={setMenuVisible} />
 
-      <div className="relative h-full w-full bg-red-200" onClick={onClickReaderView} />
+      <div className="relative h-full w-full" onClick={onClickReaderView} ref={containerRef} />
 
-      <ReaderFooter visible={menuVisible} currentPage={2} totalPages={100} />
+      <ReaderFooter
+        visible={menuVisible}
+        currentPage={2}
+        totalPages={100}
+        onNext={onNext}
+        onPrev={onPrev}
+      />
     </div>
   );
 };
