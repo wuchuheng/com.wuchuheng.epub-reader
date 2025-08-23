@@ -10,6 +10,7 @@ import { TOCSidebar } from './components/TOCSidebar';
 import { InvalidBookError } from './components/ErrorRender';
 import { useReader } from './hooks/useEpubReader';
 import { ContextMenu } from '../../types/epub';
+import ContextMenuComponent from './components/ContextMenu';
 
 /**
  * Complete EPUB reader page component
@@ -62,9 +63,10 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
   };
 
   const [contextMenu, setContextMenu] = useState<ContextMenu>({
-    tabIndex: null,
-    words: '',
-    context: '',
+    tabIndex: 0,
+    words: 'hello',
+    context:
+      'Because they live up in heaven, and know how well God arranges everything for us, so that we need have no more fear or trouble and may be quite sure that all things will come right in the end. But then we must never forget to pray, and to ask God to remember us when He is arranging things, so that we too may feel safe and have no anxiety about what is going to happen.',
   });
 
   const {
@@ -79,13 +81,23 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
   } = useReader({
     book: props.book,
     onContentClick: onClickReaderView,
-    onSelect: (selectedText, context) =>
-      setContextMenu({ tabIndex: 0, words: selectedText, context }),
+    onSelect: (selectedText, context) => {
+      // TODO: uncomment this code.
+      //  setContextMenu({ tabIndex: 0, words: selectedText, context }),
+    },
   });
 
   return (
     <div className="relative flex h-screen flex-col bg-white">
       <ReaderHeader visible={menuVisible} onOpenToc={onToggleToc} />
+      <ContextMenuComponent
+        tabIndex={contextMenu.tabIndex}
+        words={contextMenu.words}
+        context={contextMenu.context}
+        onClose={function (): void {
+          setContextMenu((prev) => ({ ...prev, tabIndex: null }));
+        }}
+      />
       <TOCSidebar
         isOpen={tocVisible}
         currentChapter={currentChapterHref}
