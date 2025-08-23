@@ -9,6 +9,7 @@ import { ReaderFooter } from './components/ReaderFooter';
 import { TOCSidebar } from './components/TOCSidebar';
 import { InvalidBookError } from './components/ErrorRender';
 import { useReader } from './hooks/useEpubReader';
+import { ContextMenu } from '../../types/epub';
 
 /**
  * Complete EPUB reader page component
@@ -59,6 +60,13 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
     setMenuVisible(false);
     setTocVisible(false);
   };
+
+  const [contextMenu, setContextMenu] = useState<ContextMenu>({
+    tabIndex: null,
+    words: '',
+    context: '',
+  });
+
   const {
     containerRef,
     goToNext: onNext,
@@ -71,6 +79,8 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
   } = useReader({
     book: props.book,
     onContentClick: onClickReaderView,
+    onSelect: (selectedText, context) =>
+      setContextMenu({ tabIndex: 0, words: selectedText, context }),
   });
 
   return (

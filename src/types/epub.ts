@@ -8,3 +8,9 @@ export interface TocItem {
   label: string;
   subitems?: TocItem[];
 }
+
+export type ContextMenu = {
+  tabIndex: number | null;
+  words: string;
+  context: string;
+};

@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { Book } from 'epubjs';
+import { Book, Contents, Rendition } from 'epubjs';
 import { logger } from '../../../utils/logger';
 import { TocItem } from '../../../types/epub';
 import Section from 'epubjs/types/section';
 import { useParams } from 'react-router-dom';
+import { logger } from './../../../utils/logger';
 
 // Latest reading location
 const latestReadingLocation = {
@@ -57,6 +58,7 @@ type UseReaderReturn = {
 type UseReaderProps = {
   book: Book;
   onContentClick?: () => void;
+  onSelect: (words: string, context: string) => void;
 };
 
 export const useReader = (props: UseReaderProps): UseReaderReturn => {
@@ -69,6 +71,28 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
   const [tableOfContents, setTableOfContents] = useState<TocItem[]>([]);
   const currentRenditionLocationRef = useRef<RenditionLocation | null>(null); // Ref to store the latest location object
   const [currentChapterHref, setCurrentChapterHref] = useState<string>('');
+
+  const onselect = async (cfiRange: string, book: Book) => {
+    // 1. Input handling
+    const range = await book.getRange(cfiRange);
+
+    // Find containing paragraph: Start from common ancestor
+    const node = range.commonAncestorContainer;
+
+    if (!node) {
+      logger.warn('No any text found');
+      return;
+    }
+    const context = node.textContent.trim(); // Full paragraph text
+
+    const selectedText = range.toString();
+    console.log(`Select range: ${cfiRange}`);
+
+    console.log('Selected text:', selectedText);
+    console.log('Context:', context);
+
+    props.onSelect(selectedText, context);
+  };
 
   // Access the bookId from the route /reader/:bookId via react-router hooks.
   const { bookId } = useParams<{ bookId: string }>();
@@ -114,9 +138,12 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
       }
     });
 
+    rendition.on('selected', (cfiRange: string, _contents: Contents) =>
+      onselect(cfiRange, props.book)
+    );
+
     // Handle content clicks
     rendition.on('click', () => {
-      logger.log('Content clicked');
       props.onContentClick?.();
     });
 
