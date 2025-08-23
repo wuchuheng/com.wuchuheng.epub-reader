@@ -1,12 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
-import { Book, Contents, Rendition } from 'epubjs';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Book, Rendition } from 'epubjs';
 import { logger } from '../../../utils/logger';
-import { TocItem } from '../../../types/epub';
-import Section from 'epubjs/types/section';
+import { SelectInfo, TocItem } from '../../../types/epub';
 import { useParams } from 'react-router-dom';
+import { createStorageManager, setupRenditionEvents } from './epub.utils';
+import { initializeBookshelf } from './../../../store/slices/bookshelfSlice';
+import { debounce } from '@wuchuheng/helper';
 
 // Types
-type RenditionLocation = {
+export type RenditionLocation = {
   start: {
     index: number;
     href: string;
@@ -40,27 +42,18 @@ type UseReaderReturn = {
 
 type UseReaderProps = {
   book: Book;
-  onContentClick?: () => void;
-  onSelect: (words: string, context: string) => void;
+  onClick?: () => void;
+  onSelect: (selectedInfo: SelectInfo) => void;
 };
 
-type TouchState = {
+export type TouchState = {
   isLongPress: boolean;
   startTime: number;
   startPos: { x: number; y: number };
   timer: number | null;
 };
 
-// =============================================================================
-// STORAGE UTILITIES
-// =============================================================================
-
-const createStorageManager = (prefix: string) => ({
-  get: (key: string): string | null => localStorage.getItem(`${prefix}${key}`),
-  set: (key: string, value: string): void => localStorage.setItem(`${prefix}${key}`, value),
-});
-
-const latestReadingLocation = createStorageManager('latestReadingLocation_');
+export const latestReadingLocation = createStorageManager('latestReadingLocation_');
 
 // =============================================================================
 // TEXT SELECTION UTILITIES
@@ -93,230 +86,46 @@ const extractTextContext = (node: Node): string => {
   return node.textContent?.trim() || '';
 };
 
-const createSelectionHandler =
-  (book: Book, onSelect: (words: string, context: string) => void) => async (cfiRange: string) => {
-    try {
-      const range = await book.getRange(cfiRange);
-      if (!range) {
-        logger.warn('Could not get range from CFI');
-        return;
-      }
-
-      const selectedText = range.toString().trim();
-      if (!selectedText) {
-        logger.warn('No text selected');
-        return;
-      }
-
-      const context = extractTextContext(range.commonAncestorContainer);
-
-      logger.log(`Selected: "${selectedText}"`);
-      logger.log(`Context: "${context}"`);
-
-      onSelect(selectedText, context);
-    } catch (error) {
-      logger.error('Error in selection handler:', error);
-    }
-  };
-
-// =============================================================================
-// MOBILE TOUCH SELECTION
-// =============================================================================
-
-const applyMobileStyles = (document: Document) => {
-  const body = document.body;
-  if (!body) return;
-
-  // Enable text selection
-  Object.assign(body.style, {
-    webkitUserSelect: 'text',
-    userSelect: 'text',
-    webkitTouchCallout: 'default',
-    touchAction: 'manipulation',
-    webkitTapHighlightColor: 'transparent',
-  });
-
-  // Add selection styles
-  const style = document.createElement('style');
-  style.textContent = `
-    ::selection {
-      background-color: rgba(0, 123, 255, 0.3) !important;
-      color: inherit !important;
-    }
-    ::-webkit-selection, ::-moz-selection {
-      background-color: rgba(0, 123, 255, 0.3) !important;
-      color: inherit !important;
-    }
-    
-    *, p, div, span, h1, h2, h3, h4, h5, h6 {
-      -webkit-user-select: text !important;
-      user-select: text !important;
-      -webkit-touch-callout: default !important;
-    }
-  `;
-  document.head.appendChild(style);
+type SelectionHandlerProps = {
+  book: Book;
+  cfiRange: string;
 };
 
-const createCaretRange = (
-  document: Document,
-  window: Window,
-  clientX: number,
-  clientY: number
-): Range | null => {
+/**
+ * Extracts the selected text information from the EPUB book.
+ * @param param0 The selection handler parameters.
+ * @returns The extracted selection information.
+ */
+const extractSelectedInfo = async ({
+  book,
+  cfiRange,
+}: SelectionHandlerProps): Promise<SelectInfo | undefined> => {
   try {
-    return (
-      document.caretRangeFromPoint?.(clientX - window.scrollX, clientY - window.scrollY) || null
-    );
-  } catch {
-    return null;
+    const range = await book.getRange(cfiRange);
+    if (!range) {
+      logger.warn('Could not get range from CFI');
+      return;
+    }
+
+    const selectedText = range.toString().trim();
+    if (!selectedText) {
+      logger.warn('No text selected');
+      return;
+    }
+
+    const context = extractTextContext(range.commonAncestorContainer);
+
+    const result = { words: selectedText, context };
+    return result;
+  } catch (error) {
+    logger.error('Error in selection handler:', error);
   }
 };
 
-const createTouchHandlers = (
-  document: Document,
-  window: Window,
-  contents: Contents,
-  onSelect: (cfi: string) => void,
-  onContentClick: (() => void) | undefined,
-  touchState: React.MutableRefObject<TouchState>
-) => {
-  const handleTouchStart = (e: TouchEvent) => {
-    const touch = e.touches[0];
-
-    // Clear existing timer
-    if (touchState.current.timer) {
-      clearTimeout(touchState.current.timer);
-    }
-
-    // Initialize touch state
-    touchState.current = {
-      isLongPress: false,
-      startTime: Date.now(),
-      startPos: { x: touch.clientX, y: touch.clientY },
-      timer: setTimeout(() => {
-        touchState.current.isLongPress = true;
-
-        // Start selection at touch point
-        const target = document.elementFromPoint(
-          touch.clientX - window.scrollX,
-          touch.clientY - window.scrollY
-        );
-
-        if (target?.closest('p, div, span, h1, h2, h3, h4, h5, h6')) {
-          const range = createCaretRange(document, window, touch.clientX, touch.clientY);
-          if (range) {
-            const selection = window.getSelection();
-            selection?.removeAllRanges();
-            selection?.addRange(range);
-          }
-        }
-      }, 500), // 500ms long press
-    };
-  };
-
-  const handleTouchMove = (e: TouchEvent) => {
-    if (!touchState.current.isLongPress || e.touches.length !== 1) return;
-
-    const touch = e.touches[0];
-    const selection = window.getSelection();
-
-    if (selection && selection.rangeCount > 0) {
-      try {
-        const range = selection!.getRangeAt(0);
-        const newRange = createCaretRange(document, window, touch.clientX, touch.clientY);
-
-        if (newRange) {
-          const extendedRange = document.createRange();
-          extendedRange.setStart(range.startContainer, range.startOffset);
-          extendedRange.setEnd(newRange.startContainer, newRange.startOffset);
-
-          selection!.removeAllRanges();
-          selection!.addRange(extendedRange);
-        }
-      } catch {
-        // Selection extension failed, continue with existing selection
-      }
-
-      e.preventDefault(); // Prevent scrolling during selection
-    }
-  };
-
-  const handleTouchEnd = (_e: TouchEvent) => {
-    const { timer, isLongPress, startTime } = touchState.current;
-
-    if (timer) {
-      clearTimeout(timer);
-      touchState.current.timer = null;
-    }
-
-    const duration = Date.now() - startTime;
-
-    if (isLongPress) {
-      // Handle long press selection
-      setTimeout(() => {
-        const selection = window.getSelection();
-        if (selection && selection.rangeCount > 0) {
-          const selectedText = selection!.toString().trim();
-          if (selectedText) {
-            try {
-              const cfi = contents.cfiFromRange(selection!.getRangeAt(0));
-              onSelect(cfi);
-            } catch (error) {
-              logger.error('Error converting range to CFI:', error);
-            }
-          }
-        }
-        touchState.current.isLongPress = false;
-      }, 50);
-    } else if (duration < 300) {
-      // Handle regular tap
-      setTimeout(() => {
-        const selection = window.getSelection();
-        if (!selection?.toString().trim()) {
-          onContentClick?.();
-        }
-      }, 10);
-    }
-  };
-
-  return { handleTouchStart, handleTouchMove, handleTouchEnd };
-};
-
-const setupMobileTextSelection = (
-  contents: Contents,
-  onSelect: (cfi: string) => void,
-  onContentClick: (() => void) | undefined,
-  touchState: React.MutableRefObject<TouchState>
-) => {
-  const { document, window } = contents;
-
-  applyMobileStyles(document);
-
-  const { handleTouchStart, handleTouchMove, handleTouchEnd } = createTouchHandlers(
-    document,
-    window,
-    contents,
-    onSelect,
-    onContentClick,
-    touchState
-  );
-
-  // Add event listeners
-  document.addEventListener('touchstart', handleTouchStart, { passive: false });
-  document.addEventListener('touchmove', handleTouchMove, { passive: false });
-  document.addEventListener('touchend', handleTouchEnd, { passive: false });
-
-  return () => {
-    if (touchState.current.timer) {
-      clearTimeout(touchState.current.timer);
-    }
-  };
-};
-
-// =============================================================================
-// RENDITION MANAGEMENT
-// =============================================================================
-
+/**
+ * Creates the configuration for the EPUB.js rendition.
+ * @returns The rendition configuration object.
+ */
 const createRenditionConfig = () => ({
   width: '100%',
   height: '100%',
@@ -326,56 +135,6 @@ const createRenditionConfig = () => ({
   flow: 'paginated' as const,
   allowScriptedContent: true,
 });
-
-const setupRenditionEvents = (
-  rendition: Rendition,
-  book: Book,
-  bookId: string,
-  onSelectionHandler: (cfi: string) => void,
-  onContentClick: (() => void) | undefined,
-  touchState: React.MutableRefObject<TouchState>,
-  setters: {
-    setCurrentPage: (page: number) => void;
-    setCurrentChapterHref: (href: string) => void;
-    setCurrentLocation: (location: RenditionLocation) => void;
-  }
-) => {
-  // Location tracking
-  rendition.on('relocated', (location: RenditionLocation) => {
-    setters.setCurrentLocation(location);
-
-    const percentage = book.locations.percentageFromCfi(location.start.cfi);
-    const total = book.locations.length();
-    const page = percentage >= 1 ? total : Math.floor(percentage * total) + 1;
-
-    setters.setCurrentPage(page);
-    latestReadingLocation.set(bookId, location.start.cfi);
-  });
-
-  // Chapter tracking
-  rendition.on('rendered', (section: Section) => {
-    const current = book.navigation.get(section.href);
-    if (current) {
-      setters.setCurrentChapterHref(current.href);
-    }
-  });
-
-  // Selection handling
-  rendition.on('selected', (cfiRange: string) => {
-    logger.log('EPUB.js selection event triggered');
-    onSelectionHandler(cfiRange);
-  });
-
-  // Click handling with selection awareness
-  rendition.on('click', () => {
-    if (touchState.current.isLongPress) return;
-  });
-
-  // Mobile text selection setup
-  rendition.hooks.content.register((contents: Contents) => {
-    setupMobileTextSelection(contents, onSelectionHandler, onContentClick, touchState);
-  });
-};
 
 const createNavigationFunctions = (
   rendition: Rendition,
@@ -400,10 +159,11 @@ const createNavigationFunctions = (
   goToSelectChapter: (href: string) => rendition.display(href),
 });
 
-// =============================================================================
-// KEYBOARD NAVIGATION
-// =============================================================================
-
+/**
+ * Implements keyboard navigation for the EPUB reader.
+ * @param goToNext
+ * @param goToPrev
+ */
 const useKeyboardNavigation = (goToNext: () => void, goToPrev: () => void) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -419,10 +179,11 @@ const useKeyboardNavigation = (goToNext: () => void, goToPrev: () => void) => {
   }, [goToNext, goToPrev]);
 };
 
-// =============================================================================
-// MAIN HOOK
-// =============================================================================
-
+/**
+ * Custom hook for the EPUB reader.
+ * @param props The props for the reader.
+ * @returns The reader state and actions.
+ */
 export const useReader = (props: UseReaderProps): UseReaderReturn => {
   const { bookId } = useParams<{ bookId: string }>();
 
@@ -442,6 +203,7 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [tableOfContents, setTableOfContents] = useState<TocItem[]>([]);
   const [currentChapterHref, setCurrentChapterHref] = useState<string>('');
+  const selectedInfoRef = useRef<SelectInfo | undefined>(undefined);
 
   // Navigation functions
   const [navigation, setNavigation] = useState({
@@ -450,35 +212,50 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
     goToSelectChapter: (_href: string) => {},
   });
 
-  // Selection handler
-  const selectionHandler = createSelectionHandler(props.book, props.onSelect);
+  const onSelectionCompleted = useCallback(
+    debounce<void>(() => {
+      if (selectedInfoRef.current) {
+        logger.log(`Omit event:`, selectedInfoRef.current);
+        props.onSelect(selectedInfoRef.current);
+      }
+    }, 200),
+    []
+  );
 
   // Main book rendering function
   const renderBook = async () => {
     if (!containerRef.current) return;
 
-    logger.log('Rendering book');
-
     // Create rendition
     const rendition = props.book.renderTo(containerRef.current, createRenditionConfig());
     renditionRef.current = rendition;
 
+    const onSelectedInfo = (info: SelectInfo | undefined) => {
+      if (info) selectedInfoRef.current = info;
+    };
+
     // Setup events
-    setupRenditionEvents(
+    setupRenditionEvents({
       rendition,
-      props.book,
-      bookId!,
-      selectionHandler,
-      props.onContentClick,
-      touchStateRef,
-      {
+      book: props.book,
+      bookId: bookId!,
+      onSelectionCompleted,
+      onSelected: async (cfiRange) => {
+        const info = await extractSelectedInfo({
+          book: props.book,
+          cfiRange,
+        });
+        onSelectedInfo(info);
+      },
+      onClick: props.onClick,
+      onClickContent: (selected) => onSelectedInfo(selected),
+      touchState: touchStateRef,
+      setters: {
         setCurrentPage,
         setCurrentChapterHref,
-        setCurrentLocation: (location) => {
-          currentLocationRef.current = location;
-        },
-      }
-    );
+        setCurrentLocation: (location) => (currentLocationRef.current = location),
+      },
+    });
 
     // Display book
     const latestCfi = latestReadingLocation.get(bookId!);
@@ -497,8 +274,6 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
     // Create navigation functions
     const nav = createNavigationFunctions(rendition, currentLocationRef);
     setNavigation(nav);
-
-    logger.log('Book is ready');
   };
 
   // Setup keyboard navigation

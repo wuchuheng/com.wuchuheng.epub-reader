@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.3.0",
+    "@wuchuheng/helper": "^1.2.1",
     "dayjs": "^1.11.13",
     "dompurify": "^3.2.6",
     "epubjs": "^0.3.93",

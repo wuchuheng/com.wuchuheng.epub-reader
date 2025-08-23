@@ -9,7 +9,7 @@ import { ReaderFooter } from './components/ReaderFooter';
 import { TOCSidebar } from './components/TOCSidebar';
 import { InvalidBookError } from './components/ErrorRender';
 import { useReader } from './hooks/useEpubReader';
-import { ContextMenu } from '../../types/epub';
+import { ContextMenu, SelectInfo } from '../../types/epub';
 import ContextMenuComponent from './components/ContextMenu';
 
 /**
@@ -80,11 +80,8 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
     currentChapterHref,
   } = useReader({
     book: props.book,
-    onContentClick: onClickReaderView,
-    onSelect: (selectedText, context) => {
-      // TODO: uncomment this code.
-      //  setContextMenu({ tabIndex: 0, words: selectedText, context }),
-    },
+    onClick: onClickReaderView,
+    onSelect: (selectedInfo: SelectInfo) => setContextMenu({ tabIndex: 0, ...selectedInfo }),
   });
 
   return (

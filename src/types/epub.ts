@@ -14,3 +14,5 @@ export type ContextMenu = {
   words: string;
   context: string;
 };
+
+export type SelectInfo = Pick<ContextMenu, 'words' | 'context'>;
