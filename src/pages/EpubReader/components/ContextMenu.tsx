@@ -8,7 +8,7 @@ interface ContextMenuProps {
 }
 
 const ContextMenu: React.FC<ContextMenuProps> = (props) => {
-  const [defaultSize, setDefaultSize] = React.useState(40);
+  const [defaultSize] = React.useState(40);
   if (props.tabIndex === null) {
     return <></>;
   }

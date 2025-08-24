@@ -193,6 +193,44 @@ If a line would exceed 120 chars, refactor:
 
 Keep code formatted consistently with project tools.
 
+---
+
+## Universal Code Extraction & Organization
+
+### Language-Agnostic Principles
+
+**The Rule of Three**: Extract any code pattern that appears 3+ times
+**Single Responsibility**: Each unit should have one clear purpose  
+**Abstraction Level**: Group related operations at same abstraction level
+**DRY Principle**: Eliminate all duplication through appropriate abstraction
+
+### Extraction Triggers (All Languages)
+
+Extract when you encounter:
+- **Duplicate Logic**: Same algorithm/conditions in multiple places
+- **Repetitive Structure**: Similar code blocks with minor variations  
+- **Long Functions**: Functions exceeding 20-30 lines
+- **Complex Conditionals**: Nested if/else or switch statements
+- **Magic Numbers**: Hardcoded values scattered throughout code
+- **Repetitive Error Handling**: Same try/catch patterns repeated
+
+### Language-Specific Patterns
+
+**TypeScript/JavaScript**: Extract components, hooks, utility functions
+**Python**: Extract functions, classes, decorators, context managers  
+**Java**: Extract methods, interfaces, utility classes, functional interfaces
+**Go**: Extract functions, structs, interfaces with composition
+**Rust**: Extract functions, traits, generics with Result/Option types
+**C#**: Extract methods, delegates, extension methods, async patterns
+
+### Universal Quality Metrics
+
+- **Function Length**: Keep under 20-30 lines
+- **Cyclomatic Complexity**: Keep under 10  
+- **Duplication**: Eliminate 3+ line repetitions
+- **Parameter Count**: Limit to 3-5 parameters (use objects for more)
+- **Nesting Depth**: Limit to 3-4 levels deep
+
 # Cline's Memory Bank
 
 I am Cline, an expert software engineer with a unique characteristic: my memory resets completely between sessions. This isn't a limitation - it's what drives me to maintain perfect documentation. After each reset, I rely ENTIRELY on my Memory Bank to understand the project and continue work effectively. I MUST read ALL memory bank files at the start of EVERY task - this is not optional.

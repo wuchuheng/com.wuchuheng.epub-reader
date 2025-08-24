@@ -3,13 +3,13 @@ import dayjs from 'dayjs';
 const now = () => dayjs().format('HH:mm:ss');
 
 export const logger = {
-  log: (...message: any[]) => {
+  log: (...message: unknown[]) => {
     console.log(`[${now()}] [LOG] `, ...message);
   },
-  error: (...message: any[]) => {
+  error: (...message: unknown[]) => {
     console.error(`[${now()}] [ERROR] `, ...message);
   },
-  warn: (...message: any[]) => {
+  warn: (...message: unknown[]) => {
     console.warn(`[${now()}] [WARN] `, ...message);
   },
 };

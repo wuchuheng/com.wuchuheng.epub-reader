@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { ContextMenuSettings, AISettingItem } from '../../types/epub';
-import { Breadcrumb } from '../../components/Breadcrumb';
-import { BackButton } from '../../components/BackButton';
 import { Container } from '../../components/Container';
+import { ApiConfig } from './components/ApiConfig';
+import { ToolList } from './components/ToolList';
+import { ToolForm } from './components/ToolForm';
 
 /**
- * Context Menu Settings page component
- * Configuration for AI providers and context menu settings
+ * Context Menu Settings page component.
+ * Configuration for AI providers and context menu settings.
  */
 export const ContextMenuSettingsPage: React.FC = () => {
+  // 1. Input handling
+  // 1.1 Initialize settings state with default AI tools
   const [settings, setSettings] = useState<ContextMenuSettings>({
     api: '',
     key: '',
@@ -32,14 +35,18 @@ export const ContextMenuSettingsPage: React.FC = () => {
     ],
   });
 
+  // 1.2 Initialize new tool form state
   const [newToolName, setNewToolName] = useState('');
   const [newToolPrompt, setNewToolPrompt] = useState('');
   const [newToolModel, setNewToolModel] = useState('gpt-3.5-turbo');
 
+  // 2. Core processing
+  // 2.1 Settings update handler
   const updateSettings = (field: keyof ContextMenuSettings, value: string | AISettingItem[]) => {
     setSettings((prev) => ({ ...prev, [field]: value }));
   };
 
+  // 2.2 Tool creation handler
   const addNewTool = () => {
     if (!newToolName || !newToolPrompt) return;
 
@@ -57,10 +64,12 @@ export const ContextMenuSettingsPage: React.FC = () => {
       items: [...prev.items, newTool],
     }));
 
+    // Reset form
     setNewToolName('');
     setNewToolPrompt('');
   };
 
+  // 2.3 Tool removal handler
   const removeTool = (index: number) => {
     setSettings((prev) => ({
       ...prev,
@@ -68,6 +77,7 @@ export const ContextMenuSettingsPage: React.FC = () => {
     }));
   };
 
+  // 2.4 Tool update handler
   const updateTool = (index: number, updatedTool: Partial<AISettingItem>) => {
     setSettings((prev) => ({
       ...prev,
@@ -75,6 +85,8 @@ export const ContextMenuSettingsPage: React.FC = () => {
     }));
   };
 
+  // 3. Output handling
+  // 3.1 Render settings page with component composition
   return (
     <Container
       breadcrumbItems={[
@@ -84,32 +96,19 @@ export const ContextMenuSettingsPage: React.FC = () => {
       ]}
       backTo="/settings"
     >
-      <div className="rounded-lg bg-white p-6 shadow">
+      <div className="rounded-lg bg-white p-6 text-black shadow">
         <div className="space-y-6">
           <h3 className="text-lg font-semibold text-gray-900">Context Menu Configuration</h3>
 
-          <div className="mb-6">
-            <label className="mb-1 block text-sm font-medium text-gray-700">API Endpoint</label>
-            <input
-              type="text"
-              value={settings.api}
-              onChange={(e) => updateSettings('api', e.target.value)}
-              placeholder="https://api.example.com/v1"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-            />
-          </div>
+          {/* API Configuration */}
+          <ApiConfig
+            apiEndpoint={settings.api}
+            apiKey={settings.key}
+            onApiEndpointChange={(value) => updateSettings('api', value)}
+            onApiKeyChange={(value) => updateSettings('key', value)}
+          />
 
-          <div className="mb-6">
-            <label className="mb-1 block text-sm font-medium text-gray-700">API Key</label>
-            <input
-              type="password"
-              value={settings.key}
-              onChange={(e) => updateSettings('key', e.target.value)}
-              placeholder="Your API key"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-            />
-          </div>
-
+          {/* Custom AI Tools Section */}
           <div className="mb-6">
             <div className="mb-4 flex items-center justify-between">
               <h4 className="text-md font-medium text-gray-900">Custom AI Tools</h4>
@@ -122,92 +121,21 @@ export const ContextMenuSettingsPage: React.FC = () => {
               </button>
             </div>
 
-            <div className="space-y-3">
-              {settings.items.map((item, index) => (
-                <div key={index} className="rounded-md border border-gray-200 p-4">
-                  <div className="mb-3 flex items-start justify-between">
-                    <div>
-                      <h4 className="font-medium text-gray-900">{item.name}</h4>
-                      <p className="text-sm text-gray-500">{item.shortName}</p>
-                    </div>
-                    <button
-                      onClick={() => removeTool(index)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      Remove
-                    </button>
-                  </div>
+            {/* Existing Tools List */}
+            <ToolList tools={settings.items} onToolUpdate={updateTool} onToolRemove={removeTool} />
 
-                  <div className="space-y-3">
-                    <div>
-                      <label className="mb-1 block text-sm text-gray-700">Prompt</label>
-                      <textarea
-                        value={item.prompt}
-                        onChange={(e) => updateTool(index, { prompt: e.target.value })}
-                        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-                        rows={3}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="mb-1 block text-sm text-gray-700">Model</label>
-                      <select
-                        value={item.model}
-                        onChange={(e) => updateTool(index, { model: e.target.value })}
-                        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-                      >
-                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                        <option value="gpt-4">GPT-4</option>
-                        <option value="gpt-4-turbo">GPT-4 Turbo</option>
-                        <option value="claude-3-haiku">Claude 3 Haiku</option>
-                        <option value="claude-3-sonnet">Claude 3 Sonnet</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
+            {/* Add New Tool Form */}
             <div className="mt-6 rounded-md bg-gray-50 p-4">
               <h5 className="mb-3 font-medium text-gray-900">Add New Tool</h5>
-              <div className="space-y-3">
-                <div>
-                  <label className="mb-1 block text-sm text-gray-700">Tool Name</label>
-                  <input
-                    type="text"
-                    value={newToolName}
-                    onChange={(e) => setNewToolName(e.target.value)}
-                    placeholder="e.g., Simple Explanation"
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-1 block text-sm text-gray-700">Prompt</label>
-                  <textarea
-                    value={newToolPrompt}
-                    onChange={(e) => setNewToolPrompt(e.target.value)}
-                    placeholder="e.g., Explain {selectedText} in simple terms"
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-                    rows={3}
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-1 block text-sm text-gray-700">Model</label>
-                  <select
-                    value={newToolModel}
-                    onChange={(e) => setNewToolModel(e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-                  >
-                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                    <option value="gpt-4">GPT-4</option>
-                    <option value="gpt-4-turbo">GPT-4 Turbo</option>
-                    <option value="claude-3-haiku">Claude 3 Haiku</option>
-                    <option value="claude-3-sonnet">Claude 3 Sonnet</option>
-                  </select>
-                </div>
-              </div>
+              <ToolForm
+                showNameField={true}
+                defaultName={newToolName}
+                defaultPrompt={newToolPrompt}
+                defaultModel={newToolModel}
+                onNameChange={setNewToolName}
+                onPromptChange={setNewToolPrompt}
+                onModelChange={setNewToolModel}
+              />
             </div>
           </div>
         </div>

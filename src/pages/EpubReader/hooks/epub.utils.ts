@@ -356,7 +356,7 @@ const getWordAtPointer = (pointer: PointerEvent, contents: Contents): SelectInfo
     const offset = range.startOffset;
 
     // Define word boundary regex
-    const wordBoundary = /[\s\.,;:!?'"()\[\]{}<>«»‹›""''`~@#$%^&*+=|\\\/\-—–]/;
+    const wordBoundary = /[\s.,;:!?'"()[\]{}<>«»‹›""''`~@#$%^&*+=|\\/\-—–]/;
 
     // Find word start
     let start = offset;

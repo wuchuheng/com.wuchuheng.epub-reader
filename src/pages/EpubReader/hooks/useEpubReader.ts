@@ -4,7 +4,6 @@ import { logger } from '../../../utils/logger';
 import { SelectInfo, TocItem } from '../../../types/epub';
 import { useParams } from 'react-router-dom';
 import { createStorageManager, setupRenditionEvents } from './epub.utils';
-import { initializeBookshelf } from './../../../store/slices/bookshelfSlice';
 import { debounce } from '@wuchuheng/helper';
 
 // Types
