@@ -1,5 +1,6 @@
 import React from 'react';
 import { AISettingItem } from '../../../types/epub';
+import { ModelSearchInput } from './ModelSearchInput';
 
 /**
  * Props for tool form component.
@@ -21,16 +22,11 @@ interface ToolFormProps {
   defaultPrompt?: string;
   /** Default value for model field. */
   defaultModel?: string;
+  /** API endpoint for fetching models. */
+  apiEndpoint?: string;
+  /** API key for authentication. */
+  apiKey?: string;
 }
-
-/** Available AI model options. */
-const MODEL_OPTIONS = [
-  { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo' },
-  { value: 'gpt-4', label: 'GPT-4' },
-  { value: 'gpt-4-turbo', label: 'GPT-4 Turbo' },
-  { value: 'claude-3-haiku', label: 'Claude 3 Haiku' },
-  { value: 'claude-3-sonnet', label: 'Claude 3 Sonnet' },
-];
 
 /**
  * Reusable form component for creating/editing AI tools.
@@ -44,14 +40,14 @@ export const ToolForm: React.FC<ToolFormProps> = ({
   showNameField = false,
   defaultName = '',
   defaultPrompt = '',
-  defaultModel = 'gpt-3.5-turbo',
+  defaultModel = '',
+  apiEndpoint,
+  apiKey,
 }) => (
   <div className="space-y-3">
     {showNameField && (
       <div>
-        <label className="mb-1 block text-sm text-gray-700">
-          Tool Name
-        </label>
+        <label className="mb-1 block text-sm text-gray-700">Tool Name</label>
         <input
           type="text"
           value={defaultName}
@@ -63,9 +59,7 @@ export const ToolForm: React.FC<ToolFormProps> = ({
     )}
 
     <div>
-      <label className="mb-1 block text-sm text-gray-700">
-        Prompt
-      </label>
+      <label className="mb-1 block text-sm text-gray-700">Prompt</label>
       <textarea
         value={tool?.prompt || defaultPrompt}
         onChange={(e) => onPromptChange(e.target.value)}
@@ -76,20 +70,13 @@ export const ToolForm: React.FC<ToolFormProps> = ({
     </div>
 
     <div>
-      <label className="mb-1 block text-sm text-gray-700">
-        Model
-      </label>
-      <select
+      <ModelSearchInput
         value={tool?.model || defaultModel}
-        onChange={(e) => onModelChange(e.target.value)}
-        className="w-full rounded-md border border-gray-300 px-3 py-2 text-black focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-      >
-        {MODEL_OPTIONS.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+        onChange={onModelChange}
+        apiEndpoint={apiEndpoint || ''}
+        apiKey={apiKey || ''}
+        placeholder="Search or enter model name..."
+      />
     </div>
   </div>
 );

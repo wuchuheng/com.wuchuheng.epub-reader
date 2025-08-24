@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { OPFSConfig, BookMetadata, OPFSDirectoryStructure } from '../types/book';
 import * as EPUBMetadataService from './EPUBMetadataService';
 import ePub, { Book } from 'epubjs';
-import { isValidEpubFile, getEpubValidationError, formatFileSize } from '../utils/epubValidation';
+import { getEpubValidationError, formatFileSize } from '../utils/epubValidation';
 import {
   performFileOperation,
   safeGetDirectoryHandle,

@@ -1,3 +1,11 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc:*)",
+      "Bash(npm run lint)",
+      "Bash(npm run build:*)",
+      "Bash(npm run type-check:*)"
+    ]
+  },
   "outputStyle": "Explanatory"
 }

@@ -68,11 +68,11 @@ export type ContextMenuItem = AISettingItem | IframeSettingItem;
 
 /**
  * Represents the settings for a context menu, including API endpoint, authentication key,
- * and a list of AI setting items.
+ * and a list of context menu items.
  *
  * @property api - The API endpoint used for context menu actions.
  * @property key - The authentication key required for API access.
- * @property items - An array of AISettingItem objects representing individual menu items.
+ * @property items - An array of ContextMenuItem objects representing individual menu items.
  */
 export type ContextMenuSettings = {
   // The API endpoint used for context menu actions.
@@ -80,6 +80,6 @@ export type ContextMenuSettings = {
   // The authentication key required for API access.
   key: string;
 
-  // An array of AISettingItem objects representing individual menu items.
-  items: AISettingItem[];
+  // An array of ContextMenuItem objects representing individual menu items.
+  items: ContextMenuItem[];
 };

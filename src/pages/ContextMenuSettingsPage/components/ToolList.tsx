@@ -1,26 +1,33 @@
 import React from 'react';
-import { AISettingItem } from '../../../types/epub';
+import { ContextMenuItem } from '../../../types/epub';
+import { ToolForm } from './ToolForm';
 
 /**
  * Props for tool list component.
  */
 interface ToolListProps {
-  /** Array of AI tools to display. */
-  tools: AISettingItem[];
+  /** Array of tools to display. */
+  tools: ContextMenuItem[];
   /** Handler for updating a tool at specific index. */
-  onToolUpdate: (index: number, updatedTool: Partial<AISettingItem>) => void;
+  onToolUpdate: (index: number, updatedTool: Partial<ContextMenuItem>) => void;
   /** Handler for removing a tool at specific index. */
   onToolRemove: (index: number) => void;
+  /** API endpoint for fetching models. */
+  apiEndpoint?: string;
+  /** API key for authentication. */
+  apiKey?: string;
 }
 
 /**
- * Reusable component for displaying and managing a list of AI tools.
- * Handles tool editing and removal functionality with empty state handling.
+ * Reusable component for displaying and managing a list of tools.
+ * Handles both AI and iframe tools with editing and removal functionality.
  */
 export const ToolList: React.FC<ToolListProps> = ({
   tools,
   onToolUpdate,
   onToolRemove,
+  apiEndpoint,
+  apiKey,
 }) => {
   // 1. Input handling
   if (tools.length === 0) {
@@ -42,6 +49,9 @@ export const ToolList: React.FC<ToolListProps> = ({
             <div>
               <h4 className="font-medium text-gray-900">{tool.name}</h4>
               <p className="text-sm text-gray-500">{tool.shortName}</p>
+              <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                {tool.type === 'AI' ? 'AI Tool' : 'Iframe Tool'}
+              </span>
             </div>
             <button
               onClick={() => onToolRemove(index)}
@@ -52,34 +62,32 @@ export const ToolList: React.FC<ToolListProps> = ({
           </div>
 
           <div className="space-y-3">
-            <div>
-              <label className="mb-1 block text-sm text-gray-700">
-                Prompt
-              </label>
-              <textarea
-                value={tool.prompt}
-                onChange={(e) => onToolUpdate(index, { prompt: e.target.value })}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-                rows={3}
+            {tool.type === 'AI' ? (
+              <ToolForm
+                tool={tool}
+                onPromptChange={(prompt) => onToolUpdate(index, { prompt } as Partial<ContextMenuItem>)}
+                onModelChange={(model) => onToolUpdate(index, { model } as Partial<ContextMenuItem>)}
+                apiEndpoint={apiEndpoint}
+                apiKey={apiKey}
+                onNameChange={(name) => onToolUpdate(index, { name } as Partial<ContextMenuItem>)}
               />
-            </div>
-
-            <div>
-              <label className="mb-1 block text-sm text-gray-700">
-                Model
-              </label>
-              <select
-                value={tool.model}
-                onChange={(e) => onToolUpdate(index, { model: e.target.value })}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-black focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-              >
-                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                <option value="gpt-4">GPT-4</option>
-                <option value="gpt-4-turbo">GPT-4 Turbo</option>
-                <option value="claude-3-haiku">Claude 3 Haiku</option>
-                <option value="claude-3-sonnet">Claude 3 Sonnet</option>
-              </select>
-            </div>
+            ) : (
+              <div className="space-y-3">
+                <div>
+                  <label className="mb-1 block text-sm text-gray-700">URL</label>
+                  <input
+                    type="url"
+                    value={(tool as any).url}
+                    onChange={(e) => onToolUpdate(index, { url: e.target.value } as Partial<ContextMenuItem>)}
+                    placeholder="https://example.com?words={words}&context={context}"
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Use {"{words}"} and {"{context}"} as placeholders for selected text
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       ))}
