@@ -1,3 +1,5 @@
+import { ContextMenuSettings } from './epub';
+
 /**
  * EPUB metadata extracted from book files
  */
@@ -56,20 +58,8 @@ export interface BookMetadata {
  * Application settings interface
  */
 export interface AppSettings {
-  /** Theme preference */
-  theme: 'light' | 'dark';
-  /** Font size preference */
-  fontSize: 'small' | 'medium' | 'large';
-  /** AI provider configuration */
-  aiProvider?: {
-    type: 'openai' | 'anthropic' | 'custom';
-    apiKey?: string;
-    baseUrl?: string;
-  };
-  /** Dictionary provider configuration */
-  dictionaryProvider?: {
-    enabled: boolean;
-  };
+  /** Array of context menu settings */
+  contextMenu: ContextMenuSettings;
 }
 
 /**
