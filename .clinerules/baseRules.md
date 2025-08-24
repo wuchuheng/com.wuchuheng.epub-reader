@@ -121,38 +121,61 @@ Is code repeated 3+ times?
 - Nesting depth ≤ 3 levels
 - If exceeded, extract sub-functions
 
-### 2.3 Three-Phase Processing Pattern
+## 3 Three-Phase Processing Pattern
 
-**When to Apply**: Functions with >10 lines containing distinct phases
+### 3.1 Three-Phase Processing Pattern (Condensed)
 
-**Pattern Structure**:
+**When to Apply**: Use for functions exceeding 10 lines with clear, distinct phases.
 
-```pseudo
-function processData(input) {
-  // 1. Input validation and preparation
-  // - Validate parameters
-  // - Apply defaults
-  // - Transform input format
+| Phase         | Purpose                     | Example Steps                 |
+| ------------- | --------------------------- | ----------------------------- |
+| 1. Input      | Validate and prepare input  | Check params, apply defaults  |
+| 2. Processing | Execute core business logic | Transform data, call APIs     |
+| 3. Output     | Return or print result      | Format and return final value |
+
+**Guidelines**:
+
+- Use numeric comments (`// 1.`, `// 2.`, `// 3.`) inside function bodies only.
+- Sub-steps: `1.1`, `2.2`, up to three levels deep.
+- Never use numeric comments at file/module/global scope or on property declarations.
+- Only use prefixes 1., 2., and 3.:
+  - `1.` for input handling (validation, preparation)
+  - `2.` for core processing (business logic)
+  - `3.` for output (return or print result)
+- Prefixes like `4.` or higher are invalid and must not be used.
+
+### 3.2 Numeric Comment Placement Rules
+
+**Numeric comments (e.g., `// 1.`, `// 2.`, `// 3.`) clarify processing steps and must follow strict placement rules:**
+
+| Location                                      | Allowed |
+| --------------------------------------------- | ------- |
+| Inside a function or method body              | Yes     |
+| Loop or conditional inside function/method    | Yes     |
+| Outside any function or method (file/module)  | No      |
+| Global scope (e.g., script-level statements)  | No      |
+| Property or field declarations (class/object) | No      |
+
+- Numeric comments are only permitted inside function or method bodies.
+- They must not be used at file/module/global scope, on property/field declarations, or outside executable code blocks.
+- Use numeric comments to clarify distinct processing phases within functions, following the three-phase pattern.
+
+### 3.3 Valid Numeric Comment Usage Examples
+
+```typescript example 1 - Simple Function
+function example(input) {
+  // 1. Input validation
+  if (!input) throw new Error('Missing input');
 
   // 2. Core processing
-  // - Business logic execution
-  // - Data transformations
-  // - External API calls
+  const result = process(input);
 
-  // 3. Return the result(Or, Print the result). <-- Usually, either the final result is printed or the final result is returned. In short, there is often only one line of code following it
+  // 3. Output
   return result;
 }
 ```
 
-**Numbering Guidelines**:
-
-- Use 1/2/3 for main phases
-- Use 1.1/1.2 for sub-steps within phases
-- Maximum 3 sub-levels (1.2.1, 2.1.3, etc.)
-
-**Minimal example**:
-
-```ts-example 1
+```typescript example 2 - Multiple Numeric Comments
 /**
  * Determines the truth value of a statement using double negation and logical NOT.
  * @param value - The input value to evaluate
@@ -176,49 +199,71 @@ function notNotNotTruth(value: unknown): boolean {
 }
 ```
 
-```ts-example 2
+```typescript example 3 – Three-Phase Pattern with Nested Numeric Comments
 /**
- * Gets a user's profile by ID from a remote API.
- * @param userId - The user's unique ID
- * @returns User profile object
- * @throws {ApiError} If the request fails
+ * Processes a payment transaction with detailed validation, calculation, and logging.
+ * @param payment - Payment details including amount and method
+ * @returns Transaction result object
+ * @throws {PaymentError} If validation or processing fails
  */
-async function getUserProfile(userId: string): Promise<UserProfile> {
-  // 1. Input handling
-  if (!userId) throw new ApiError('Missing userId');
+async function processPayment(payment: PaymentDetails): Promise<TransactionResult> {
+  // 1. Input validation and preparation
+  // 1.1 Check for missing payment details
+  if (!payment || !payment.amount || !payment.method) {
+    throw new PaymentError('Missing payment details');
+  }
+
+  // 1.2 Validate payment amount
+  // 1.2.1 Ensure amount is positive
+  if (payment.amount <= 0) {
+    throw new PaymentError('Invalid payment amount');
+  }
+
+  // 1.2.2 Ensure supported payment method
+  if (!['credit_card', 'paypal', 'bank_transfer'].includes(payment.method)) {
+    throw new PaymentError('Unsupported payment method');
+  }
 
   // 2. Core processing
-  // 2.1 Fetch user data
-  const res = await fetch(`https://api.example.com/users/${encodeURIComponent(userId)}`);
-  if (!res.ok) throw new ApiError('API error');
-  const data = await res.json();
+  // 2.1 Calculate transaction fees
+  // 2.1.1 Determine base fee
+  const baseFee = payment.amount * 0.02;
 
-  // 2.2 Transform to UserProfile
-  if (!data.id || !data.name) throw new ApiError('Incomplete user data');
-  const profile: UserProfile = {
-    id: data.id,
-    name: data.name ?? '',
-    email: data.email ?? '',
-    avatarUrl: data.avatar_url ?? '',
-    createdAt: new Date(data.created_at),
+  // 2.1.2 Apply method-specific surcharge
+  const surcharge = payment.method === 'credit_card' ? 1.5 : 0;
+
+  // 2.2 Execute payment and log event
+  try {
+    // 2.2.1 Call external payment API
+    const apiResult = await paymentApi.charge(payment);
+
+    // 2.2.2 Log successful transaction
+    logger.info('Payment processed', { paymentId: apiResult.id, amount: payment.amount });
+  } catch (error) {
+    // 2.2.3 Log error and rethrow
+    logger.error('Payment failed', { error, payment });
+    throw new PaymentError('Payment processing failed');
+  }
+
+  // 3. Return transaction result
+  return {
+    status: 'success',
+    amount: payment.amount,
+    fee: baseFee + surcharge,
   };
-
-  // 3. Output handling
-  return profile;
 }
-
 ```
 
-| Context                                       | Numeric Comments Allowed |
-| --------------------------------------------- | ------------------------ |
-| Inside a function or method body              | Yes                      |
-| Outside any function or method (file/module)  | No                       |
-| Global scope (e.g., script-level statements)  | No                       |
-| Property or field declarations (class/object) | No                       |
-| Loop or conditional inside function/method    | Yes                      |
+### 3.5 Invalid Usage Examples
 
-_Numeric comments (e.g., `// 1.`, `// 2.`) are only permitted inside function or method bodies to clarify processing steps.  
- They must not be used at file/module/global scope, on property/field declarations, or outside executable code blocks._
+```typescript
+function badExample(input) {
+  // 1. This must only handle input logic
+  // 2. This must relate to core logic, not input/output
+  // 3. This must only handle output (return/console)
+  // 4. This is invalid – only 1, 2, 3 as prefix allowed, the 4th phase is not allowed.
+}
+```
 
 ---
 
