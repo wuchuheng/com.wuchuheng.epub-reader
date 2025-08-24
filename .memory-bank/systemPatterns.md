@@ -423,8 +423,8 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items }) => {
         <React.Fragment key={index}>
           {index > 0 && <span className="text-gray-400" aria-hidden="true">/</span>}
           {item.path ? (
-            <Link 
-              to={item.path} 
+            <Link
+              to={item.path}
               className="text-blue-600 hover:text-blue-800 transition-colors"
               aria-current={index === items.length - 1 ? 'page' : undefined}
             >
@@ -492,8 +492,8 @@ export const ContextMenuSettingsPage: React.FC = () => {
 
 ```typescript
 /**
- * Tool management system with comprehensive CRUD operations
- * Extensible architecture supporting multiple tool types
+ * Comprehensive tool management system with full CRUD operations
+ * Extensible architecture supporting multiple tool types with validation
  */
 interface ToolManagementPattern {
   // Tool types supported by the system
@@ -502,36 +502,51 @@ interface ToolManagementPattern {
     iframe: IframeToolConfig;
     custom: CustomToolConfig;
   };
-  
+
   // State management pattern
   state: {
     tools: CustomAITool[];
-    activeTool: string | null;
+    loading: boolean;
+    error: string | null;
     dialogOpen: boolean;
     editingTool: CustomAITool | null;
+    selectedType: ToolType | null;
   };
-  
+
   // CRUD operations pattern
   operations: {
     createTool: (tool: Omit<CustomAITool, 'id'>) => Promise<void>;
     updateTool: (id: string, updates: Partial<CustomAITool>) => Promise<void>;
     deleteTool: (id: string) => Promise<void>;
     reorderTools: (fromIndex: number, toIndex: number) => Promise<void>;
+    toggleToolStatus: (id: string, isActive: boolean) => Promise<void>;
+  };
+
+  // Validation patterns
+  validation: {
+    validateTool: (tool: Partial<CustomAITool>) => ValidationResult;
+    validateAIConfig: (config: AIToolConfig) => ValidationResult;
+    validateIframeConfig: (config: IframeToolConfig) => ValidationResult;
+    validateCustomConfig: (config: CustomToolConfig) => ValidationResult;
   };
 }
 
 /**
  * Dynamic form system for different tool types
- * Type-safe form validation with real-time feedback
+ * Type-safe form validation with real-time feedback and error handling
  */
 interface FormSystemPattern {
   // Base form with common fields
   baseForm: {
+    id?: string;
     name: string;
     shortName?: string;
+    description?: string;
     isActive: boolean;
+    type: ToolType;
+    order: number;
   };
-  
+
   // Type-specific forms
   typeForms: {
     ai: {
@@ -542,30 +557,43 @@ interface FormSystemPattern {
       maxTokens?: number;
       temperature?: number;
       systemPrompt?: string;
+      userPrompt?: string;
     };
     iframe: {
       url: string;
       width?: number;
       height?: number;
       sandbox?: string;
+      allow?: string;
     };
     custom: {
       prompt: string;
       variables?: string[];
+      context?: string;
     };
   };
-  
+
   // Validation pattern
   validation: {
-    required: string[];
+    required: Record<ToolType, string[]>;
     patterns: Record<string, RegExp>;
     async: Record<string, (value: string) => Promise<boolean>>;
+    messages: Record<string, string>;
+  };
+
+  // Form state management
+  formState: {
+    formData: ToolFormData;
+    errors: Record<string, string>;
+    touched: Record<string, boolean>;
+    isValid: boolean;
+    isSubmitting: boolean;
   };
 }
 
 /**
  * Modal dialog system for tool creation and editing
- * Consistent dialog patterns with proper state management
+ * Consistent dialog patterns with proper state management and animations
  */
 interface DialogSystemPattern {
   // Dialog state management
@@ -574,28 +602,35 @@ interface DialogSystemPattern {
     mode: 'create' | 'edit';
     currentTool: CustomAITool | null;
     selectedType: ToolType | null;
+    step: 'type' | 'config' | 'review';
+    loading: boolean;
+    error: string | null;
   };
-  
+
   // Dialog actions
   actions: {
     openCreateDialog: () => void;
     openEditDialog: (tool: CustomAITool) => void;
     closeDialog: () => void;
+    nextStep: () => void;
+    prevStep: () => void;
     submitDialog: (data: ToolFormData) => Promise<void>;
+    resetDialog: () => void;
   };
-  
+
   // Dialog components
   components: {
-    ToolTypeSelector: React.FC<{ onSelect: (type: ToolType) => void }>;
-    AIToolForm: React.FC<{ data: AIToolData; onChange: (data: AIToolData) => void }>;
-    IframeToolForm: React.FC<{ data: IframeToolData; onChange: (data: IframeToolData) => void }>;
-    ToolForm: React.FC<{ data: ToolFormData; onChange: (data: ToolFormData) => void }>;
+    ToolTypeSelector: React.FC<{ onSelect: (type: ToolType) => void; selected?: ToolType }>;
+    AIToolForm: React.FC<{ data: AIToolData; onChange: (data: AIToolData) => errors: Record<string, string> }>;
+    IframeToolForm: React.FC<{ data: IframeToolData; onChange: (data: IframeToolData) => errors: Record<string, string> }>;
+    ToolForm: React.FC<{ data: ToolFormData; onChange: (data: ToolFormData) => errors: Record<string, string> }>;
+    ModelSearchInput: React.FC<{ value: string; onChange: (value: string) => provider: 'openai' | 'anthropic' | 'custom' }>;
   };
 }
 
 /**
  * Custom hooks pattern for state management
- * Consistent hook patterns across all features
+ * Consistent hook patterns across all features with proper error handling
  */
 interface CustomHooksPattern {
   // Context menu settings hook
@@ -607,25 +642,84 @@ interface CustomHooksPattern {
     updateTool: (id: string, updates: Partial<CustomAITool>) => Promise<void>;
     deleteTool: (id: string) => Promise<void>;
     reorderTools: (fromIndex: number, toIndex: number) => Promise<void>;
+    toggleToolStatus: (id: string, isActive: boolean) => Promise<void>;
+    validateTool: (tool: Partial<CustomAITool>) => ValidationResult;
   };
-  
+
   // Tool form hook
-  useToolForm: (initialData?: ToolFormData) => {
+  useToolForm: (initialData?: ToolFormData, mode?: 'create' | 'edit') => {
     formData: ToolFormData;
     errors: Record<string, string>;
+    touched: Record<string, boolean>;
     isValid: boolean;
+    isSubmitting: boolean;
     handleChange: (field: string, value: any) => void;
+    handleBlur: (field: string) => void;
     handleSubmit: () => Promise<void>;
     resetForm: () => void;
+    setFieldError: (field: string, error: string) => void;
+    clearErrors: () => void;
   };
-  
+
   // Dialog hook
   useDialog: () => {
     isOpen: boolean;
-    openDialog: () => void;
+    mode: 'create' | 'edit';
+    currentTool: CustomAITool | null;
+    selectedType: ToolType | null;
+    step: 'type' | 'config' | 'review';
+    loading: boolean;
+    error: string | null;
+    openCreateDialog: () => void;
+    openEditDialog: (tool: CustomAITool) => void;
     closeDialog: () => void;
-    dialogData: any;
-    setDialogData: (data: any) => void;
+    nextStep: () => void;
+    prevStep: () => void;
+    submitDialog: (data: ToolFormData) => Promise<void>;
+    resetDialog: () => void;
+    setError: (error: string) => void;
+    clearError: () => void;
+  };
+
+  // Model search hook
+  useModelSearch: (provider: 'openai' | 'anthropic' | 'custom') => {
+    models: AIModel[];
+    loading: boolean;
+    error: string | null;
+    searchQuery: string;
+    setSearchQuery: (query: string) => void;
+    filteredModels: AIModel[];
+  };
+}
+
+/**
+ * Persistence layer pattern for settings storage
+ * LocalStorage integration with proper schema validation
+ */
+interface PersistencePattern {
+  // Storage schema
+  schema: {
+    version: number;
+    tools: CustomAITool[];
+    settings: ContextMenuSettings;
+    lastUpdated: number;
+  };
+
+  // Storage operations
+  operations: {
+    saveSettings: (settings: ContextMenuSettings) => Promise<void>;
+    loadSettings: () => Promise<ContextMenuSettings>;
+    migrateSettings: (oldVersion: number, data: any) => ContextMenuSettings;
+    exportSettings: () => string;
+    importSettings: (data: string) => Promise<void>;
+    clearSettings: () => Promise<void>;
+  };
+
+  // Validation and error handling
+  validation: {
+    validateSchema: (data: any) => ValidationResult;
+    handleStorageError: (error: Error) => void;
+    handleQuotaExceeded: () => void;
   };
 }
 ```
@@ -652,9 +746,59 @@ const router = createBrowserRouter([
           { path: 'context-menu', element: <ContextMenuSettingsPage /> },
           { path: 'ai-providers', element: <AIProviderSettings /> },
           { path: 'reading-preferences', element: <ReadingPreferencesSettings /> },
+          { path: 'appearance', element: <AppearanceSettings /> },
         ],
       },
     ],
   },
 ]);
+
+/**
+ * Navigation guard pattern for protected routes
+ * Ensures proper authentication and authorization for settings pages
+ */
+interface NavigationGuardPattern {
+  // Route protection
+  guards: {
+    requireAuth: (route: RouteObject) => RouteObject;
+    requireFeature: (feature: string) => (route: RouteObject) => RouteObject;
+    requirePermission: (permission: string) => (route: RouteObject) => RouteObject;
+  };
+
+  // Navigation hooks
+  hooks: {
+    useNavigationGuard: (requiredAuth?: boolean) => boolean;
+    useFeatureAccess: (feature: string) => boolean;
+    usePermissionCheck: (permission: string) => boolean;
+  };
+
+  // Error handling
+  errorHandling: {
+    UnauthorizedRoute: React.FC;
+    FeatureUnavailableRoute: React.FC;
+    PermissionDeniedRoute: React.FC;
+  };
+}
+
+/**
+ * Breadcrumb navigation pattern for settings hierarchy
+ * Dynamic breadcrumb generation based on current route
+ */
+interface BreadcrumbNavigationPattern {
+  // Breadcrumb generation
+  generateBreadcrumbs: (location: Location) => BreadcrumbItem[];
+
+  // Breadcrumb components
+  components: {
+    Breadcrumb: React.FC<{ items: BreadcrumbItem[] }>;
+    BreadcrumbItem: React.FC<{ item: BreadcrumbItem; index: number; total: number }>;
+  };
+
+  // Breadcrumb utilities
+  utils: {
+    formatBreadcrumbLabel: (path: string) => string;
+    getBreadcrumbIcon: (path: string) => React.ReactNode;
+    isBreadcrumbActive: (item: BreadcrumbItem, location: Location) => boolean;
+  };
+}
 ```
