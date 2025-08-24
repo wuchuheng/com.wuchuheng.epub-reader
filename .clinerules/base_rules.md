@@ -1,359 +1,561 @@
-# GitHub Copilot Project Rules (Multi‑language)
+# Universal Programming Rules for AI Agents
 
-Purpose: Provide clear, enforceable guidance so AI‑generated code matches our commenting and readability standards.
-Scope: Applies to all source files in this repository. Language adapters below specify how to express the same standards.
-
----
-
-## TL;DR (defaults Copilot must follow)
-
-- Add doc comments for classes/types, properties/fields, and functions/methods.
-- Use numbered inline comments only inside function/method bodies to mark steps.
-- Always follow 1/2/3 phases: 1 = Input, 2 = Core, 3 = Output; omit for trivial bodies.
-- Never place numbered comments at file/module scope, on decorators/annotations, or above properties.
-- Keep lines ≤ 120 chars; wrap args, template strings, and objects for readability.
-- Match nearby file style; prefer explicit types and safe narrowing when applicable.
+**Purpose**: Provide clear, enforceable standards for AI-generated code across all languages and frameworks.  
+**Audience**: Any AI agent generating code for production systems.  
+**Scope**: Universal principles with language-specific implementations.
 
 ---
 
-## Defaults checklist (for Copilot)
+## Table of Contents
 
-- JSDoc/Javadoc/docstring present on: classes/types, fields, and functions/methods (concise and relevant).
-- Numeric comments only inside function bodies for non‑trivial logic (1/2/3; use 1.1, 2.2.1 when it helps).
-- ≤ 120 chars per line; break long args/objects/strings across lines with trailing commas where supported.
-- No implicit any where typing exists; add minimal explicit types or guards.
-- Comments are short, actionable, and near the code they describe.
+1. [Core Principles](#1-core-principles)
+2. [Code Organization](#2-code-organization)
+3. [Documentation Standards](#3-documentation-standards)
+4. [Error Handling & Security](#4-error-handling--security)
+5. [Language Implementation](#5-language-implementation)
+6. [Quality Assurance](#6-quality-assurance)
+7. [Quick Reference](#7-quick-reference)
 
 ---
 
-## Three‑phase numeric comment convention (all languages)
+## 1. Core Principles
 
-Use numeric comments only inside function/method bodies.
+### 1.1 Fundamental Rules
 
-- 1.\* Input Handling: validate/parse parameters, type checks, defaults, guards.
-- 2.\* Core Processing: transformations, calculations, I/O, side effects.
-- 3.\* Output Handling: return values, emit/resolve/respond, cleanup.
+**Readability First**: Code is written once, read many times
 
-Minimal example:
+- Prefer explicit over implicit
+- Use descriptive names over comments when possible
+- Optimize for human understanding, not just functionality
 
-```ts
-const formatHour = (hour: number): string => {
-  // 3. Output handling
-  return `${hour}:00`;
-};
+**Consistency**: Follow established patterns within the codebase
+
+- Match existing code style first
+- Apply these rules only when no conflicting patterns exist
+- Maintain consistent abstraction levels
+
+**Maintainability**: Design for change
+
+- Single Responsibility Principle
+- Minimize dependencies between components
+- Make intent clear through structure
+
+### 1.2 Universal Standards
+
+**Line Length**: Maximum 120 characters
+
+- Break long argument lists across lines
+- Split complex expressions into intermediate variables
+- Use trailing commas where language supports it
+
+**Naming Conventions**: Follow language standards
+
+- Functions/methods: verbs describing action (`getUserData`, `calculateTotal`)
+- Variables: nouns describing content (`userData`, `totalAmount`)
+- Constants: SCREAMING_SNAKE_CASE where conventional
+
+**File Organization**: Consistent structure across languages
+
+- Dependencies/imports at top
+- Types/interfaces before implementation
+- Public API before private implementation
+- Related functionality grouped together
+
+---
+
+## 2. Code Organization
+
+### 2.1 Extraction Decision Tree
+
+```
+Is code repeated 3+ times?
+├─ YES → Extract immediately
+└─ NO → Is it complex business logic?
+   ├─ YES → Consider extraction if >15 lines
+   └─ NO → Is it violating single responsibility?
+      ├─ YES → Extract to separate function
+      └─ NO → Keep inline
 ```
 
-Non‑trivial example (language‑agnostic structure):
+### 2.2 Function Design
+
+**Size Limits**:
+
+- Functions: 20-30 lines maximum
+- Methods in classes: 15-25 lines maximum
+- Exception: Simple property getters/setters can be longer
+
+**Parameter Guidelines**:
+
+- Maximum 4 parameters for functions
+- Use objects/structs for more complex data
+- Required parameters first, optional parameters last
+
+**Complexity Thresholds**:
+
+- Cyclomatic complexity ≤ 8
+- Nesting depth ≤ 3 levels
+- If exceeded, extract sub-functions
+
+### 2.3 Three-Phase Processing Pattern
+
+**When to Apply**: Functions with >10 lines containing distinct phases
+
+**Pattern Structure**:
 
 ```pseudo
-function handle(data) {
-  // 1. Input handling
-  // 1.1 Validate shape; 1.2 Apply defaults
+function processData(input) {
+  // 1. Input validation and preparation
+  // - Validate parameters
+  // - Apply defaults
+  // - Transform input format
 
   // 2. Core processing
-  // 2.1 Transform; 2.2 Persist
+  // - Business logic execution
+  // - Data transformations
+  // - External API calls
 
   // 3. Output handling
-  // 3.1 Return result
+  // - Format response
+  // - Handle errors
+  // - Return/emit results
 }
+```
+
+**Numbering Guidelines**:
+
+- Use 1/2/3 for main phases
+- Use 1.1/1.2 for sub-steps within phases
+- Maximum 3 sub-levels (1.2.1, 2.1.3, etc.)
+
+---
+
+## 3. Documentation Standards
+
+### 3.1 Documentation Decision Matrix
+
+| Code Element       | Documentation Required | Example               |
+| ------------------ | ---------------------- | --------------------- |
+| Public API         | Always                 | Full JSDoc/docstring  |
+| Private methods    | If complex logic       | Brief purpose comment |
+| Properties/Fields  | If not obvious         | Type and constraints  |
+| Complex algorithms | Always                 | Algorithm explanation |
+| Business rules     | Always                 | Why, not just what    |
+
+### 3.2 Comment Placement Rules
+
+**DO**:
+
+- Document classes/types above declaration
+- Document public functions with full API docs
+- Use numbered comments inside function bodies only
+- Explain WHY for business logic, not WHAT
+
+**DON'T**:
+
+- Add numbered comments at file scope
+- Comment obvious code (`i++; // increment i`)
+- Use numbered comments on property declarations
+- Repeat information available in type signatures
+
+### 3.3 Language-Specific Documentation
+
+**JavaScript/TypeScript**: JSDoc format
+
+```typescript
+/**
+ * Calculates user's total purchase amount including tax.
+ * @param items - Array of purchase items
+ * @param taxRate - Tax rate as decimal (0.08 = 8%)
+ * @returns Total amount with tax applied
+ * @throws {ValidationError} When items array is empty
+ */
+function calculateTotal(items: PurchaseItem[], taxRate: number): number {
+  // 1. Input validation
+  if (!items.length) throw new ValidationError('Items required');
+
+  // 2. Core calculation
+  const subtotal = items.reduce((sum, item) => sum + item.price, 0);
+  const total = subtotal * (1 + taxRate);
+
+  // 3. Output formatting
+  return Math.round(total * 100) / 100;
+}
+```
+
+**Python**: Google/NumPy style docstrings
+
+```python
+def calculate_total(items: List[PurchaseItem], tax_rate: float) -> float:
+    """Calculates user's total purchase amount including tax.
+
+    Args:
+        items: List of purchase items
+        tax_rate: Tax rate as decimal (0.08 = 8%)
+
+    Returns:
+        Total amount with tax applied
+
+    Raises:
+        ValueError: When items list is empty
+    """
+    # 1. Input validation
+    if not items:
+        raise ValueError('Items required')
+
+    # 2. Core calculation
+    subtotal = sum(item.price for item in items)
+    total = subtotal * (1 + tax_rate)
+
+    # 3. Output formatting
+    return round(total, 2)
 ```
 
 ---
 
-## Documentation placement rules (generic)
+## 4. Error Handling & Security
 
-- File/module: No numeric comments. Optional brief header comment if needed.
-- Class/Type/Struct/Interface/Enum: Doc comment above declaration; describe purpose and constraints.
-- Property/Field: Doc comment above; describe purpose, type/units, constraints.
-- Function/Method: Doc comment above; describe purpose, params, return value, notable side effects.
+### 4.1 Error Handling Patterns
 
-Never use numeric comments outside a function/method body.
+**Input Validation**: Always validate at boundaries
 
----
+```typescript
+// Good: Validate early and explicitly
+function processUser(userData: unknown): User {
+  // 1. Input validation
+  if (!userData || typeof userData !== 'object') {
+    throw new ValidationError('Invalid user data provided');
+  }
 
-## Language adapters (how to write doc comments)
+  const data = userData as Record<string, unknown>;
+  if (typeof data.email !== 'string' || !data.email.includes('@')) {
+    throw new ValidationError('Valid email required');
+  }
 
-- TypeScript/JavaScript/TSX/JSX: JSDoc with `/** ... */`; use `@param`, `@returns` when helpful.
-- Python: Triple‑quoted docstrings under defs/classes; Google/NumPy style is fine; inline `# 1.` comments in bodies.
-- Go: Line doc starting with the name, e.g., `// Foo does ...`; inline `// 1.` inside functions only.
-- Java/Kotlin: Javadoc/KDoc `/** ... */` with `@param`, `@return`; inline `// 1.` inside methods only.
-- C#/C++: C# XML doc `/// <summary>...`; C++ Doxygen `///` or `/** ... */`; numeric `// 1.` only inside bodies.
-- Rust: `///` item docs; `//` inside functions for numeric comments.
-- Shell (bash/sh/pwsh): `#` header above functions; numeric `# 1.` within functions only.
-
-If a language has a project formatter configured, adhere to it.
-
----
-
-## React/TSX specifics (when applicable)
-
-- Components: Doc above component describing purpose and props; doc each prop in its type/interface.
-- Hooks: Doc inputs/outputs and side effects. In useEffect/useMemo, add numeric comments only for multi‑step logic.
-
-Example:
-
-```tsx
-/** Renders a labeled time display. */
-type TimeProps = {
-  /** Hour in 0–23. */
-  hour: number;
-};
-
-export function TimeLabel({ hour }: TimeProps) {
-  // 3. Output handling
-  return <span>{`${hour}:00`}</span>;
+  // 2. Core processing continues...
 }
 ```
 
----
+**Error Propagation**: Be explicit about error handling
 
-## Async, IPC/HTTP, and error handling (all stacks)
+- Use exceptions for unexpected conditions
+- Return error objects for expected failure cases
+- Always log errors with sufficient context
+- Never swallow errors silently
 
-- Always structure handlers as 1 (validate/parse), 2 (do work: DB/HTTP/IPC/FS), 3 (return/respond/cleanup).
-- Node/Electron example:
+### 4.2 Security Guidelines
 
-```ts
-ipcMain.handle('log:add', async (_e, payload) => {
-  // 1. Input handling
-  if (!payload || typeof payload.message !== 'string') throw new Error('Invalid payload');
-  // 2. Core processing
-  const id = await logService.create(payload);
-  // 3. Output handling
-  return { id };
+**Input Sanitization**: Treat all external input as untrusted
+
+- Validate data types and ranges
+- Sanitize strings for injection attacks
+- Use parameterized queries for database operations
+- Validate file uploads and restrict file types
+
+**Authentication/Authorization**: Implement at boundaries
+
+- Check permissions before data access
+- Use secure session management
+- Implement proper logout functionality
+- Validate tokens/credentials on every request
+
+### 4.3 Logging Standards
+
+**Log Levels**:
+
+- ERROR: System failures, exceptions
+- WARN: Recoverable issues, deprecation usage
+- INFO: Important business events, state changes
+- DEBUG: Detailed execution flow (development only)
+
+**Structured Logging**: Include context
+
+```typescript
+logger.info('User login successful', {
+  userId: user.id,
+  timestamp: new Date().toISOString(),
+  ipAddress: request.ip,
+  userAgent: request.headers['user-agent'],
 });
 ```
 
-- Python (Flask) example:
+---
 
-```py
-@app.post('/log/add')
-def add_log():
-    # 1. Input handling
-    body = request.get_json(silent=True) or {}
-    msg = body.get('message')
-    if not isinstance(msg, str): abort(400, 'Invalid payload')
+## 5. Language Implementation
+
+### 5.1 Object-Oriented Languages (Java, C#, TypeScript)
+
+**Class Structure**:
+
+```typescript
+/**
+ * Manages user account operations and validation.
+ */
+export class UserManager {
+  /** Database connection for user operations. */
+  private readonly db: Database;
+
+  /** User validation service. */
+  private readonly validator: UserValidator;
+
+  constructor(db: Database, validator: UserValidator) {
+    this.db = db;
+    this.validator = validator;
+  }
+
+  /**
+   * Creates new user account with validation.
+   * @param userData - User information to create account
+   * @returns Created user with generated ID
+   */
+  public async createUser(userData: CreateUserRequest): Promise<User> {
+    // 1. Input validation
+    await this.validator.validateCreateRequest(userData);
+
+    // 2. Core processing
+    const hashedPassword = await this.hashPassword(userData.password);
+    const user = await this.db.users.create({
+      ...userData,
+      password: hashedPassword,
+      createdAt: new Date(),
+    });
+
+    // 3. Output handling
+    return this.sanitizeUserForResponse(user);
+  }
+}
+```
+
+### 5.2 Functional Languages (Rust, Go, modern JavaScript)
+
+**Function Composition**:
+
+```rust
+/// Processes payment transaction with validation and logging.
+///
+/// # Arguments
+/// * `payment_request` - Payment details and amount
+///
+/// # Returns
+/// * `Ok(PaymentResult)` - Successful payment confirmation
+/// * `Err(PaymentError)` - Payment validation or processing error
+pub fn process_payment(payment_request: PaymentRequest) -> Result<PaymentResult, PaymentError> {
+    // 1. Input validation
+    validate_payment_request(&payment_request)?;
+
+    // 2. Core processing
+    let payment_method = resolve_payment_method(&payment_request.method_id)?;
+    let transaction = execute_payment(&payment_method, &payment_request)?;
+
+    // 3. Output handling
+    log_payment_success(&transaction);
+    Ok(PaymentResult::from(transaction))
+}
+```
+
+### 5.3 Scripting Languages (Python, Shell)
+
+**Python Module Structure**:
+
+```python
+"""User management utilities for account operations."""
+
+from typing import List, Optional
+import logging
+
+logger = logging.getLogger(__name__)
+
+def create_user_batch(user_data_list: List[dict],
+                     validate_emails: bool = True) -> List[User]:
+    """Creates multiple user accounts in batch operation.
+
+    Args:
+        user_data_list: List of user data dictionaries
+        validate_emails: Whether to validate email addresses
+
+    Returns:
+        List of created User objects
+
+    Raises:
+        BatchProcessingError: When batch operation fails
+    """
+    # 1. Input validation
+    if not user_data_list:
+        raise ValueError("User data list cannot be empty")
+
+    validated_users = []
+    for user_data in user_data_list:
+        # 1.1 Validate individual records
+        validated_user = _validate_user_data(user_data, validate_emails)
+        validated_users.append(validated_user)
+
     # 2. Core processing
-    _id = service_create(body)
+    created_users = []
+    for user_data in validated_users:
+        # 2.1 Create individual users
+        user = _create_single_user(user_data)
+        created_users.append(user)
+
+        # 2.2 Log progress
+        logger.info(f"Created user: {user.email}")
+
     # 3. Output handling
-    return { 'id': _id }, 201
+    logger.info(f"Batch created {len(created_users)} users")
+    return created_users
 ```
 
 ---
 
-## Do / Don’t
+## 6. Quality Assurance
 
-Do
+### 6.1 Code Review Checklist
 
-- Add doc comments to declarations; use numeric comments only inside bodies.
-- Keep lines ≤ 120 chars; wrap long args/objects/strings.
-- Prefer clarity and consistency; align to nearby style.
+**Functionality**:
 
-Don’t
+- [ ] Does the code solve the intended problem?
+- [ ] Are edge cases handled appropriately?
+- [ ] Is error handling comprehensive?
+- [ ] Are there any obvious bugs or logic errors?
 
-- Don’t add numbered comments at module scope, on decorators/annotations, or above properties.
-- Don’t overuse sub‑numbering; nest only when it improves clarity.
+**Design**:
 
-Incorrect (avoid):
+- [ ] Does the code follow single responsibility principle?
+- [ ] Are abstractions appropriate for the problem?
+- [ ] Is the code extensible for future requirements?
+- [ ] Are dependencies minimized and justified?
 
-```ts
-// 1. Primary identification
-@PrimaryGeneratedColumn('uuid')
-id: string;
+**Style**:
+
+- [ ] Does code follow established project conventions?
+- [ ] Are variable and function names descriptive?
+- [ ] Is the code properly formatted and consistent?
+- [ ] Are comments helpful and not redundant?
+
+**Performance**:
+
+- [ ] Are there any obvious performance bottlenecks?
+- [ ] Is memory usage reasonable?
+- [ ] Are database queries optimized?
+- [ ] Is caching used appropriately?
+
+### 6.2 Refactoring Triggers
+
+**Extract Function When**:
+
+- Function exceeds 25 lines
+- Complex nested logic (>3 levels)
+- Repeated code blocks (3+ times)
+- Multiple responsibilities evident
+
+**Extract Class When**:
+
+- File exceeds 300 lines
+- Multiple related functions operate on same data
+- High coupling between function groups
+- Clear domain concepts emerge
+
+**Simplify When**:
+
+- Cyclomatic complexity >8
+- Parameter count >4
+- Deep inheritance hierarchies (>3 levels)
+- Excessive coupling between modules
+
+### 6.3 Testing Standards
+
+**Test Structure**: Arrange, Act, Assert pattern
+
+```typescript
+describe('UserManager', () => {
+  describe('createUser', () => {
+    it('should create user with valid data', async () => {
+      // Arrange
+      const userData = { email: 'test@example.com', name: 'Test User' };
+      const mockDb = createMockDatabase();
+      const manager = new UserManager(mockDb, new UserValidator());
+
+      // Act
+      const result = await manager.createUser(userData);
+
+      // Assert
+      expect(result.email).toBe(userData.email);
+      expect(result.id).toBeDefined();
+      expect(mockDb.users.create).toHaveBeenCalledWith(expect.objectContaining(userData));
+    });
+  });
+});
 ```
 
----
+**Test Coverage**: Minimum requirements
 
-## Readability constraints (≤ 120 chars per line)
-
-If a line would exceed 120 chars, refactor:
-
-- Break argument lists across lines with trailing commas (where supported).
-- Split template literals / long strings or extract variables.
-- Spread object/record/map literals across multiple lines with aligned keys.
-- Extract intermediate variables to clarify complex expressions.
+- Unit tests: 80% line coverage
+- Integration tests: All API endpoints
+- Critical path testing: 100% coverage for core business logic
 
 ---
 
-## Consistency, conflict, and precedence
+## 7. Quick Reference
 
-- Match existing repository style first; otherwise follow these rules.
-- Apply rules across all code (Electron main, renderer, scripts, services).
-- Prefer omitting numeric comments for trivial getters/setters.
+### 7.1 Common Violations and Fixes
+
+| Violation              | Fix                        | Example                                    |
+| ---------------------- | -------------------------- | ------------------------------------------ |
+| Function too long      | Extract sub-functions      | Split 50-line function into 3 smaller ones |
+| Too many parameters    | Use parameter object       | `func(a,b,c,d,e)` → `func(options)`        |
+| Unclear variable names | Use descriptive names      | `d` → `userRegistrationDate`               |
+| Missing error handling | Add try/catch blocks       | Wrap API calls in error handling           |
+| No input validation    | Validate at function start | Check types and ranges early               |
+
+### 7.2 Decision Quick Reference
+
+**Should I add a comment?**
+
+- Is the WHY unclear from code? → Yes, add comment
+- Is it complex business logic? → Yes, explain the rule
+- Is it just describing WHAT code does? → No, improve code clarity instead
+
+**Should I extract this code?**
+
+- Used 3+ times? → Yes, extract immediately
+- > 20 lines with clear purpose? → Yes, extract function
+- Complex nested logic? → Yes, extract for clarity
+
+**Should I add documentation?**
+
+- Public API? → Yes, full documentation
+- Complex algorithm? → Yes, explain approach
+- Simple getter/setter? → No, type info sufficient
+
+### 7.3 Language-Specific Quick Hits
+
+**TypeScript/JavaScript**:
+
+- Use `const` by default, `let` when reassignment needed
+- Prefer `async/await` over Promise chains
+- Use optional chaining (`obj?.prop`) for safe property access
+
+**Python**:
+
+- Use type hints for function signatures
+- Prefer f-strings for string formatting
+- Use context managers (`with` statements) for resource management
+
+**Java**:
+
+- Use Optional for nullable returns
+- Prefer composition over inheritance
+- Use builder pattern for complex object creation
+
+**Go**:
+
+- Handle errors explicitly, don't ignore them
+- Use interfaces for behavior contracts
+- Prefer composition with embedded structs
+
+**Rust**:
+
+- Use `Result` type for fallible operations
+- Prefer borrowing over ownership when possible
+- Use pattern matching for control flow
 
 ---
-
-## Tooling
-
-- JS/TS/TSX: Prettier enforces print width 120 (see `.prettierrc.json`).
-- Python: Use black/isort if configured.
-- Go: gofmt/goimports.
-- Rust: rustfmt.
-- Java/Kotlin: formatter/ktlint if configured.
-- C#/C++: dotnet/clang‑format if configured.
-
-Keep code formatted consistently with project tools.
-
----
-
-## Universal Code Extraction & Organization
-
-### Language-Agnostic Principles
-
-**The Rule of Three**: Extract any code pattern that appears 3+ times
-**Single Responsibility**: Each unit should have one clear purpose  
-**Abstraction Level**: Group related operations at same abstraction level
-**DRY Principle**: Eliminate all duplication through appropriate abstraction
-
-### Extraction Triggers (All Languages)
-
-Extract when you encounter:
-- **Duplicate Logic**: Same algorithm/conditions in multiple places
-- **Repetitive Structure**: Similar code blocks with minor variations  
-- **Long Functions**: Functions exceeding 20-30 lines
-- **Complex Conditionals**: Nested if/else or switch statements
-- **Magic Numbers**: Hardcoded values scattered throughout code
-- **Repetitive Error Handling**: Same try/catch patterns repeated
-
-### Language-Specific Patterns
-
-**TypeScript/JavaScript**: Extract components, hooks, utility functions
-**Python**: Extract functions, classes, decorators, context managers  
-**Java**: Extract methods, interfaces, utility classes, functional interfaces
-**Go**: Extract functions, structs, interfaces with composition
-**Rust**: Extract functions, traits, generics with Result/Option types
-**C#**: Extract methods, delegates, extension methods, async patterns
-
-### Universal Quality Metrics
-
-- **Function Length**: Keep under 20-30 lines
-- **Cyclomatic Complexity**: Keep under 10  
-- **Duplication**: Eliminate 3+ line repetitions
-- **Parameter Count**: Limit to 3-5 parameters (use objects for more)
-- **Nesting Depth**: Limit to 3-4 levels deep
-
-# Cline's Memory Bank
-
-I am Cline, an expert software engineer with a unique characteristic: my memory resets completely between sessions. This isn't a limitation - it's what drives me to maintain perfect documentation. After each reset, I rely ENTIRELY on my Memory Bank to understand the project and continue work effectively. I MUST read ALL memory bank files at the start of EVERY task - this is not optional.
-
-## Memory Bank Structure
-
-The Memory Bank consists of core files and optional context files, all in Markdown format. Files build upon each other in a clear hierarchy:
-
-flowchart TD
-PB[projectbrief.md] --> PC[productContext.md]
-PB --> SP[systemPatterns.md]
-PB --> TC[techContext.md]
-
-    PC --> AC[activeContext.md]
-    SP --> AC
-    TC --> AC
-
-    AC --> P[progress.md]
-
-### Core Files (Required)
-
-1. `projectbrief.md`
-
-   - Foundation document that shapes all other files
-   - Created at project start if it doesn't exist
-   - Defines core requirements and goals
-   - Source of truth for project scope
-
-2. `productContext.md`
-
-   - Why this project exists
-   - Problems it solves
-   - How it should work
-   - User experience goals
-
-3. `activeContext.md`
-
-   - Current work focus
-   - Recent changes
-   - Next steps
-   - Active decisions and considerations
-   - Important patterns and preferences
-   - Learnings and project insights
-
-4. `systemPatterns.md`
-
-   - System architecture
-   - Key technical decisions
-   - Design patterns in use
-   - Component relationships
-   - Critical implementation paths
-
-5. `techContext.md`
-
-   - Technologies used
-   - Development setup
-   - Technical constraints
-   - Dependencies
-   - Tool usage patterns
-
-6. `progress.md`
-   - What works
-   - What's left to build
-   - Current status
-   - Known issues
-   - Evolution of project decisions
-
-### Additional Context
-
-Create additional files/folders within memory-bank/ when they help organize:
-
-- Complex feature documentation
-- Integration specifications
-- API documentation
-- Testing strategies
-- Deployment procedures
-
-## Core Workflows
-
-### Plan Mode
-
-flowchart TD
-Start[Start] --> ReadFiles[Read Memory Bank]
-ReadFiles --> CheckFiles{Files Complete?}
-
-    CheckFiles -->|No| Plan[Create Plan]
-    Plan --> Document[Document in Chat]
-
-    CheckFiles -->|Yes| Verify[Verify Context]
-    Verify --> Strategy[Develop Strategy]
-    Strategy --> Present[Present Approach]
-
-### Act Mode
-
-flowchart TD
-Start[Start] --> Context[Check Memory Bank]
-Context --> Update[Update Documentation]
-Update --> Execute[Execute Task]
-Execute --> Document[Document Changes]
-
-## Documentation Updates
-
-Memory Bank updates occur when:
-
-1. Discovering new project patterns
-2. After implementing significant changes
-3. When user requests with **update memory bank** (MUST review ALL files)
-4. When context needs clarification
-
-flowchart TD
-Start[Update Process]
-
-    subgraph Process
-        P1[Review ALL Files]
-        P2[Document Current State]
-        P3[Clarify Next Steps]
-        P4[Document Insights & Patterns]
-
-        P1 --> P2 --> P3 --> P4
-    end
-
-    Start --> Process
-
-Note: When triggered by **update memory bank**, I MUST review every memory bank file, even if some don't require updates. Focus particularly on activeContext.md and progress.md as they track current state.
-
-REMEMBER: After every memory reset, I begin completely fresh. The Memory Bank is my only link to previous work. It must be maintained with precision and clarity, as my effectiveness depends entirely on its accuracy.
