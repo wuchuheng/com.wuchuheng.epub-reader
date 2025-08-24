@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
-import { ContextMenuItem } from '../../types/epub';
+import { Link } from 'react-router-dom';
 import { Container } from '../../components/Container';
 import { ApiConfig } from './components/ApiConfig';
 import { ToolList } from './components/ToolList';
-import { AddToolDialog } from './components/AddToolDialog';
 import { useContextMenuSettings } from './hooks/useContextMenuSettings';
-import { useDialog } from './hooks/useDialog';
 
 /**
  * Context Menu Settings page component.
@@ -15,14 +13,7 @@ import { useDialog } from './hooks/useDialog';
 export const ContextMenuSettingsPage: React.FC = () => {
   // 1. State and logic using custom hooks
   const contextMenuSettings = useContextMenuSettings();
-  const dialog = useDialog();
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
-
-  // 2. Event handlers
-  const handleAddTool = (tool: ContextMenuItem) => {
-    contextMenuSettings.addTool(tool);
-    dialog.close();
-  };
 
   const handleSaveSettings = async () => {
     const success = await contextMenuSettings.saveSettings();
@@ -78,12 +69,12 @@ export const ContextMenuSettingsPage: React.FC = () => {
               <div className="mb-6">
                 <div className="mb-4 flex items-center justify-between">
                   <h4 className="text-md font-medium text-gray-900">Custom AI Tools</h4>
-                  <button
-                    onClick={dialog.open}
+                  <Link
+                    to="/settings/contextmenu/add-tool"
                     className="rounded-md bg-blue-500 px-3 py-1 text-white transition-colors hover:bg-blue-600"
                   >
                     + Add New Tool
-                  </button>
+                  </Link>
                 </div>
 
                 {/* Existing Tools List */}
@@ -103,11 +94,11 @@ export const ContextMenuSettingsPage: React.FC = () => {
                     <button
                       onClick={handleSaveSettings}
                       disabled={contextMenuSettings.isSaving}
-                      className="rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {contextMenuSettings.isSaving ? 'Saving...' : 'Save Settings'}
                     </button>
-                    
+
                     {/* Save Status Feedback */}
                     {saveStatus === 'success' && (
                       <div className="text-green-600">Settings saved successfully!</div>
@@ -121,17 +112,6 @@ export const ContextMenuSettingsPage: React.FC = () => {
             </>
           )}
         </div>
-
-        {/* Add Tool Dialog */}
-        {!contextMenuSettings.isLoading && (
-          <AddToolDialog
-            isOpen={dialog.isOpen}
-            onClose={dialog.close}
-            onAddTool={handleAddTool}
-            apiEndpoint={contextMenuSettings.settings.api || ''}
-            apiKey={contextMenuSettings.settings.key || ''}
-          />
-        )}
       </div>
     </Container>
   );
