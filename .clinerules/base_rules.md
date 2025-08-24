@@ -1,8 +1,31 @@
 # Universal Programming Rules for AI Agents
 
-**Purpose**: Provide clear, enforceable standards for AI-generated code across all languages and frameworks.  
-**Audience**: Any AI agent generating code for production systems.  
-**Scope**: Universal principles with language-specific implementations.
+**Purpose**: Establish comprehensive, actionable standards that ensure AI-generated code consistently meets the highest quality benchmarks across all programming languages and frameworks. These standards serve as both a guide and a mandate for code excellence.
+
+**Audience**: AI agents and language models responsible for generating, modifying, or reviewing production code. These rules apply universally to any automated system that creates or influences code artifacts.
+
+**Scope**: Core principles that transcend specific programming languages, with practical implementations tailored to each language's unique characteristics and conventions. The standards cover the entire software development lifecycle from initial design to maintenance.
+
+---
+
+## 🎯 The Ultimate Goal: Readability First
+
+**The primary and ultimate goal of all code generation is READABILITY.** All rules, patterns, and standards that follow are fundamentally aimed at achieving this single objective.
+
+**Priority Order:**
+
+1. **Readability** - Code must be understood by humans, even the least experienced ones
+2. **Stability** - Code should be reliable and predictable
+3. **Robustness** - Code should handle edge cases and errors gracefully
+
+**Why Readability Comes First:**
+
+- Code is written once but read many times
+- The "dumbest" human reader must be able to understand the code
+- Unreadable code cannot be effectively maintained, debugged, or improved
+- Stability and robustness are meaningless if no one can understand the code to achieve them
+
+**All other rules in this document serve this ultimate goal.** When in doubt, choose the approach that maximizes human understanding.
 
 ---
 
@@ -11,10 +34,10 @@
 1. [Core Principles](#1-core-principles)
 2. [Code Organization](#2-code-organization)
 3. [Documentation Standards](#3-documentation-standards)
-4. [Error Handling & Security](#4-error-handling--security)
-5. [Language Implementation](#5-language-implementation)
-6. [Quality Assurance](#6-quality-assurance)
-7. [Quick Reference](#7-quick-reference)
+4. [Logging Best Practices](#4-logging-best-practices)
+5. [Quality Assurance](#5-quality-assurance)
+6. [Quick Reference](#6-quick-reference)
+7. [Empty Line Usage in Code Blocks and Documentation Comments](#7-empty-line-usage-in-code-blocks-and-documentation-comments)
 
 ---
 
@@ -24,6 +47,7 @@
 
 **Readability First**: Code is written once, read many times
 
+- As established in the ultimate goal above, readability is the primary objective that precedes stability and robustness
 - Prefer explicit over implicit
 - Use descriptive names over comments when possible
 - Optimize for human understanding, not just functionality
@@ -115,10 +139,8 @@ function processData(input) {
   // - Data transformations
   // - External API calls
 
-  // 3. Output handling
-  // - Format response
-  // - Handle errors
-  // - Return/emit results
+  // 3. Return the result(Or, Print the result). <-- Usually, either the final result is printed or the final result is returned. In short, there is often only one line of code following it
+  return result;
 }
 ```
 
@@ -127,6 +149,76 @@ function processData(input) {
 - Use 1/2/3 for main phases
 - Use 1.1/1.2 for sub-steps within phases
 - Maximum 3 sub-levels (1.2.1, 2.1.3, etc.)
+
+**Minimal example**:
+
+```ts-example 1
+/**
+ * Determines the truth value of a statement using double negation and logical NOT.
+ * @param value - The input value to evaluate
+ * @returns Boolean indicating the truthiness of the input
+ */
+function notNotNotTruth(value: unknown): boolean {
+  // 1. Input handling
+  // 1.1 Check for null or undefined
+  if (value === null || value === undefined) {
+    return false;
+  }
+
+  // 2. Core processing
+  // 2.1 Apply double negation (!!) to get truthiness
+  // 2.2 Apply logical NOT (!) to invert the result
+  const truthValue = !!value;
+  const inverted = !truthValue;
+
+  // 3. Return result.
+  return !inverted;
+}
+```
+
+```ts-example 2
+/**
+ * Gets a user's profile by ID from a remote API.
+ * @param userId - The user's unique ID
+ * @returns User profile object
+ * @throws {ApiError} If the request fails
+ */
+async function getUserProfile(userId: string): Promise<UserProfile> {
+  // 1. Input handling
+  if (!userId) throw new ApiError('Missing userId');
+
+  // 2. Core processing
+  // 2.1 Fetch user data
+  const res = await fetch(`https://api.example.com/users/${encodeURIComponent(userId)}`);
+  if (!res.ok) throw new ApiError('API error');
+  const data = await res.json();
+
+  // 2.2 Transform to UserProfile
+  if (!data.id || !data.name) throw new ApiError('Incomplete user data');
+  const profile: UserProfile = {
+    id: data.id,
+    name: data.name ?? '',
+    email: data.email ?? '',
+    avatarUrl: data.avatar_url ?? '',
+    createdAt: new Date(data.created_at),
+  };
+
+  // 3. Output handling
+  return profile;
+}
+
+```
+
+| Context                                       | Numeric Comments Allowed |
+| --------------------------------------------- | ------------------------ |
+| Inside a function or method body              | Yes                      |
+| Outside any function or method (file/module)  | No                       |
+| Global scope (e.g., script-level statements)  | No                       |
+| Property or field declarations (class/object) | No                       |
+| Loop or conditional inside function/method    | Yes                      |
+
+_Numeric comments (e.g., `// 1.`, `// 2.`) are only permitted inside function or method bodies to clarify processing steps.  
+ They must not be used at file/module/global scope, on property/field declarations, or outside executable code blocks._
 
 ---
 
@@ -183,232 +275,63 @@ function calculateTotal(items: PurchaseItem[], taxRate: number): number {
 }
 ```
 
-**Python**: Google/NumPy style docstrings
+## 4. Logging Best Practices
 
-```python
-def calculate_total(items: List[PurchaseItem], tax_rate: float) -> float:
-    """Calculates user's total purchase amount including tax.
+### 4.1 When to Log
 
-    Args:
-        items: List of purchase items
-        tax_rate: Tax rate as decimal (0.08 = 8%)
+- Log at key decision points: input validation failures, business rule triggers, external API calls, and error handling.
+- Use logging to record important state changes, warnings, and exceptions.
+- Avoid excessive logging in tight loops or trivial operations.
 
-    Returns:
-        Total amount with tax applied
+### 4.2 Logger Usage
 
-    Raises:
-        ValueError: When items list is empty
-    """
-    # 1. Input validation
-    if not items:
-        raise ValueError('Items required')
+- If a logger module is declared in the project, always use it for logging (e.g., `logger.error`, `logger.info`).
+- Prefer structured logging (objects, context) over plain strings for easier analysis.
+- If no logger is present, use the language's standard logging facility (e.g., `console.log`, `print`, etc.).
 
-    # 2. Core calculation
-    subtotal = sum(item.price for item in items)
-    total = subtotal * (1 + tax_rate)
+### 4.3 Log Level Guidelines
 
-    # 3. Output formatting
-    return round(total, 2)
-```
+- Use ERROR for system failures and exceptions.
+- Use WARN for recoverable issues and deprecated usage.
+- Use INFO for significant business events and state changes.
+- Use DEBUG for detailed execution flow (development only).
 
----
-
-## 4. Error Handling & Security
-
-### 4.1 Error Handling Patterns
-
-**Input Validation**: Always validate at boundaries
-
-```typescript
-// Good: Validate early and explicitly
-function processUser(userData: unknown): User {
-  // 1. Input validation
-  if (!userData || typeof userData !== 'object') {
-    throw new ValidationError('Invalid user data provided');
-  }
-
-  const data = userData as Record<string, unknown>;
-  if (typeof data.email !== 'string' || !data.email.includes('@')) {
-    throw new ValidationError('Valid email required');
-  }
-
-  // 2. Core processing continues...
-}
-```
-
-**Error Propagation**: Be explicit about error handling
-
-- Use exceptions for unexpected conditions
-- Return error objects for expected failure cases
-- Always log errors with sufficient context
-- Never swallow errors silently
-
-### 4.2 Security Guidelines
-
-**Input Sanitization**: Treat all external input as untrusted
-
-- Validate data types and ranges
-- Sanitize strings for injection attacks
-- Use parameterized queries for database operations
-- Validate file uploads and restrict file types
-
-**Authentication/Authorization**: Implement at boundaries
-
-- Check permissions before data access
-- Use secure session management
-- Implement proper logout functionality
-- Validate tokens/credentials on every request
-
-### 4.3 Logging Standards
-
-**Log Levels**:
-
-- ERROR: System failures, exceptions
-- WARN: Recoverable issues, deprecation usage
-- INFO: Important business events, state changes
-- DEBUG: Detailed execution flow (development only)
-
-**Structured Logging**: Include context
-
-```typescript
-logger.info('User login successful', {
-  userId: user.id,
-  timestamp: new Date().toISOString(),
-  ipAddress: request.ip,
-  userAgent: request.headers['user-agent'],
-});
-```
-
----
-
-## 5. Language Implementation
-
-### 5.1 Object-Oriented Languages (Java, C#, TypeScript)
-
-**Class Structure**:
+### 4.4 Example (TypeScript)
 
 ```typescript
 /**
- * Manages user account operations and validation.
+ * Processes user registration and logs key events.
+ * @param user - User registration data
+ * @returns Registration result
  */
-export class UserManager {
-  /** Database connection for user operations. */
-  private readonly db: Database;
-
-  /** User validation service. */
-  private readonly validator: UserValidator;
-
-  constructor(db: Database, validator: UserValidator) {
-    this.db = db;
-    this.validator = validator;
+async function registerUser(user: UserData): Promise<RegistrationResult> {
+  // 1. Input validation
+  if (!user.email) {
+    logger.error('Registration failed: missing email', { user });
+    throw new ValidationError('Email required');
   }
 
-  /**
-   * Creates new user account with validation.
-   * @param userData - User information to create account
-   * @returns Created user with generated ID
-   */
-  public async createUser(userData: CreateUserRequest): Promise<User> {
-    // 1. Input validation
-    await this.validator.validateCreateRequest(userData);
+  // 2. Core processing
+  logger.info('Registering user', { email: user.email });
+  const result = await registrationService.register(user);
 
-    // 2. Core processing
-    const hashedPassword = await this.hashPassword(userData.password);
-    const user = await this.db.users.create({
-      ...userData,
-      password: hashedPassword,
-      createdAt: new Date(),
-    });
-
-    // 3. Output handling
-    return this.sanitizeUserForResponse(user);
-  }
+  // 3. Output handling
+  logger.info('Registration successful', { userId: result.id });
+  return result;
 }
 ```
 
-### 5.2 Functional Languages (Rust, Go, modern JavaScript)
+### 4.5 Logging Checklist
 
-**Function Composition**:
+- [ ] Are errors and exceptions logged with context?
+- [ ] Are important business events recorded?
+- [ ] Is the declared logger module used if available?
+- [ ] Are log levels appropriate for the message?
+- [ ] Is sensitive information excluded from logs?
 
-```rust
-/// Processes payment transaction with validation and logging.
-///
-/// # Arguments
-/// * `payment_request` - Payment details and amount
-///
-/// # Returns
-/// * `Ok(PaymentResult)` - Successful payment confirmation
-/// * `Err(PaymentError)` - Payment validation or processing error
-pub fn process_payment(payment_request: PaymentRequest) -> Result<PaymentResult, PaymentError> {
-    // 1. Input validation
-    validate_payment_request(&payment_request)?;
+## 5. Quality Assurance
 
-    // 2. Core processing
-    let payment_method = resolve_payment_method(&payment_request.method_id)?;
-    let transaction = execute_payment(&payment_method, &payment_request)?;
-
-    // 3. Output handling
-    log_payment_success(&transaction);
-    Ok(PaymentResult::from(transaction))
-}
-```
-
-### 5.3 Scripting Languages (Python, Shell)
-
-**Python Module Structure**:
-
-```python
-"""User management utilities for account operations."""
-
-from typing import List, Optional
-import logging
-
-logger = logging.getLogger(__name__)
-
-def create_user_batch(user_data_list: List[dict],
-                     validate_emails: bool = True) -> List[User]:
-    """Creates multiple user accounts in batch operation.
-
-    Args:
-        user_data_list: List of user data dictionaries
-        validate_emails: Whether to validate email addresses
-
-    Returns:
-        List of created User objects
-
-    Raises:
-        BatchProcessingError: When batch operation fails
-    """
-    # 1. Input validation
-    if not user_data_list:
-        raise ValueError("User data list cannot be empty")
-
-    validated_users = []
-    for user_data in user_data_list:
-        # 1.1 Validate individual records
-        validated_user = _validate_user_data(user_data, validate_emails)
-        validated_users.append(validated_user)
-
-    # 2. Core processing
-    created_users = []
-    for user_data in validated_users:
-        # 2.1 Create individual users
-        user = _create_single_user(user_data)
-        created_users.append(user)
-
-        # 2.2 Log progress
-        logger.info(f"Created user: {user.email}")
-
-    # 3. Output handling
-    logger.info(f"Batch created {len(created_users)} users")
-    return created_users
-```
-
----
-
-## 6. Quality Assurance
-
-### 6.1 Code Review Checklist
+### 5.1 Code Review Checklist
 
 **Functionality**:
 
@@ -438,7 +361,7 @@ def create_user_batch(user_data_list: List[dict],
 - [ ] Are database queries optimized?
 - [ ] Is caching used appropriately?
 
-### 6.2 Refactoring Triggers
+### 5.2 Refactoring Triggers
 
 **Extract Function When**:
 
@@ -461,42 +384,35 @@ def create_user_batch(user_data_list: List[dict],
 - Deep inheritance hierarchies (>3 levels)
 - Excessive coupling between modules
 
-### 6.3 Testing Standards
+### High Cohesion, Low Coupling
 
-**Test Structure**: Arrange, Act, Assert pattern
+**Rule**:  
+Design modules, classes, and functions so that each has a clear, focused responsibility (high cohesion) and minimal dependencies on other parts of the system (low coupling).
 
-```typescript
-describe('UserManager', () => {
-  describe('createUser', () => {
-    it('should create user with valid data', async () => {
-      // Arrange
-      const userData = { email: 'test@example.com', name: 'Test User' };
-      const mockDb = createMockDatabase();
-      const manager = new UserManager(mockDb, new UserValidator());
+- Group related functionality together; avoid mixing unrelated concerns.
+- Limit the number of external dependencies required by each module or function.
+- Prefer passing only necessary data between components; avoid sharing global state.
+- Refactor code that handles multiple unrelated tasks into separate, focused units.
+- Changes in one module should have minimal impact on others.
 
-      // Act
-      const result = await manager.createUser(userData);
+**Why**:  
+High cohesion improves maintainability and readability, while low coupling reduces the risk of unintended side effects and makes code easier to test and extend.
 
-      // Assert
-      expect(result.email).toBe(userData.email);
-      expect(result.id).toBeDefined();
-      expect(mockDb.users.create).toHaveBeenCalledWith(expect.objectContaining(userData));
-    });
-  });
-});
-```
+#### When to Apply High Cohesion and Low Coupling
 
-**Test Coverage**: Minimum requirements
+| Situation                                              | Action Required          | Example/Fix                                     |
+| ------------------------------------------------------ | ------------------------ | ----------------------------------------------- |
+| Module/class handles unrelated responsibilities        | Split into focused units | Separate data access from business logic        |
+| Function depends on many external modules              | Reduce dependencies      | Inject only needed services, not entire modules |
+| Shared global state between components                 | Eliminate global state   | Pass data via parameters or context             |
+| Changes in one module break others                     | Decouple modules         | Use interfaces or events for communication      |
+| Function or class grows too large or complex           | Refactor for cohesion    | Extract sub-functions or classes                |
+| Multiple unrelated tasks handled in one function/class | Separate concerns        | Move unrelated logic to new functions/classes   |
+| Tight coupling to implementation details               | Abstract dependencies    | Depend on interfaces, not concrete classes      |
 
-- Unit tests: 80% line coverage
-- Integration tests: All API endpoints
-- Critical path testing: 100% coverage for core business logic
+## 6. Quick Reference
 
----
-
-## 7. Quick Reference
-
-### 7.1 Common Violations and Fixes
+### 6.1 Common Violations and Fixes
 
 | Violation              | Fix                        | Example                                    |
 | ---------------------- | -------------------------- | ------------------------------------------ |
@@ -506,7 +422,7 @@ describe('UserManager', () => {
 | Missing error handling | Add try/catch blocks       | Wrap API calls in error handling           |
 | No input validation    | Validate at function start | Check types and ranges early               |
 
-### 7.2 Decision Quick Reference
+### 6.2 Decision Quick Reference
 
 **Should I add a comment?**
 
@@ -526,36 +442,192 @@ describe('UserManager', () => {
 - Complex algorithm? → Yes, explain approach
 - Simple getter/setter? → No, type info sufficient
 
-### 7.3 Language-Specific Quick Hits
+## 7. Empty Line Usage in Code Blocks and Documentation Comments
 
-**TypeScript/JavaScript**:
+Use empty lines to visually separate distinct logical steps, categories, or unrelated properties in code blocks and documentation comments. This separation acts as a "period" in code, making boundaries between ideas clear and improving readability.
 
-- Use `const` by default, `let` when reassignment needed
-- Prefer `async/await` over Promise chains
-- Use optional chaining (`obj?.prop`) for safe property access
+### Rule
 
-**Python**:
+- In documentation comments, end each sentence with a period.
+- In code blocks, insert an empty line between lines that represent different logical steps or categories.
 
-- Use type hints for function signatures
-- Prefer f-strings for string formatting
-- Use context managers (`with` statements) for resource management
+### Examples
 
-**Java**:
+#### Example 1: Logical Steps in Code
 
-- Use Optional for nullable returns
-- Prefer composition over inheritance
-- Use builder pattern for complex object creation
+```typescript
+function processOrder(order) {
+  // Validate input
+  if (!order) throw new Error('Order required');
 
-**Go**:
+  // Calculate totals
+  const total = order.items.reduce((sum, item) => sum + item.price, 0);
 
-- Handle errors explicitly, don't ignore them
-- Use interfaces for behavior contracts
-- Prefer composition with embedded structs
+  // Return result
+  return { total };
+}
+```
 
-**Rust**:
+#### Example 2: Configuration Properties
 
-- Use `Result` type for fallible operations
-- Prefer borrowing over ownership when possible
-- Use pattern matching for control flow
+```json
+{
+  "host": "localhost",
 
----
+  "port": 8080,
+
+  "useSSL": false
+}
+```
+
+#### Example 3: Documentation Comment
+
+```typescript
+/**
+ * Processes an order.
+ * Validates the input.
+ * Calculates the total price.
+ * Returns the result.
+ */
+```
+
+### When to Use Empty Lines
+
+| Situation                                  | Use Empty Line |
+| ------------------------------------------ | -------------- |
+| Between distinct logical steps in code     | Yes            |
+| Between unrelated configuration properties | Yes            |
+| Between sentences in documentation comment | Yes (period)   |
+| Within tightly related code (same step)    | No             |
+| Within grouped properties (same category)  | No             |
+
+## 8. Memory Bank
+
+I am AI agent, an expert software engineer with a unique characteristic: my memory resets completely between sessions. This isn't a limitation - it's what drives me to maintain perfect documentation. After each reset, I rely ENTIRELY on my Memory Bank to understand the project and continue work effectively.
+
+**MANDATORY BEHAVIOR**: I MUST read ALL memory bank files at the start of EVERY conversation if the memory bank exists in the root `.memory-bank/` directory. This behavior is not optional - it is required to understand the project status and context before proceeding with any task.
+
+**Location**: The Memory Bank is located in the `.memory-bank/` directory in the root of the project. If this directory exists, I MUST read all files within it before engaging in any task.
+
+## Memory Bank Structure
+
+The Memory Bank consists of core files and optional context files, all in Markdown format. Files build upon each other in a clear hierarchy:
+
+flowchart TD
+PB[projectbrief.md] --> PC[productContext.md]
+PB --> SP[systemPatterns.md]
+PB --> TC[techContext.md]
+
+    PC --> AC[activeContext.md]
+    SP --> AC
+    TC --> AC
+
+    AC --> P[progress.md]
+
+### Core Files (Required)
+
+1. `projectbrief.md`
+
+   - Foundation document that shapes all other files
+   - Created at project start if it doesn't exist
+   - Defines core requirements and goals
+   - Source of truth for project scope
+
+2. `productContext.md`
+
+   - Why this project exists
+   - Problems it solves
+   - How it should work
+   - User experience goals
+
+3. `activeContext.md`
+
+   - Current work focus
+   - Recent changes
+   - Next steps
+   - Active decisions and considerations
+   - Important patterns and preferences
+   - Learnings and project insights
+
+4. `systemPatterns.md`
+
+   - System architecture
+   - Key technical decisions
+   - Design patterns in use
+   - Component relationships
+   - Critical implementation paths
+
+5. `techContext.md`
+
+   - Technologies used
+   - Development setup
+   - Technical constraints
+   - Dependencies
+   - Tool usage patterns
+
+6. `progress.md`
+   - What works
+   - What's left to build
+   - Current status
+   - Known issues
+   - Evolution of project decisions
+
+### Additional Context
+
+Create additional files/folders within memory-bank/ when they help organize:
+
+- Complex feature documentation
+- Integration specifications
+- API documentation
+- Testing strategies
+- Deployment procedures
+
+## Core Workflows
+
+### Plan Mode
+
+flowchart TD
+Start[Start] --> ReadFiles[Read Memory Bank]
+ReadFiles --> CheckFiles{Files Complete?}
+
+    CheckFiles -->|No| Plan[Create Plan]
+    Plan --> Document[Document in Chat]
+
+    CheckFiles -->|Yes| Verify[Verify Context]
+    Verify --> Strategy[Develop Strategy]
+    Strategy --> Present[Present Approach]
+
+### Act Mode
+
+flowchart TD
+Start[Start] --> Context[Check Memory Bank]
+Context --> Update[Update Documentation]
+Update --> Execute[Execute Task]
+Execute --> Document[Document Changes]
+
+## Documentation Updates
+
+Memory Bank updates occur when:
+
+1. Discovering new project patterns
+2. After implementing significant changes
+3. When user requests with **update memory bank** (MUST review ALL files)
+4. When context needs clarification
+
+flowchart TD
+Start[Update Process]
+
+    subgraph Process
+        P1[Review ALL Files]
+        P2[Document Current State]
+        P3[Clarify Next Steps]
+        P4[Document Insights & Patterns]
+
+        P1 --> P2 --> P3 --> P4
+    end
+
+    Start --> Process
+
+Note: When triggered by **update memory bank**, I MUST review every memory bank file, even if some don't require updates. Focus particularly on activeContext.md and progress.md as they track current state.
+
+REMEMBER: After every memory reset, I begin completely fresh. The Memory Bank is my only link to previous work. It must be maintained with precision and clarity, as my effectiveness depends entirely on its accuracy.
