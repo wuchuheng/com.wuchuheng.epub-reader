@@ -480,10 +480,154 @@ export const ContextMenuSettingsPage: React.FC = () => {
       <div className="mx-auto max-w-4xl p-6">
         <h1 className="mb-6 text-2xl font-bold text-gray-900">Context Menu Settings</h1>
         {/* Context menu settings content - dictionary, AI tools, custom prompts */}
+        <ToolList />
+        <AddToolDialog />
       </div>
     </Container>
   );
 };
+```
+
+### Context Menu Settings Patterns - IMPLEMENTED & IN PRODUCTION
+
+```typescript
+/**
+ * Tool management system with comprehensive CRUD operations
+ * Extensible architecture supporting multiple tool types
+ */
+interface ToolManagementPattern {
+  // Tool types supported by the system
+  toolTypes: {
+    ai: AIToolConfig;
+    iframe: IframeToolConfig;
+    custom: CustomToolConfig;
+  };
+  
+  // State management pattern
+  state: {
+    tools: CustomAITool[];
+    activeTool: string | null;
+    dialogOpen: boolean;
+    editingTool: CustomAITool | null;
+  };
+  
+  // CRUD operations pattern
+  operations: {
+    createTool: (tool: Omit<CustomAITool, 'id'>) => Promise<void>;
+    updateTool: (id: string, updates: Partial<CustomAITool>) => Promise<void>;
+    deleteTool: (id: string) => Promise<void>;
+    reorderTools: (fromIndex: number, toIndex: number) => Promise<void>;
+  };
+}
+
+/**
+ * Dynamic form system for different tool types
+ * Type-safe form validation with real-time feedback
+ */
+interface FormSystemPattern {
+  // Base form with common fields
+  baseForm: {
+    name: string;
+    shortName?: string;
+    isActive: boolean;
+  };
+  
+  // Type-specific forms
+  typeForms: {
+    ai: {
+      provider: 'openai' | 'anthropic' | 'custom';
+      model: string;
+      apiUrl?: string;
+      apiToken?: string;
+      maxTokens?: number;
+      temperature?: number;
+      systemPrompt?: string;
+    };
+    iframe: {
+      url: string;
+      width?: number;
+      height?: number;
+      sandbox?: string;
+    };
+    custom: {
+      prompt: string;
+      variables?: string[];
+    };
+  };
+  
+  // Validation pattern
+  validation: {
+    required: string[];
+    patterns: Record<string, RegExp>;
+    async: Record<string, (value: string) => Promise<boolean>>;
+  };
+}
+
+/**
+ * Modal dialog system for tool creation and editing
+ * Consistent dialog patterns with proper state management
+ */
+interface DialogSystemPattern {
+  // Dialog state management
+  state: {
+    open: boolean;
+    mode: 'create' | 'edit';
+    currentTool: CustomAITool | null;
+    selectedType: ToolType | null;
+  };
+  
+  // Dialog actions
+  actions: {
+    openCreateDialog: () => void;
+    openEditDialog: (tool: CustomAITool) => void;
+    closeDialog: () => void;
+    submitDialog: (data: ToolFormData) => Promise<void>;
+  };
+  
+  // Dialog components
+  components: {
+    ToolTypeSelector: React.FC<{ onSelect: (type: ToolType) => void }>;
+    AIToolForm: React.FC<{ data: AIToolData; onChange: (data: AIToolData) => void }>;
+    IframeToolForm: React.FC<{ data: IframeToolData; onChange: (data: IframeToolData) => void }>;
+    ToolForm: React.FC<{ data: ToolFormData; onChange: (data: ToolFormData) => void }>;
+  };
+}
+
+/**
+ * Custom hooks pattern for state management
+ * Consistent hook patterns across all features
+ */
+interface CustomHooksPattern {
+  // Context menu settings hook
+  useContextMenuSettings: () => {
+    tools: CustomAITool[];
+    loading: boolean;
+    error: string | null;
+    addTool: (tool: Omit<CustomAITool, 'id'>) => Promise<void>;
+    updateTool: (id: string, updates: Partial<CustomAITool>) => Promise<void>;
+    deleteTool: (id: string) => Promise<void>;
+    reorderTools: (fromIndex: number, toIndex: number) => Promise<void>;
+  };
+  
+  // Tool form hook
+  useToolForm: (initialData?: ToolFormData) => {
+    formData: ToolFormData;
+    errors: Record<string, string>;
+    isValid: boolean;
+    handleChange: (field: string, value: any) => void;
+    handleSubmit: () => Promise<void>;
+    resetForm: () => void;
+  };
+  
+  // Dialog hook
+  useDialog: () => {
+    isOpen: boolean;
+    openDialog: () => void;
+    closeDialog: () => void;
+    dialogData: any;
+    setDialogData: (data: any) => void;
+  };
+}
 ```
 
 ### Routing Integration Pattern - IMPLEMENTED & IN PRODUCTION

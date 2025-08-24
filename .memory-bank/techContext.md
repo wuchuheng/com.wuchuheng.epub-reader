@@ -31,6 +31,11 @@
 - **Breadcrumb Component**: ✅ Hierarchical navigation trail with accessibility features
 - **Settings Pages**: ✅ ContextMenuSettingsPage and enhanced SettingsPage with navigation
 - **Reader Components**: ✅ Complete reader interface with Header, Footer, TOC, and View
+- **Tool Management Components**: ✅ Comprehensive tool management system with specialized forms
+- **Modal System**: ✅ AddToolDialog with dynamic form rendering
+- **Form Components**: ✅ AIToolForm, IframeToolForm, ToolForm for different tool types
+- **Input Components**: ✅ ModelSearchInput with autocomplete, ToolTypeSelector for visual selection
+- **List Components**: ✅ ToolList with drag-and-drop ordering and status indicators
 
 ### Build & Development Tools
 
