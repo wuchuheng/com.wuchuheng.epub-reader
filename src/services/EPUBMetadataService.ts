@@ -2,17 +2,22 @@ import ePub, { Book } from 'epubjs';
 import { EPUBMetaData } from '../types/book';
 import { logger } from '../utils/logger';
 import * as OPFSManager from './OPFSManager';
+import { getEpubValidationError } from '../utils/epubValidation';
+import { performFileOperation } from '../utils/fileOperations';
 
 /**
  * Extract comprehensive metadata from EPUB file
  */
 export async function extractMetadata(file: File): Promise<EPUBMetaData> {
-  try {
+  logger.log('Starting EPUB metadata extraction for:', file.name);
+
+  return performFileOperation(async () => {
     logger.log('Starting EPUB metadata extraction for:', file.name);
 
     // 1. Input handling - validate file
-    if (!file || !file.name.toLowerCase().endsWith('.epub')) {
-      throw new Error('Invalid EPUB file');
+    const validationError = getEpubValidationError(file);
+    if (validationError) {
+      throw new Error(validationError);
     }
 
     // 2. Core processing - load and parse EPUB
@@ -42,14 +47,14 @@ export async function extractMetadata(file: File): Promise<EPUBMetaData> {
       chapterCount: spine.length || 0,
       coverPath: cover,
     };
-  } catch (error) {
+  }, 'extract EPUB metadata').catch((error) => {
     logger.error('Failed to extract EPUB metadata:', error);
     return {
       title: file.name.replace(/\.epub$/i, ''),
       author: 'Unknown Author',
       chapterCount: 0,
     };
-  }
+  });
 }
 
 /**

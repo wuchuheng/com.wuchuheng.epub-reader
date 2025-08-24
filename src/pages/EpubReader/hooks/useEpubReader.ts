@@ -5,6 +5,7 @@ import { SelectInfo, TocItem } from '../../../types/epub';
 import { useParams } from 'react-router-dom';
 import { createStorageManager, setupRenditionEvents } from './epub.utils';
 import { debounce } from '@wuchuheng/helper';
+import { RENDERING_CONFIG } from '../../../constants/epub';
 
 // Types
 export type RenditionLocation = {
@@ -126,12 +127,12 @@ const extractSelectedInfo = async ({
  * @returns The rendition configuration object.
  */
 const createRenditionConfig = () => ({
-  width: '100%',
-  height: '100%',
-  spread: 'always' as const,
-  minSpreadWidth: 800,
-  manager: 'continuous' as const,
-  flow: 'paginated' as const,
+  width: RENDERING_CONFIG.WIDTH,
+  height: RENDERING_CONFIG.HEIGHT,
+  spread: RENDERING_CONFIG.SPREAD,
+  minSpreadWidth: RENDERING_CONFIG.MIN_SPREAD_WIDTH,
+  manager: RENDERING_CONFIG.MANAGER,
+  flow: RENDERING_CONFIG.FLOW,
   allowScriptedContent: true,
 });
 
@@ -264,7 +265,7 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
     await props.book.ready;
 
     // Generate locations
-    await props.book.locations.generate(1600);
+    await props.book.locations.generate(RENDERING_CONFIG.LOCATION_CHAR_COUNT);
     setTotalPages(props.book.locations.length());
 
     // Set table of contents

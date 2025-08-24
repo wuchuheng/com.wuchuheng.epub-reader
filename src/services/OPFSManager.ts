@@ -2,6 +2,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { OPFSConfig, BookMetadata, OPFSDirectoryStructure } from '../types/book';
 import * as EPUBMetadataService from './EPUBMetadataService';
 import ePub, { Book } from 'epubjs';
+import { isValidEpubFile, getEpubValidationError, formatFileSize } from '../utils/epubValidation';
+import {
+  performFileOperation,
+  safeGetDirectoryHandle,
+  safeGetFileHandle,
+} from '../utils/fileOperations';
+import { DEFAULT_CONFIG } from '../constants/epub';
 
 /**
  * Check if OPFS is supported in the current browser
@@ -55,11 +62,14 @@ async function ensureConfigExists(): Promise<void> {
   } catch {
     // File doesn't exist, create it
     const config: OPFSConfig = {
-      version: 1,
+      version: DEFAULT_CONFIG.CONFIG_VERSION,
       books: [],
       settings: {
-        theme: 'light',
-        fontSize: 'medium',
+        contextMenu: {
+          api: '',
+          key: '',
+          items: [],
+        },
       },
       lastSync: Date.now(),
     };
@@ -73,14 +83,11 @@ async function ensureConfigExists(): Promise<void> {
  */
 export async function uploadBook(file: File): Promise<BookMetadata> {
   const directoryStructure = await getDirectoryStructure();
-  // Validate file type
-  if (!file.name.toLowerCase().endsWith('.epub')) {
-    throw new Error('Only EPUB files are supported');
-  }
 
-  // Validate file size (100MB limit)
-  if (file.size > 100 * 1024 * 1024) {
-    throw new Error('File size exceeds 100MB limit');
+  // Validate file using centralized validation
+  const validationError = getEpubValidationError(file);
+  if (validationError) {
+    throw new Error(validationError);
   }
 
   const bookId = uuidv4();
@@ -88,14 +95,27 @@ export async function uploadBook(file: File): Promise<BookMetadata> {
   const bookDirName = bookId;
   const bookPath = `books/${bookDirName}/${bookFileName}`;
 
-  try {
+  return await performFileOperation(async () => {
     // Create book directory
-    const bookDir = await directoryStructure.booksDir.getDirectoryHandle(bookDirName, {
-      create: true,
-    });
+    const bookDir = await safeGetDirectoryHandle(
+      () => directoryStructure.booksDir.getDirectoryHandle(bookDirName, { create: true }),
+      bookDirName
+    );
+
+    if (!bookDir) {
+      throw new Error('Failed to create book directory');
+    }
 
     // Save the EPUB file
-    const bookFileHandle = await bookDir.getFileHandle(bookFileName, { create: true });
+    const bookFileHandle = await safeGetFileHandle(
+      () => bookDir.getFileHandle(bookFileName, { create: true }),
+      bookFileName
+    );
+
+    if (!bookFileHandle) {
+      throw new Error('Failed to create book file');
+    }
+
     const writable = await bookFileHandle.createWritable();
     await writable.write(await file.arrayBuffer());
     await writable.close();
@@ -115,12 +135,17 @@ export async function uploadBook(file: File): Promise<BookMetadata> {
 
       if (coverBlob) {
         const coverFileName = `cover.${coverFormat}`;
-        const coverFileHandle = await bookDir.getFileHandle(coverFileName, { create: true });
-        const coverWritable = await coverFileHandle.createWritable();
-        await coverWritable.write(await coverBlob.arrayBuffer());
-        await coverWritable.close();
+        const coverFileHandle = await safeGetFileHandle(
+          () => bookDir.getFileHandle(coverFileName, { create: true }),
+          coverFileName
+        );
 
-        coverPath = `books/${bookDirName}/${coverFileName}`;
+        if (coverFileHandle) {
+          const coverWritable = await coverFileHandle.createWritable();
+          await coverWritable.write(await coverBlob.arrayBuffer());
+          await coverWritable.close();
+          coverPath = `books/${bookDirName}/${coverFileName}`;
+        }
       }
     } catch (error) {
       console.warn('Failed to extract cover image:', error);
@@ -146,9 +171,7 @@ export async function uploadBook(file: File): Promise<BookMetadata> {
     await saveConfig(config);
 
     return bookMetadata;
-  } catch (error) {
-    throw new Error(`Failed to upload book: ${error}`);
-  }
+  }, 'upload book');
 }
 
 /**
@@ -215,19 +238,6 @@ export async function getBookFile(bookId: string): Promise<ArrayBuffer> {
   } catch (error) {
     throw new Error(`Failed to get book file: ${error}`);
   }
-}
-
-/**
- * Format file size in human-readable format
- */
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
-
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
 /**
@@ -301,11 +311,14 @@ async function loadConfig(): Promise<OPFSConfig> {
       // If JSON is corrupted, recreate with default config
       console.warn('Corrupted config.json detected, recreating...');
       const defaultConfig: OPFSConfig = {
-        version: 1,
+        version: DEFAULT_CONFIG.CONFIG_VERSION,
         books: [],
         settings: {
-          theme: 'light',
-          fontSize: 'medium',
+          contextMenu: {
+            api: '',
+            key: '',
+            items: [],
+          },
         },
         lastSync: Date.now(),
       };
@@ -316,11 +329,14 @@ async function loadConfig(): Promise<OPFSConfig> {
     // If file doesn't exist, create it
     if (error instanceof Error && error.message.includes('not found')) {
       const defaultConfig: OPFSConfig = {
-        version: 1,
+        version: DEFAULT_CONFIG.CONFIG_VERSION,
         books: [],
         settings: {
-          theme: 'light',
-          fontSize: 'medium',
+          contextMenu: {
+            api: '',
+            key: '',
+            items: [],
+          },
         },
         lastSync: Date.now(),
       };

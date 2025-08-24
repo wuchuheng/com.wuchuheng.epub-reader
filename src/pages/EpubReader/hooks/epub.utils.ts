@@ -3,6 +3,7 @@ import { latestReadingLocation, RenditionLocation, TouchState } from './useEpubR
 import Section from 'epubjs/types/section';
 import { logger } from '../../../utils/logger';
 import { SelectInfo } from '../../../types/epub';
+import { TOUCH_TIMING, SELECTION_COLORS, WORD_BOUNDARY_REGEX } from '../../../constants/epub';
 
 type SetupRenditionEventsProps = {
   rendition: Rendition;
@@ -156,21 +157,19 @@ const applyMobileStyles = (document: Document) => {
   const style = document.createElement('style');
   style.textContent = `
     ::selection {
-      background-color: rgba(0, 123, 255, 0.3) !important;
-      color: inherit !important;
+      background-color: ${SELECTION_COLORS.BACKGROUND} !important;
+      color: ${SELECTION_COLORS.TEXT_INHERIT} !important;
     }
     ::-webkit-selection, ::-moz-selection {
-      background-color: rgba(0, 123, 255, 0.3) !important;
-      color: inherit !important;
+      background-color: ${SELECTION_COLORS.BACKGROUND} !important;
+      color: ${SELECTION_COLORS.TEXT_INHERIT} !important;
     }
     
     *, p, div, span, h1, h2, h3, h4, h5, h6 {
       -webkit-user-select: text !important;
       user-select: text !important;
       -webkit-touch-callout: default !important;
-    }import { setupRenditionEvents } from './epub.utils';
-import { initializeBookshelf } from './../../../store/slices/bookshelfSlice';
-
+    }
   `;
   document.head.appendChild(style);
 };
@@ -185,112 +184,177 @@ import { initializeBookshelf } from './../../../store/slices/bookshelfSlice';
  * @param touchState The mutable ref object to track touch state.
  * @returns An object containing touch event handlers.
  */
+/**
+ * Initializes touch state and starts long press timer
+ */
+const initializeTouchState = (
+  touch: Touch,
+  document: Document,
+  window: Window,
+  touchState: React.MutableRefObject<TouchState>
+) => {
+  // Clear existing timer
+  if (touchState.current.timer) {
+    clearTimeout(touchState.current.timer);
+  }
+
+  // Initialize touch state
+  touchState.current = {
+    isLongPress: false,
+    startTime: Date.now(),
+    startPos: { x: touch.clientX, y: touch.clientY },
+    timer: setTimeout(() => {
+      startSelectionAtTouchPoint(touch, document, window, touchState);
+    }, TOUCH_TIMING.LONG_PRESS_DURATION),
+  };
+};
+
+/**
+ * Starts text selection at the given touch point
+ */
+const startSelectionAtTouchPoint = (
+  touch: Touch,
+  document: Document,
+  window: Window,
+  touchState: React.MutableRefObject<TouchState>
+) => {
+  touchState.current.isLongPress = true;
+
+  // Start selection at touch point
+  const target = document.elementFromPoint(
+    touch.clientX - window.scrollX,
+    touch.clientY - window.scrollY
+  );
+
+  if (target?.closest('p, div, span, h1, h2, h3, h4, h5, h6')) {
+    const range = createCaretRange(document, window, touch.clientX, touch.clientY);
+    if (range) {
+      const selection = window.getSelection();
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+    }
+  }
+};
+
+/**
+ * Extends selection during touch movement
+ */
+const extendSelection = (
+  touch: Touch,
+  document: Document,
+  window: Window,
+  touchState: React.MutableRefObject<TouchState>
+) => {
+  if (!touchState.current.isLongPress) return;
+
+  const selection = window.getSelection();
+
+  if (selection && selection.rangeCount > 0) {
+    try {
+      const range = selection!.getRangeAt(0);
+      const newRange = createCaretRange(document, window, touch.clientX, touch.clientY);
+
+      if (newRange) {
+        const extendedRange = document.createRange();
+        extendedRange.setStart(range.startContainer, range.startOffset);
+        extendedRange.setEnd(newRange.startContainer, newRange.startOffset);
+
+        selection!.removeAllRanges();
+        selection!.addRange(extendedRange);
+      }
+    } catch {
+      // Selection extension failed, continue with existing selection
+    }
+  }
+};
+
+/**
+ * Handles completion of touch interaction
+ */
+const completeTouchInteraction = (
+  touchState: React.MutableRefObject<TouchState>,
+  contents: Contents,
+  onSelect: (cfi: string) => void
+) => {
+  const { timer, isLongPress, startTime } = touchState.current;
+
+  if (timer) {
+    clearTimeout(timer);
+    touchState.current.timer = null;
+  }
+
+  const duration = Date.now() - startTime;
+
+  if (isLongPress) {
+    handleLongPressCompletion(touchState, contents, onSelect);
+  } else if (duration < TOUCH_TIMING.REGULAR_TAP_THRESHOLD) {
+    handleRegularTap();
+  }
+};
+
+/**
+ * Handles long press selection completion
+ */
+const handleLongPressCompletion = (
+  touchState: React.MutableRefObject<TouchState>,
+  contents: Contents,
+  onSelect: (cfi: string) => void
+) => {
+  setTimeout(() => {
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      const selectedText = selection!.toString().trim();
+      if (selectedText) {
+        try {
+          const cfi = contents.cfiFromRange(selection!.getRangeAt(0));
+          onSelect(cfi);
+        } catch (error) {
+          logger.error('Error converting range to CFI:', error);
+        }
+      }
+    }
+    touchState.current.isLongPress = false;
+  }, TOUCH_TIMING.SELECTION_DELAY);
+};
+
+/**
+ * Handles regular tap completion
+ */
+const handleRegularTap = () => {
+  setTimeout(() => {
+    const selection = window.getSelection();
+    if (!selection?.toString().trim()) {
+      // Handle regular tap if needed
+      // onContentClick?.();
+    }
+  }, TOUCH_TIMING.CLICK_DELAY);
+};
+
+/**
+ * Creates touch event handlers for mobile text selection
+ */
 const createTouchHandlers = (
   document: Document,
   window: Window,
   contents: Contents,
   onSelect: (cfi: string) => void,
-  // onContentClick: (() => void) | undefined,
   touchState: React.MutableRefObject<TouchState>
 ) => {
   const handleTouchStart = (e: TouchEvent) => {
     const touch = e.touches[0];
-
-    // Clear existing timer
-    if (touchState.current.timer) {
-      clearTimeout(touchState.current.timer);
-    }
-
-    // Initialize touch state
-    touchState.current = {
-      isLongPress: false,
-      startTime: Date.now(),
-      startPos: { x: touch.clientX, y: touch.clientY },
-      timer: setTimeout(() => {
-        touchState.current.isLongPress = true;
-
-        // Start selection at touch point
-        const target = document.elementFromPoint(
-          touch.clientX - window.scrollX,
-          touch.clientY - window.scrollY
-        );
-
-        if (target?.closest('p, div, span, h1, h2, h3, h4, h5, h6')) {
-          const range = createCaretRange(document, window, touch.clientX, touch.clientY);
-          if (range) {
-            const selection = window.getSelection();
-            selection?.removeAllRanges();
-            selection?.addRange(range);
-          }
-        }
-      }, 500), // 500ms long press
-    };
+    initializeTouchState(touch, document, window, touchState);
   };
 
   const handleTouchMove = (e: TouchEvent) => {
-    if (!touchState.current.isLongPress || e.touches.length !== 1) return;
+    if (e.touches.length !== 1) return;
 
     const touch = e.touches[0];
-    const selection = window.getSelection();
-
-    if (selection && selection.rangeCount > 0) {
-      try {
-        const range = selection!.getRangeAt(0);
-        const newRange = createCaretRange(document, window, touch.clientX, touch.clientY);
-
-        if (newRange) {
-          const extendedRange = document.createRange();
-          extendedRange.setStart(range.startContainer, range.startOffset);
-          extendedRange.setEnd(newRange.startContainer, newRange.startOffset);
-
-          selection!.removeAllRanges();
-          selection!.addRange(extendedRange);
-        }
-      } catch {
-        // Selection extension failed, continue with existing selection
-      }
-
-      e.preventDefault(); // Prevent scrolling during selection
-    }
+    extendSelection(touch, document, window, touchState);
+    e.preventDefault(); // Prevent scrolling during selection
   };
 
   const handleTouchEnd = (_e: TouchEvent) => {
-    const { timer, isLongPress, startTime } = touchState.current;
-
-    if (timer) {
-      clearTimeout(timer);
-      touchState.current.timer = null;
-    }
-
-    const duration = Date.now() - startTime;
-
-    if (isLongPress) {
-      // Handle long press selection
-      setTimeout(() => {
-        const selection = window.getSelection();
-        if (selection && selection.rangeCount > 0) {
-          const selectedText = selection!.toString().trim();
-          if (selectedText) {
-            try {
-              const cfi = contents.cfiFromRange(selection!.getRangeAt(0));
-              onSelect(cfi);
-            } catch (error) {
-              logger.error('Error converting range to CFI:', error);
-            }
-          }
-        }
-        touchState.current.isLongPress = false;
-      }, 50);
-    } else if (duration < 300) {
-      // Handle regular tap
-      setTimeout(() => {
-        const selection = window.getSelection();
-        if (!selection?.toString().trim()) {
-          // const result = !selection?.toString().trim();
-          // onContentClick?.();
-        }
-      }, 10);
-    }
+    completeTouchInteraction(touchState, contents, onSelect);
   };
 
   return { handleTouchStart, handleTouchMove, handleTouchEnd };
@@ -356,7 +420,7 @@ const getWordAtPointer = (pointer: PointerEvent, contents: Contents): SelectInfo
     const offset = range.startOffset;
 
     // Define word boundary regex
-    const wordBoundary = /[\s.,;:!?'"()[\]{}<>«»‹›""''`~@#$%^&*+=|\\/\-—–]/;
+    const wordBoundary = WORD_BOUNDARY_REGEX;
 
     // Find word start
     let start = offset;

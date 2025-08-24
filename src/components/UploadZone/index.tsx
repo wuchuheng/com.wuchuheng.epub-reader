@@ -1,6 +1,12 @@
 import React, { useCallback, useState } from 'react';
 import { useAppDispatch } from '../../store';
 import { uploadBook } from '../../store/slices/bookshelfSlice';
+import {
+  isValidEpubFile,
+  getEpubValidationError,
+  MAX_EPUB_SIZE,
+  formatFileSize,
+} from '../../utils/epubValidation';
 
 interface UploadZoneProps {
   /** Callback when upload is complete */
@@ -16,21 +22,15 @@ export const UploadZone: React.FC<UploadZoneProps> = ({ onUploadComplete }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
-  // 1. Input handling - validate file type
-  const validateFile = (file: File): boolean => {
-    // More permissive validation - check file extension and basic file properties
-    const isEpub = file.name.toLowerCase().endsWith('.epub');
-    const hasContent = file.size > 0;
-    const maxSize = 100 * 1024 * 1024; // 100MB
-
-    return isEpub && hasContent && file.size <= maxSize;
-  };
+  // 1. Input handling - validate file type using centralized validation
+  const validateFile = (file: File): boolean => isValidEpubFile(file);
 
   // 2. Core processing - handle file upload
   const handleFileUpload = useCallback(
     async (file: File) => {
-      if (!validateFile(file)) {
-        alert('Please select a valid EPUB file');
+      const validationError = getEpubValidationError(file);
+      if (validationError) {
+        alert(validationError);
         return;
       }
 
@@ -87,25 +87,21 @@ export const UploadZone: React.FC<UploadZoneProps> = ({ onUploadComplete }) => {
 
   return (
     <div
-      className={`
-        border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200
-        ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}
-        ${isUploading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-      `}
+      className={`rounded-lg border-2 border-dashed p-8 text-center transition-all duration-200 ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'} ${isUploading ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} `}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
       {isUploading ? (
         <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+          <div className="mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
           <p className="text-gray-600">Uploading book...</p>
         </div>
       ) : (
         <>
-          <div className="text-6xl mb-4">📚</div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload EPUB Book</h3>
-          <p className="text-gray-600 mb-4">
+          <div className="mb-4 text-6xl">📚</div>
+          <h3 className="mb-2 text-lg font-semibold text-gray-900">Upload EPUB Book</h3>
+          <p className="mb-4 text-gray-600">
             Drag and drop your EPUB file here, or click to browse
           </p>
           <input
@@ -118,11 +114,13 @@ export const UploadZone: React.FC<UploadZoneProps> = ({ onUploadComplete }) => {
           />
           <label
             htmlFor="file-upload"
-            className="inline-block bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200 cursor-pointer"
+            className="inline-block cursor-pointer rounded-md bg-blue-600 px-6 py-2 text-white transition-colors duration-200 hover:bg-blue-700"
           >
             Choose File
           </label>
-          <p className="text-xs text-gray-500 mt-2">Maximum file size: 100MB</p>
+          <p className="mt-2 text-xs text-gray-500">
+            Maximum file size: {formatFileSize(MAX_EPUB_SIZE)}
+          </p>
         </>
       )}
     </div>
