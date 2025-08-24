@@ -8,6 +8,8 @@
 
 ## ✅ **PHASE 6: CONTEXT MENU SETTINGS SYSTEM - COMPLETED**
 
+## ✅ **MOBILE UX OPTIMIZATION - TOOL EXTRACTION - COMPLETED**
+
 ## 🚀 **PHASE 3: AI INTEGRATION - PRODUCTION READY**
 
 ### **Completed Features - ALL PHASES 1, 2, 5, 6**
@@ -57,6 +59,17 @@
 - ✅ **Persistence Layer**: LocalStorage integration with proper schema validation
 - ✅ **Responsive Design**: Mobile-friendly with touch interactions and accessibility
 
+#### **Mobile UX Optimization - Tool Extraction (100%)**
+
+- ✅ **ToolExtractPage**: Created dedicated page for adding new tools with full-page form layout optimized for mobile devices
+- ✅ **Route Configuration**: Added `/settings/contextmenu/add-tool` route for direct access to tool creation
+- ✅ **Modal-to-Page Migration**: Replaced AddToolDialog modal with dedicated page for better mobile experience
+- ✅ **Code Cleanup**: Removed useless AddToolDialog.tsx and useDialog.ts files that only managed modal state
+- ✅ **Navigation Integration**: Updated ContextMenuSettingsPage to use Link component instead of modal trigger
+- ✅ **Form Optimization**: Enhanced form layout with better touch targets and mobile-friendly spacing
+- ✅ **Auto-save & Redirect**: Implemented automatic settings saving and navigation back to context menu settings
+- ✅ **Breadcrumb Navigation**: Added proper breadcrumb trail for the new tool creation page
+
 ### **Current Production Architecture**
 
 ```
@@ -82,12 +95,13 @@ Application Layer
 │   │   └── Breadcrumb.tsx (navigation trail component)
 │   ├── Settings Components ✅
 │   │   ├── ToolList.tsx (context menu tool management)
-│   │   ├── AddToolDialog.tsx (modal for tool creation)
 │   │   ├── AIToolForm.tsx (AI tool configuration form)
 │   │   ├── IframeToolForm.tsx (iframe tool configuration form)
 │   │   ├── ToolForm.tsx (base tool configuration form)
 │   │   ├── ModelSearchInput.tsx (AI model search input)
 │   │   └── ToolTypeSelector.tsx (tool type selection)
+│   ├── Mobile Optimization Components ✅
+│   │   └── ToolExtractPage.tsx (dedicated page for tool creation with mobile-first design)
 │   └── Phase 3 Components ❌
 │       ├── DictionaryPopup.tsx (dictionary integration)
 │       ├── ContextMenu.tsx (text selection context menu)
@@ -97,7 +111,6 @@ Application Layer
 │   ├── useReader.ts (consolidated primary hook for all reader logic)
 │   ├── useContextMenuSettings.ts (context menu settings state management)
 │   ├── useToolForm.ts (tool form state management with validation)
-│   └── useDialog.ts (modal dialog state management)
 ├── Services ✅
 │   ├── OPFSManager.ts (complete storage layer)
 │   ├── EPUBMetadataService.ts (metadata extraction)

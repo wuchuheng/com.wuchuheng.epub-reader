@@ -223,6 +223,14 @@ The foundation is now **production-ready** for Phase 3 enhancements:
 - ✅ **SettingsPage Updates**: Enhanced existing settings page to use the new Container component with BackButton and Breadcrumb navigation.
 - ✅ **Sticky Header Implementation**: Used optimized Tailwind CSS classes (`sticky top-0`) instead of fixed positioning for better layout flow and simpler CSS.
 
+**Mobile UX Optimization - Tool Extraction**
+
+- ✅ **ToolExtractPage**: Created dedicated page for adding new tools with full-page form layout optimized for mobile devices.
+- ✅ **Route Addition**: Added `/settings/contextmenu/add-tool` route for direct access to tool creation.
+- ✅ **Modal-to-Page Migration**: Replaced AddToolDialog modal with dedicated page for better mobile experience.
+- ✅ **Code Cleanup**: Removed useless AddToolDialog.tsx and useDialog.ts files that only managed modal state.
+- ✅ **Navigation Integration**: Updated ContextMenuSettingsPage to use Link component instead of modal trigger.
+
 **Type Safety & Code Quality**
 
 - ✅ **BreadcrumbItem Interface**: Proper TypeScript interface for breadcrumb navigation items with optional path property.
@@ -258,21 +266,25 @@ The project has completed **ALL foundational infrastructure** and is now **produ
 The foundation is **production-ready** for immediate Phase 3 development:
 
 1. **Text Selection System**
+
    - Word-level text selection with context extraction
    - Context menu for dictionary/AI features
    - Selection persistence and highlighting
 
 2. **Dictionary Integration**
+
    - Eudic API integration with iframe embedding
    - Kindle-style popup dictionary display
    - Word lookup with surrounding context
 
 3. **AI Explanation Tools**
+
    - Configurable AI providers (OpenAI, Anthropic, Custom)
    - Custom AI prompts for text analysis
    - Contextual explanations with {selectedText} and {context} variables
 
 4. **Reading Customization Settings**
+
    - Font size, family, and theme controls
    - Line height and margin adjustments
    - Layout preferences (single/double page)
@@ -311,6 +323,7 @@ The project is **ready for immediate Phase 3 implementation**. The next steps in
 #### **Memory Bank Status**
 
 All memory bank files have been reviewed and are current. The project documentation accurately reflects:
+
 - **Completed Phases**: 1, 2, 5, and 6 (Core Reader, Navigation, Settings, Context Menu)
 - **Current Status**: Phase 3 Ready with complete infrastructure
 - **Technical Architecture**: Comprehensive component patterns and system design
