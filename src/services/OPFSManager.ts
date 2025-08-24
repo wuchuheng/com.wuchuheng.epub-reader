@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { OPFSConfig, BookMetadata, OPFSDirectoryStructure } from '../types/book';
+import { ContextMenuItem } from '../types/epub';
 import * as EPUBMetadataService from './EPUBMetadataService';
 import ePub, { Book } from 'epubjs';
 import { getEpubValidationError, formatFileSize } from '../utils/epubValidation';
@@ -95,7 +96,7 @@ export async function uploadBook(file: File): Promise<BookMetadata> {
   const bookDirName = bookId;
   const bookPath = `books/${bookDirName}/${bookFileName}`;
 
-  return await performFileOperation(async () => {
+  return (await performFileOperation(async () => {
     // Create book directory
     const bookDir = await safeGetDirectoryHandle(
       () => directoryStructure.booksDir.getDirectoryHandle(bookDirName, { create: true }),
@@ -171,13 +172,13 @@ export async function uploadBook(file: File): Promise<BookMetadata> {
     await saveConfig(config);
 
     return bookMetadata;
-  }, 'upload book');
+  }, 'upload book')) as BookMetadata;
 }
 
 /**
  * Save configuration to config.json
  */
-async function saveConfig(config: OPFSConfig): Promise<void> {
+export async function saveConfig(config: OPFSConfig): Promise<void> {
   const directoryStructure = await getDirectoryStructure();
 
   try {
@@ -287,12 +288,57 @@ export async function getAllBooks(): Promise<BookMetadata[]> {
   return config.books;
 }
 
+/**
+ * Update context menu settings in config.json
+ */
+export async function updateContextMenuSettings(settings: {
+  api: string;
+  key: string;
+  items: ContextMenuItem[];
+}): Promise<void> {
+  const config = await loadConfig();
+  
+  // Ensure settings structure exists
+  if (!config.settings) {
+    config.settings = { contextMenu: { api: '', key: '', items: [] } };
+  }
+  
+  // Update context menu settings
+  config.settings.contextMenu = {
+    api: settings.api || '',
+    key: settings.key || '',
+    items: settings.items || [],
+  };
+  
+  config.lastSync = Date.now();
+  await saveConfig(config);
+}
+
+/**
+ * Get context menu settings from config.json
+ */
+export async function getContextMenuSettings(): Promise<{
+  api: string;
+  key: string;
+  items: ContextMenuItem[];
+}> {
+  const config = await loadConfig();
+  const contextMenuSettings = config.settings?.contextMenu;
+  
+  // Return default values if contextMenu settings don't exist
+  return {
+    api: contextMenuSettings?.api || '',
+    key: contextMenuSettings?.key || '',
+    items: contextMenuSettings?.items || []
+  };
+}
+
 let directoryStructure: OPFSDirectoryStructure | null = null;
 
 /**
  * Load configuration from config.json with error recovery
  */
-async function loadConfig(): Promise<OPFSConfig> {
+export async function loadConfig(): Promise<OPFSConfig> {
   const directoryStructure = await getDirectoryStructure();
 
   try {

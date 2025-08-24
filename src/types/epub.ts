@@ -23,7 +23,7 @@ export type SelectInfo = Pick<ContextMenu, 'words' | 'context'>;
  * @property name - The display name of the menu item.
  * @property shortName - (Optional) A short name for the menu item.
  */
-type ContextMenuItemCommon = {
+export type ContextMenuItemCommon = {
   type: 'AI' | 'iframe';
   // The display name of the context menu item.
   name: string;

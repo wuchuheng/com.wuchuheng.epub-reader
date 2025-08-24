@@ -1,5 +1,6 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { ContextMenuSettings, ContextMenuItem } from '../../../types/epub';
+import { getContextMenuSettings, updateContextMenuSettings } from '../../../services/OPFSManager';
 
 /**
  * Hook for managing context menu settings state and operations.
@@ -12,6 +13,42 @@ export const useContextMenuSettings = () => {
     key: '',
     items: [],
   });
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // 2. Load settings from OPFS on mount
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const savedSettings = await getContextMenuSettings();
+        
+        // Ensure we have valid settings object
+        const validSettings = {
+          api: savedSettings?.api || '',
+          key: savedSettings?.key || '',
+          items: savedSettings?.items || []
+        };
+        
+        setSettings(validSettings);
+      } catch (err) {
+        setError('Failed to load settings');
+        console.error('Error loading context menu settings:', err);
+        // Set default settings on error
+        setSettings({
+          api: '',
+          key: '',
+          items: []
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadSettings();
+  }, []);
 
   // 2. Actions
   const updateSettings = useCallback((field: keyof ContextMenuSettings, value: string | ContextMenuItem[]) => {
@@ -47,10 +84,29 @@ export const useContextMenuSettings = () => {
     }));
   }, []);
 
-  // 3. Export interface
+  // 3. Save settings to OPFS
+  const saveSettings = useCallback(async () => {
+    try {
+      setIsSaving(true);
+      setError(null);
+      await updateContextMenuSettings(settings);
+      return true;
+    } catch (err) {
+      setError('Failed to save settings');
+      console.error('Error saving context menu settings:', err);
+      return false;
+    } finally {
+      setIsSaving(false);
+    }
+  }, [settings]);
+
+  // 4. Export interface
   return {
     // State
     settings,
+    isLoading,
+    isSaving,
+    error,
     
     // Actions
     updateSettings,
@@ -59,6 +115,7 @@ export const useContextMenuSettings = () => {
     addTool,
     removeTool,
     updateTool,
+    saveSettings,
   };
 };
 
