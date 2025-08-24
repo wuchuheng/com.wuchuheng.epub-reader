@@ -9,7 +9,8 @@ Application Layer
 ├── Pages (Route-level components)
 │   ├── BookshelfPage ✅ (complete library management)
 │   ├── EpubReader ✅ (complete with consolidated `useReader` hook)
-│   ├── SettingsPage ⚠️ (placeholder - needs configuration)
+│   ├── SettingsPage ✅ (updated with navigation components)
+│   ├── ContextMenuSettingsPage ✅ (new context menu settings)
 │   └── SearchPage ❌ (future enhancement)
 ├── Components (Reusable UI)
 │   ├── BookCard ✅ (responsive book display)
@@ -24,6 +25,9 @@ Application Layer
 │   ├── ActionButtons.tsx (utility buttons, if used by ReaderHeader)
 │   ├── NavigationControls.tsx (page nav buttons, if used by ReaderFooter)
 │   ├── ProgressBar.tsx (progress display, if used by ReaderFooter)
+│   ├── Container ✅ (layout with sticky header)
+│   ├── BackButton ✅ (navigation component)
+│   ├── Breadcrumb ✅ (navigation trail component)
 │   ├── DictionaryPopup ❌ (Phase 3)
 │   └── ErrorBoundary ❌ (future enhancement)
 ├── Services (Business logic)
@@ -349,4 +353,164 @@ latestReadingLocation.setCfi(bookId!, location.start.cfi);
 // Usage when displaying the book:
 const latestCfi = latestReadingLocation.getCfi(bookId!);
 rendition.display(latestCfi || undefined);
+```
+
+## Navigation & Settings Component Patterns - IMPLEMENTED
+
+### Container Layout Pattern - IMPLEMENTED
+
+```typescript
+/**
+ * Flexible container component with sticky header and scrollable content
+ * Provides consistent layout structure for settings pages with optimized Tailwind classes
+ */
+interface ContainerProps {
+  breadcrumbItems: BreadcrumbItem[];
+  backTo: string;
+  children?: React.ReactNode;
+}
+
+export const Container: React.FC<ContainerProps> = (props) => {
+  return (
+    <div className="flex h-full w-full flex-col bg-gray-50">
+      <header className="sticky top-0 border-b bg-white shadow-sm">
+        {/* Header content with BackButton and Breadcrumb */}
+      </header>
+      <main className="flex-1 overflow-y-auto">{props.children}</main>
+    </div>
+  );
+};
+```
+
+### Navigation Components Pattern - IMPLEMENTED & IN PRODUCTION
+
+```typescript
+/**
+ * BackButton component for consistent navigation across settings pages
+ * Simple, reusable button with icon support and proper TypeScript typing
+ */
+interface BackButtonProps {
+  to: string;
+  label?: string;
+}
+
+export const BackButton: React.FC<BackButtonProps> = ({ to, label }) => {
+  return (
+    <Link to={to} className="flex items-center space-x-1 text-gray-600 hover:text-gray-900 transition-colors">
+      <ArrowLeftIcon className="h-5 w-5" />
+      {label && <span>{label}</span>}
+    </Link>
+  );
+};
+
+/**
+ * Breadcrumb component for hierarchical navigation trails
+ * Shows current location in settings hierarchy with proper TypeScript interfaces
+ */
+interface BreadcrumbItem {
+  label: string;
+  path?: string;
+}
+
+interface BreadcrumbProps {
+  items: BreadcrumbItem[];
+}
+
+export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items }) => {
+  return (
+    <nav className="flex items-center space-x-2 text-sm" aria-label="Breadcrumb">
+      {items.map((item, index) => (
+        <React.Fragment key={index}>
+          {index > 0 && <span className="text-gray-400" aria-hidden="true">/</span>}
+          {item.path ? (
+            <Link 
+              to={item.path} 
+              className="text-blue-600 hover:text-blue-800 transition-colors"
+              aria-current={index === items.length - 1 ? 'page' : undefined}
+            >
+              {item.label}
+            </Link>
+          ) : (
+            <span className="text-gray-900 font-medium" aria-current="page">
+              {item.label}
+            </span>
+          )}
+        </React.Fragment>
+      ))}
+    </nav>
+  );
+};
+```
+
+### Settings Page Pattern - IMPLEMENTED & IN PRODUCTION
+
+```typescript
+/**
+ * Settings page structure using Container component
+ * Consistent layout for all settings pages with proper navigation hierarchy
+ */
+export const SettingsPage: React.FC = () => {
+  return (
+    <Container
+      backTo="/settings"
+      breadcrumbItems={[
+        { label: 'Home', path: '/' },
+        { label: 'Settings', path: '/settings' },
+        { label: 'General Settings' },
+      ]}
+    >
+      <div className="mx-auto max-w-4xl p-6">
+        <h1 className="mb-6 text-2xl font-bold text-gray-900">General Settings</h1>
+        {/* Settings form content - reading preferences, appearance, etc. */}
+      </div>
+    </Container>
+  );
+};
+
+export const ContextMenuSettingsPage: React.FC = () => {
+  return (
+    <Container
+      backTo="/settings"
+      breadcrumbItems={[
+        { label: 'Home', path: '/' },
+        { label: 'Settings', path: '/settings' },
+        { label: 'Context Menu' },
+      ]}
+    >
+      <div className="mx-auto max-w-4xl p-6">
+        <h1 className="mb-6 text-2xl font-bold text-gray-900">Context Menu Settings</h1>
+        {/* Context menu settings content - dictionary, AI tools, custom prompts */}
+      </div>
+    </Container>
+  );
+};
+```
+
+### Routing Integration Pattern - IMPLEMENTED & IN PRODUCTION
+
+```typescript
+/**
+ * React Router configuration for settings pages
+ * Nested routing structure for organized settings with proper navigation hierarchy
+ */
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Layout />,
+    children: [
+      { path: '/', element: <BookshelfPage /> },
+      { path: '/book/:bookId', element: <EpubReader /> },
+      {
+        path: '/settings',
+        element: <SettingsPage />,
+        children: [
+          { index: true, element: <GeneralSettings /> },
+          { path: 'context-menu', element: <ContextMenuSettingsPage /> },
+          { path: 'ai-providers', element: <AIProviderSettings /> },
+          { path: 'reading-preferences', element: <ReadingPreferencesSettings /> },
+        ],
+      },
+    ],
+  },
+]);
 ```
