@@ -1,6 +1,7 @@
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 import { ContextMenuSettings, ContextMenuItem } from '../../../types/epub';
 import { getContextMenuSettings, updateContextMenuSettings } from '../../../services/OPFSManager';
+import { logger } from '../../../utils/logger';
 
 /**
  * Hook for managing context menu settings state and operations.
@@ -17,6 +18,10 @@ export const useContextMenuSettings = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Ref for accessing current settings in async operations
+  const settingsRef = useRef(settings);
+  settingsRef.current = settings;
+
   // 2. Load settings from OPFS on mount
   useEffect(() => {
     const loadSettings = async () => {
@@ -24,14 +29,14 @@ export const useContextMenuSettings = () => {
         setIsLoading(true);
         setError(null);
         const savedSettings = await getContextMenuSettings();
-        
+
         // Ensure we have valid settings object
         const validSettings = {
           api: savedSettings?.api || '',
           key: savedSettings?.key || '',
-          items: savedSettings?.items || []
+          items: savedSettings?.items || [],
         };
-        
+
         setSettings(validSettings);
       } catch (err) {
         setError('Failed to load settings');
@@ -40,7 +45,7 @@ export const useContextMenuSettings = () => {
         setSettings({
           api: '',
           key: '',
-          items: []
+          items: [],
         });
       } finally {
         setIsLoading(false);
@@ -51,24 +56,35 @@ export const useContextMenuSettings = () => {
   }, []);
 
   // 2. Actions
-  const updateSettings = useCallback((field: keyof ContextMenuSettings, value: string | ContextMenuItem[]) => {
-    setSettings((prev) => ({ ...prev, [field]: value }));
-  }, []);
+  const updateSettings = useCallback(
+    (field: keyof ContextMenuSettings, value: string | ContextMenuItem[]) => {
+      setSettings((prev) => ({ ...prev, [field]: value }));
+    },
+    []
+  );
 
-  const updateApiEndpoint = useCallback((endpoint: string) => {
-    updateSettings('api', endpoint);
-  }, [updateSettings]);
+  const updateApiEndpoint = useCallback(
+    (endpoint: string) => {
+      updateSettings('api', endpoint);
+    },
+    [updateSettings]
+  );
 
-  const updateApiKey = useCallback((key: string) => {
-    updateSettings('key', key);
-  }, [updateSettings]);
+  const updateApiKey = useCallback(
+    (key: string) => {
+      updateSettings('key', key);
+    },
+    [updateSettings]
+  );
 
-  const addTool = useCallback((tool: ContextMenuItem) => {
-    setSettings((prev) => ({
-      ...prev,
-      items: [...prev.items, tool],
-    }));
-  }, []);
+  const addTool = useCallback(
+    async (tool: ContextMenuItem) => {
+      const newSettings = { ...settings, items: [...settings.items, tool] };
+      await updateContextMenuSettings(newSettings);
+      setSettings(newSettings);
+    },
+    [settings]
+  );
 
   const removeTool = useCallback((index: number) => {
     setSettings((prev) => ({
@@ -107,7 +123,7 @@ export const useContextMenuSettings = () => {
     isLoading,
     isSaving,
     error,
-    
+
     // Actions
     updateSettings,
     updateApiEndpoint,

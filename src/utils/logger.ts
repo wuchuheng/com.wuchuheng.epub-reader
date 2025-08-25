@@ -6,6 +6,9 @@ export const logger = {
   log: (...message: unknown[]) => {
     console.log(`[${now()}] [LOG] `, ...message);
   },
+  info: (...message: unknown[]) => {
+    console.log(`[${now()}] [INFO] `, ...message);
+  },
   error: (...message: unknown[]) => {
     console.error(`[${now()}] [ERROR] `, ...message);
   },

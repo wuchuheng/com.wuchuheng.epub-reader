@@ -96,7 +96,7 @@ export async function uploadBook(file: File): Promise<BookMetadata> {
   const bookDirName = bookId;
   const bookPath = `books/${bookDirName}/${bookFileName}`;
 
-  return (await performFileOperation(async () => {
+  const result = await performFileOperation<BookMetadata>(async () => {
     // Create book directory
     const bookDir = await safeGetDirectoryHandle(
       () => directoryStructure.booksDir.getDirectoryHandle(bookDirName, { create: true }),
@@ -172,7 +172,9 @@ export async function uploadBook(file: File): Promise<BookMetadata> {
     await saveConfig(config);
 
     return bookMetadata;
-  }, 'upload book')) as BookMetadata;
+  }, 'upload book');
+
+  return result.data!;
 }
 
 /**
@@ -297,19 +299,19 @@ export async function updateContextMenuSettings(settings: {
   items: ContextMenuItem[];
 }): Promise<void> {
   const config = await loadConfig();
-  
+
   // Ensure settings structure exists
   if (!config.settings) {
     config.settings = { contextMenu: { api: '', key: '', items: [] } };
   }
-  
+
   // Update context menu settings
   config.settings.contextMenu = {
     api: settings.api || '',
     key: settings.key || '',
     items: settings.items || [],
   };
-  
+
   config.lastSync = Date.now();
   await saveConfig(config);
 }
@@ -324,12 +326,12 @@ export async function getContextMenuSettings(): Promise<{
 }> {
   const config = await loadConfig();
   const contextMenuSettings = config.settings?.contextMenu;
-  
+
   // Return default values if contextMenu settings don't exist
   return {
     api: contextMenuSettings?.api || '',
     key: contextMenuSettings?.key || '',
-    items: contextMenuSettings?.items || []
+    items: contextMenuSettings?.items || [],
   };
 }
 

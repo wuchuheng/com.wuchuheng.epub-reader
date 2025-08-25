@@ -31,10 +31,7 @@ export const ToolExtractPage: React.FC = () => {
     const newTool = form.createTool();
     if (newTool) {
       // Add the tool
-      contextMenuSettings.addTool(newTool);
-
-      // Auto-save settings
-      await contextMenuSettings.saveSettings();
+      await contextMenuSettings.addTool(newTool);
 
       // Navigate back to context menu settings
       navigate('/settings/contextmenu');

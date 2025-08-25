@@ -24,7 +24,7 @@ export const Container: React.FC<ContainerProps> = (props) => {
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto">{props.children}</main>
+      <main className="flex-1 overflow-y-auto text-black">{props.children}</main>
     </div>
   );
 };
