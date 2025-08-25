@@ -1,5 +1,5 @@
 import React from 'react';
-import { ContextMenuItem } from '../../../types/epub';
+import { AISettingItem, ContextMenuItem, IframeSettingItem } from '../../../types/epub';
 import { ToolForm } from './ToolForm';
 
 /**
@@ -9,7 +9,7 @@ interface ToolListProps {
   /** Array of tools to display. */
   tools: ContextMenuItem[];
   /** Handler for updating a tool at specific index. */
-  onToolUpdate: (index: number, updatedTool: Partial<ContextMenuItem>) => void;
+  onToolUpdate: (index: number, updatedTool: AISettingItem | IframeSettingItem) => void;
   /** Handler for removing a tool at specific index. */
   onToolRemove: (index: number) => void;
   /** API endpoint for fetching models. */
@@ -49,7 +49,7 @@ export const ToolList: React.FC<ToolListProps> = ({
             <div>
               <h4 className="font-medium text-gray-900">{tool.name}</h4>
               <p className="text-sm text-gray-500">{tool.shortName}</p>
-              <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+              <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
                 {tool.type === 'AI' ? 'AI Tool' : 'Iframe Tool'}
               </span>
             </div>
@@ -64,12 +64,10 @@ export const ToolList: React.FC<ToolListProps> = ({
           <div className="space-y-3">
             {tool.type === 'AI' ? (
               <ToolForm
-                tool={tool}
-                onPromptChange={(prompt) => onToolUpdate(index, { prompt } as Partial<ContextMenuItem>)}
-                onModelChange={(model) => onToolUpdate(index, { model } as Partial<ContextMenuItem>)}
+                tool={tool as AISettingItem}
+                onChange={(updatedTool) => onToolUpdate(index, updatedTool)}
                 apiEndpoint={apiEndpoint}
                 apiKey={apiKey}
-                onNameChange={(name) => onToolUpdate(index, { name } as Partial<ContextMenuItem>)}
               />
             ) : (
               <div className="space-y-3">
@@ -77,13 +75,13 @@ export const ToolList: React.FC<ToolListProps> = ({
                   <label className="mb-1 block text-sm text-gray-700">URL</label>
                   <input
                     type="url"
-                    value={(tool as any).url}
-                    onChange={(e) => onToolUpdate(index, { url: e.target.value } as Partial<ContextMenuItem>)}
+                    value={(tool as IframeSettingItem).url}
+                    onChange={(e) => onToolUpdate(index, { ...tool, url: e.target.value })}
                     placeholder="https://example.com?words={words}&context={context}"
                     className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
                   />
                   <p className="mt-1 text-xs text-gray-500">
-                    Use {"{words}"} and {"{context}"} as placeholders for selected text
+                    Use {'{words}'} and {'{context}'} as placeholders for selected text
                   </p>
                 </div>
               </div>

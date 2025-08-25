@@ -7,62 +7,28 @@ import { ModelSearchInput } from './ModelSearchInput';
  */
 interface ToolFormProps {
   /** Optional existing tool data for editing. */
-  tool?: Partial<AISettingItem>;
-  /** Handler for tool name changes. */
-  onNameChange: (name: string) => void;
-  /** Handler for prompt changes. */
-  onPromptChange: (prompt: string) => void;
-  /** Handler for model selection changes. */
-  onModelChange: (model: string) => void;
-  /** Whether to show the name input field. */
-  showNameField?: boolean;
+  tool: AISettingItem;
+  /** Handler for reasoning toggle changes. */
+  onChange: (value: AISettingItem) => void;
   /** Default value for name field. */
-  defaultName?: string;
-  /** Default value for prompt field. */
-  defaultPrompt?: string;
-  /** Default value for model field. */
-  defaultModel?: string;
-  /** API endpoint for fetching models. */
-  apiEndpoint?: string;
+
   /** API key for authentication. */
   apiKey?: string;
+
+  apiEndpoint?: string;
 }
 
 /**
  * Reusable form component for creating/editing AI tools.
  * Eliminates code duplication between existing tools and new tool creation.
  */
-export const ToolForm: React.FC<ToolFormProps> = ({
-  tool,
-  onNameChange,
-  onPromptChange,
-  onModelChange,
-  showNameField = false,
-  defaultName = '',
-  defaultPrompt = '',
-  defaultModel = '',
-  apiEndpoint,
-  apiKey,
-}) => (
+export const ToolForm: React.FC<ToolFormProps> = ({ tool, onChange, apiEndpoint, apiKey }) => (
   <div className="space-y-3">
-    {showNameField && (
-      <div>
-        <label className="mb-1 block text-sm text-gray-700">Tool Name</label>
-        <input
-          type="text"
-          value={defaultName}
-          onChange={(e) => onNameChange(e.target.value)}
-          placeholder="e.g., Simple Explanation"
-          className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-        />
-      </div>
-    )}
-
     <div>
       <label className="mb-1 block text-sm text-gray-700">Prompt</label>
       <textarea
-        value={tool?.prompt || defaultPrompt}
-        onChange={(e) => onPromptChange(e.target.value)}
+        value={tool?.prompt || ''}
+        onChange={(e) => onChange({ ...tool, prompt: e.target.value })}
         placeholder="e.g., Explain {selectedText} in simple terms"
         className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
         rows={3}
@@ -71,12 +37,26 @@ export const ToolForm: React.FC<ToolFormProps> = ({
 
     <div>
       <ModelSearchInput
-        value={tool?.model || defaultModel}
-        onChange={onModelChange}
+        value={tool?.model || ''}
+        onChange={(model) => onChange({ ...tool, model })}
         apiEndpoint={apiEndpoint || ''}
         apiKey={apiKey || ''}
         placeholder="Search or enter model name..."
       />
+    </div>
+
+    {/* Reasoning Toggle */}
+    <div className="flex items-center">
+      <input
+        type="checkbox"
+        id="reasoningEnabled"
+        checked={tool.reasoningEnabled}
+        onChange={() => onChange({ ...tool, reasoningEnabled: !tool.reasoningEnabled })}
+        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+      />
+      <label htmlFor="reasoningEnabled" className="ml-2 block text-sm text-gray-700">
+        Enable reasoning (for supported models)
+      </label>
     </div>
   </div>
 );
