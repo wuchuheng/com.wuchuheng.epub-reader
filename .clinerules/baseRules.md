@@ -137,11 +137,11 @@ Is code repeated 3+ times?
 
 - Use numeric comments (`// 1.`, `// 2.`, `// 3.`) inside function bodies only.
 - Sub-steps: `1.1`, `2.2`, up to three levels deep.
-- Never use numeric comments at file/module/global scope or on property declarations.
-- Only use prefixes 1., 2., and 3.:
-  - `1.` for input handling (validation, preparation)
-  - `2.` for core processing (business logic)
-  - `3.` for output (return or print result)
+- Numeric comments must only be used inside function or method bodies, never at the file, module, or global scope, and never on property declarations.
+- Only the prefixes `1.`, `2.`, and `3.` are permitted:
+  - `1.` is for input handling (validation, preparation). This phase corresponds to the "input" section in computer architecture, where data is received, checked, and prepared before processing.
+  - `2.` is for core processing (business logic). This phase corresponds to the "processing" section in computer architecture, where the system computes, transforms, or manipulates the input data to produce the desired result. Numeric comments with the prefix `2.` should be used to annotate steps that perform calculations, transformations, or any business logic that processes the validated input.
+  - `3.` is for output (return or print result). This phase corresponds to the "output" section in computer architecture, where the processing result is returned, printed, or otherwise delivered as the final output of the function or method. Numeric comments with the prefix `3.` should be used to annotate steps that handle the result of processing and produce the final output.
 - Prefixes like `4.` or higher are invalid and must not be used.
 
 ### 3.2 Numeric Comment Placement Rules
