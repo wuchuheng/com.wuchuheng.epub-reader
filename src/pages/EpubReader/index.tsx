@@ -88,6 +88,7 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
     <div className="relative flex h-screen flex-col bg-white">
       <ReaderHeader visible={menuVisible} onOpenToc={onToggleToc} />
       <ContextMenuComponent
+        onChangeIndex={(index) => setContextMenu((prev) => ({ ...prev, tabIndex: index }))}
         tabIndex={contextMenu.tabIndex}
         words={contextMenu.words}
         context={contextMenu.context}
