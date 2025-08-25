@@ -726,7 +726,7 @@ interface PersistencePattern {
 
 ### Routing Integration Pattern - IMPLEMENTED & IN PRODUCTION
 
-```typescript
+````typescript
 /**
  * React Router configuration for settings pages
  * Nested routing structure for organized settings with proper navigation hierarchy
@@ -801,4 +801,118 @@ interface BreadcrumbNavigationPattern {
     isBreadcrumbActive: (item: BreadcrumbItem, location: Location) => boolean;
   };
 }
-```
+
+### Mobile UX Optimization - Tool Extraction Patterns - IMPLEMENTED & IN PRODUCTION
+
+```typescript
+/**
+ * Mobile-first tool creation interface with full-page layout
+ * Optimized for mobile devices with touch interactions and proper navigation
+ */
+interface MobileToolExtractionPattern {
+  // Page-based tool creation instead of modal
+  pageLayout: {
+    route: '/settings/contextmenu/add-tool';
+    component: ToolExtractPage;
+    navigation: {
+      breadcrumb: BreadcrumbItem[];
+      backNavigation: string;
+      autoSave: boolean;
+      autoRedirect: boolean;
+    };
+  };
+
+  // Mobile-optimized form layout
+  formLayout: {
+    fullPage: boolean;
+    touchTargets: {
+      minWidth: number;
+      minHeight: number;
+      spacing: number;
+    };
+    keyboardHandling: {
+      autoFocus: boolean;
+      scrollIntoView: boolean;
+      dismissOnSubmit: boolean;
+    };
+    responsiveBreakpoints: {
+      mobile: number;
+      tablet: number;
+      desktop: number;
+    };
+  };
+
+  // Navigation and state management
+  navigation: {
+    routeIntegration: React.Router;
+    statePersistence: LocalStorage;
+    formState: {
+      saveOnNavigate: boolean;
+      restoreOnMount: boolean;
+      validationState: boolean;
+    };
+  };
+
+  // User experience optimizations
+  userExperience: {
+    loadingStates: boolean;
+    successFeedback: boolean;
+    errorHandling: boolean;
+    accessibility: {
+      ariaLabels: boolean;
+      keyboardNavigation: boolean;
+      screenReader: boolean;
+    };
+  };
+}
+
+/**
+ * Modal-to-page migration pattern for mobile optimization
+ * Replaces modal dialogs with dedicated pages for better mobile experience
+ */
+interface ModalToPageMigrationPattern {
+  // Migration strategy
+  migration: {
+    removedComponents: string[]; // ['AddToolDialog.tsx', 'useDialog.tsx'];
+    addedComponents: string[]; // ['ToolExtractPage.tsx'];
+    routeChanges: {
+      added: string[]; // ['/settings/contextmenu/add-tool'];
+      updated: string[]; // ['ContextMenuSettingsPage.tsx'];
+    };
+  };
+
+  // State management changes
+  stateManagement: {
+    removedHooks: string[]; // ['useDialog.ts'];
+    addedHooks: string[]; // ['useToolForm.ts (enhanced)'];
+    persistenceStrategy: 'localStorage' | 'sessionStorage' | 'memory';
+  };
+
+  // Navigation pattern changes
+  navigationChanges: {
+    modalTriggers: {
+      old: 'useState + Modal';
+      new: 'Link + Route';
+    };
+    routing: {
+      type: 'nested' | 'parallel' | 'standalone';
+      parameters: 'route-params' | 'query-params' | 'state';
+    };
+  };
+
+  // User experience improvements
+  userExperience: {
+    mobileOptimization: {
+      touchTargets: 'enlarged';
+      scrolling: 'natural';
+      keyboard: 'native';
+      navigation: 'browser-back';
+    };
+    accessibility: {
+      focusManagement: 'automatic';
+      screenReader: 'optimized';
+      keyboardNavigation: 'full';
+    };
+  };
+}
+````
