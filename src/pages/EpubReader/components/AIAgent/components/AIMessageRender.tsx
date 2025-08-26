@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { MarkdownRender } from './MarkdownRender';
 import { MessageItemContainer } from './MessageItemContainer';
-import { ChevronDown, ChevronRight, ArrowUp, CheckCircle, Copy, Refresh } from '@/components/icons';
+import { ChevronDown, ChevronRight } from '@/components/icons';
 import { logger } from '@/utils/logger';
 import { AIStatusBar } from './AIStatusBar';
 

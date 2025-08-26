@@ -3,12 +3,11 @@ import { MarkdownRender } from './MarkdownRender';
 import { MessageItemContainer } from './MessageItemContainer';
 
 type MessageRenderProps = {
-  role: string;
   content: string;
   hightWords?: string;
 };
 
-export const UserMessage: React.FC<MessageRenderProps> = (props) => {
+export const UserMessageRender: React.FC<MessageRenderProps> = (props) => {
   const [content, setContent] = React.useState(props.content);
 
   const onHightWords = useCallback(() => {

@@ -7,11 +7,27 @@ export type InputBarRenderProps = {
   onStop: () => void;
   onSend: (msg: string) => void;
 };
-export const InputBarRender: React.FC<InputBarRenderProps> = () => {
-  console.log('InputBarRender');
+
+/**
+ * Detects if the current device is a desktop/computer screen
+ * @returns true if desktop device, false if mobile device
+ */
+const isDesktopDevice = (): boolean => {
+  // Check if it's a touch device
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+  // Check screen size (desktop typically > 768px width)
+  const isLargeScreen = window.innerWidth > 768;
+
+  // Consider it desktop if it's not a touch device or has a large screen
+  return !isTouchDevice || isLargeScreen;
+};
+
+export const InputBarRender: React.FC<InputBarRenderProps> = ({ onSend }) => {
   const [visible, setVisible] = React.useState(false);
   const [textareaValue, setTextareaValue] = React.useState('');
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+  const isDesktop = React.useMemo(() => isDesktopDevice(), []);
 
   const minRows = 1;
   // Auto-resize textarea based on content
@@ -33,21 +49,67 @@ export const InputBarRender: React.FC<InputBarRenderProps> = () => {
     }
   };
 
+  // Handle keyboard events for desktop devices
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Only apply keyboard shortcuts on desktop devices
+    if (!isDesktop) return;
+
+    // Handle Enter key submission (desktop only)
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
+    }
+    // Shift+Enter creates a new line (default behavior, no action needed)
+  };
+
+  const handleSubmit = () => {
+    const value = textareaValue.trim();
+    if (value) {
+      // Call the onSend prop with the message
+      onSend(textareaValue);
+      // Clear the textarea
+      setTextareaValue('');
+    }
+  };
+
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    handleSubmit();
+  };
+
+  const handleButtonSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    handleSubmit();
+  };
+
   return (
     <>
       {visible && (
         <div className="sticky bottom-0 left-0 right-0 bg-transparent p-4">
-          <div className="flex min-h-16 items-center rounded-lg border border-gray-200 bg-white shadow-lg">
+          <form
+            className="flex min-h-16 items-center rounded-lg border border-gray-200 bg-white shadow-lg"
+            onSubmit={onSubmit}
+          >
             <textarea
+              name="message"
               ref={textareaRef}
               className="flex-1 resize-y rounded-l-lg border-0 px-3 py-2 outline-none focus:ring-2"
-              placeholder="Type your message..."
+              placeholder={
+                isDesktop
+                  ? 'Type your message... (Press Enter to send, Shift+Enter for new line)'
+                  : 'Type your message...'
+              }
               rows={minRows}
               value={textareaValue}
               onChange={handleTextareaChange}
+              onKeyDown={handleKeyDown}
               style={{ resize: 'vertical' }}
             />
-            <button className="flex size-16 items-center justify-center rounded transition-colors">
+            <button
+              type="button"
+              className="flex size-16 items-center justify-center rounded transition-colors"
+              onClick={handleButtonSubmit}
+            >
               <FaArrowUp className="size-5" />
             </button>
             <button
@@ -56,7 +118,7 @@ export const InputBarRender: React.FC<InputBarRenderProps> = () => {
             >
               <MdClose className="size-6" />
             </button>
-          </div>
+          </form>
         </div>
       )}
 
