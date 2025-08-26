@@ -1,124 +1,74 @@
-# Project Brief: EPUB Reader Application
+# Project Brief: EPUB Reader with AI Integration
 
-## Core Mission
+## **Project Overview**
 
-Build a modern, privacy-first EPUB reader web application that combines offline functionality with AI-enhanced reading tools, giving users complete control over their digital library and reading experience.
+A modern EPUB reader application with AI-powered text analysis and explanation capabilities. Built with React and TypeScript, featuring a clean interface and advanced reading features.
 
-## Project Vision
+## **Current Status**
 
-"A powerful, privacy-first EPUB reader that combines offline functionality with AI-enhanced reading tools, giving users complete control over their digital library and reading experience."
+- **Phase**: 3 AI Integration (60% Complete)
+- **Focus**: Implementing AI Agent system for text analysis
+- **Next Milestone**: Complete text selection and context menu integration
 
-## Current Status
+## **Key Features**
 
-**🚀 PRODUCTION READY FOR PHASE 3 AI INTEGRATION + MOBILE UX OPTIMIZATION COMPLETE**
+### **Core Reading Experience**
 
-The project has successfully completed **ALL foundational infrastructure** for Phases 1, 2, 5, and 6, plus comprehensive mobile UX optimization, and is now **production-ready for immediate Phase 3 AI integration implementation**. All navigation, settings, context menu systems, and mobile-optimized interfaces are in place with proper TypeScript interfaces, responsive design, and comprehensive error handling.
+- Full EPUB book rendering with navigation
+- Table of contents with chapter tracking
+- Reading progress persistence
+- Responsive design for all devices
+- Keyboard navigation support
 
-## Essential Requirements
+### **AI Integration (In Development)**
 
-### 1. Book Management System ✅ COMPLETED
+- OpenAI-powered text analysis
+- Real-time conversation interface
+- Streaming AI responses
+- Token usage tracking
+- Reasoning content display
+- Word highlighting and explanations
 
-- **OPFS Storage**: Leverage Origin Private File System for offline book storage
-- **Upload Interface**: Drag-and-drop or file picker for EPUB uploads
-- **Library View**: Grid-based bookshelf with cover images and progress tracking
-- **Metadata Handling**: Extract and display book titles, authors, progress, and reading statistics
+### **User Interface**
 
-### 2. Core Reading Experience ✅ COMPLETED
+- Clean, modern design
+- Intuitive navigation controls
+- Settings management system
+- Mobile-optimized interface
+- Accessibility features
 
-- **EPUB Rendering**: Use EPUB.js for accurate book rendering
-- **Navigation**: Chapter-based navigation with progress tracking
-- **Customization**: Font size, theme (light/dark), and layout preferences
-- **Responsive Design**: Optimized for desktop, tablet, and mobile devices
+## **Technology Highlights**
 
-### 3. Enhanced Reading Features 🔄 READY FOR IMPLEMENTATION
+- React 18 + TypeScript for type safety
+- EPUB.js for book rendering
+- OPFS for browser-based storage
+- OpenAI API for AI features
+- TailwindCSS for styling
+- Redux Toolkit for state management
 
-- **Table of Contents**: ✅ Collapsible sidebar with chapter navigation
-- **Text Selection**: ⏳ Ready for word-level selection with context menus
-- **Dictionary Integration**: ⏳ Ready for Eudic API with contextual information
-- **AI Explanations**: ⏳ Ready for configurable AI providers (OpenAI, Anthropic, Custom)
-- **Custom Tools**: ⏳ Ready for user-defined AI prompts for specialized text analysis
-- **Navigation Components**: ✅ Container, BackButton, Breadcrumb with TypeScript interfaces
+## **Current Development Focus**
 
-### 4. Search & Discovery ⏳ FUTURE
+1. **Text Selection Integration**: Connect AI Agent to selected text
+2. **Context Menu System**: Right-click menu for AI tools
+3. **Reading Customization**: Font, theme, and layout options
+4. **Dictionary Integration**: Word definition lookup
+5. **Performance Optimization**: Smooth user experience
 
-- **Full-text Search**: Search within individual books with highlighted results
-- **Cross-book Search**: Global search across library (future enhancement)
-- **Search History**: Recently searched terms and suggestions
+## **Target Audience**
 
-### 5. Progressive Web App ⏳ FUTURE
+- Students and researchers
+- Book enthusiasts and readers
+- Users needing AI-powered text analysis
+- Anyone looking for a modern reading experience
 
-- **Offline Capability**: Service worker for offline reading
-- **Installable**: PWA manifest for native-like installation
-- **Performance**: Fast loading, efficient memory management
-- **Caching**: Intelligent caching strategies for books and assets
+## **Success Metrics**
 
-### 6. Settings & Configuration ✅ COMPLETED
+- User engagement with AI features
+- Reading session duration
+- Feature adoption rates
+- Performance and load times
+- User satisfaction scores
 
-- **Settings Pages**: ✅ Context menu settings and general settings with navigation
-- **Navigation Components**: ✅ BackButton, Breadcrumb, Container components with sticky headers
-- **Configuration Management**: ✅ Complete AI provider configuration and tool management system
-- **Advanced Tool Management**: ✅ Full CRUD operations for custom AI tools with validation
-- **Form System**: ✅ Dynamic forms for different tool types with real-time feedback
-- **Modal System**: ✅ Dialog system for tool creation and editing
-- **Persistence**: ✅ LocalStorage integration for settings persistence
+---
 
-## Technical Foundation
-
-### Architecture
-
-- **Frontend**: React 18 + TypeScript + Vite
-- **State Management**: Redux Toolkit
-- **Routing**: React Router v6
-- **Styling**: TailwindCSS + CSS Modules
-- **Storage**: OPFS + LocalStorage for settings
-
-### Key Dependencies
-
-- **EPUB.js**: Core EPUB parsing and rendering
-- **Workbox**: PWA service worker management
-- **File System Access API**: For OPFS implementation
-- **Dictionary APIs**: Eudic integration
-- **AI APIs**: OpenAI/Anthropic/Custom providers
-
-## Success Criteria
-
-### ✅ Completed Success Criteria
-
-1. **Core Functionality**: Users can upload, organize, and read EPUB files offline
-2. **Navigation**: Intuitive table of contents and page navigation with persistent reading locations
-3. **Type Safety**: 100% TypeScript coverage with zero `any` types
-4. **Responsive Design**: Works on desktop, tablet, and mobile devices
-5. **Component Architecture**: Clean, maintainable code with proper separation of concerns
-
-### 🔄 Phase 3 Success Criteria (Ready for Implementation)
-
-1. **AI Integration**: Dictionary and AI explanations work seamlessly with configurable providers
-2. **Text Selection**: Word-level selection with context menus for instant lookups
-3. **Custom Tools**: User-defined AI prompts for specialized text analysis
-4. **Settings Management**: Hierarchical settings with consistent navigation patterns
-5. **Performance**: Books load within 2 seconds with smooth page navigation and responsive UI
-
-## Scope Boundaries
-
-### Included
-
-- EPUB format support (v2 and v3)
-- Offline-first architecture
-- Basic reading statistics
-- Customizable AI tools
-- PWA installation
-
-### Excluded (Future Phases)
-
-- Multi-format support (PDF, MOBI)
-- Cloud synchronization
-- Social features
-- Advanced analytics
-- Multi-language UI
-
-## Project Constraints
-
-- **Browser Support**: Chrome 86+, Firefox 102+, Safari 15.2+, Edge 86+
-- **Storage**: Client-side only (OPFS + LocalStorage)
-- **Dependencies**: Minimal external dependencies for performance
-- **Security**: Client-side processing only, no server-side data storage
+_Project brief focuses on current goals and user value_
