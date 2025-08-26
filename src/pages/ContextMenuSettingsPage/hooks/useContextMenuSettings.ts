@@ -1,7 +1,6 @@
 import { useCallback, useState, useEffect, useRef } from 'react';
 import { ContextMenuSettings, ContextMenuItem } from '../../../types/epub';
 import { getContextMenuSettings, updateContextMenuSettings } from '../../../services/OPFSManager';
-import { logger } from '../../../utils/logger';
 
 /**
  * Hook for managing context menu settings state and operations.

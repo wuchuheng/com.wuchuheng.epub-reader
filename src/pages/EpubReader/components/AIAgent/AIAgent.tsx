@@ -5,6 +5,8 @@ import { AIMessageRender, AIMessageRenderProps } from './components/AIMessageRen
 import { InputBarRender, InputBarRenderProps } from './components/InputBarRender';
 import { AIAgentProps, MessageItem } from './types/AIAgent';
 import { useFetchAIMessage } from './hooks/useFetchAIMessage';
+import { useSmoothScrollToBottom } from './hooks/useSmoothScroll';
+import { useAutoScrollOnUpdate } from './hooks/useAutoScrollOnUpdate';
 
 /**
  * AI Agent component that provides a chat interface for AI interactions.
@@ -25,33 +27,12 @@ export const AIAgent: React.FC<AIAgentProps> = (props) => {
   ]);
 
   const conversationRef = useRef<HTMLDivElement>(null);
+  const smoothScrollToBottom = useSmoothScrollToBottom(conversationRef, 600);
 
-  // Custom smooth scroll function with easing
-  const smoothScrollToBottom = useCallback(() => {
-    if (!conversationRef.current) return;
+  // Auto-scroll when messages update if user is already near the bottom.
+  useAutoScrollOnUpdate(conversationRef, messageList, smoothScrollToBottom, 120);
 
-    const element = conversationRef.current;
-    const start = element.scrollTop;
-    const target = element.scrollHeight - element.clientHeight;
-    const duration = 800; // Slightly longer for more fluid feel
-    const startTime = performance.now();
-
-    const easeOutCubic = (t: number): number => 1 - Math.pow(1 - t, 3);
-
-    const animateScroll = (currentTime: number) => {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const easedProgress = easeOutCubic(progress);
-
-      element.scrollTop = start + (target - start) * easedProgress;
-
-      if (progress < 1) {
-        requestAnimationFrame(animateScroll);
-      }
-    };
-
-    requestAnimationFrame(animateScroll);
-  }, []);
+  // Cleanup handled by useSmoothScrollToBottom
 
   const onUpdateAIResponse = useCallback(
     (res: AIMessageRenderProps) => {
@@ -82,9 +63,12 @@ export const AIAgent: React.FC<AIAgentProps> = (props) => {
     reasoningEnabled: props.reasoningEnabled,
   });
 
+  const hasFetchedInitiallyRef = useRef(false);
   useEffect(() => {
+    if (hasFetchedInitiallyRef.current) return;
+    hasFetchedInitiallyRef.current = true;
     fetchAIMessage(messageList);
-  }, []);
+  }, [fetchAIMessage, messageList]);
   const [inputBarStatus, setInputBarStatus] = useState<InputBarRenderProps['status']>('idle');
 
   const onSend = useCallback(
@@ -92,7 +76,7 @@ export const AIAgent: React.FC<AIAgentProps> = (props) => {
       const msgList: MessageItem[] = [...messageList, { role: 'user', content: msg }];
       fetchAIMessage(msgList);
     },
-    [messageList]
+    [messageList, fetchAIMessage]
   );
 
   return (
