@@ -114,11 +114,13 @@ export const ThinkProgressing: React.FC<ThinkProgressingProps> = ({
   return (
     <>
       {reasoningContent && (
-        <div className="mb-4 rounded-r-md border-l-4 border-gray-400 bg-gray-50">
+        <div
+          className="mb-4 rounded-r-md border-l-4 border-gray-400 bg-gray-50"
+          onClick={handleToggle}
+        >
           {/* 2. Clickable header with toggle functionality */}
           <div
             className="flex cursor-pointer items-center justify-between p-4 transition-colors"
-            onClick={handleToggle}
             aria-expanded={!isReasoningFolded}
             aria-controls="reasoning-content"
           >

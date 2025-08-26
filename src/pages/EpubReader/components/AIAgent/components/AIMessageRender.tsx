@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { MarkdownRender } from './MarkdownRender';
 import { MessageItemContainer } from './MessageItemContainer';
-import { ChevronDown, ChevronRight } from '@/components/icons';
 import { logger } from '@/utils/logger';
 import { AIStatusBar } from './AIStatusBar';
 import { ThinkProgressing } from './ThinkingProgressing';
@@ -15,11 +14,14 @@ export type AIMessageRenderProps = {
     completionTokens: number;
     totalTokens: number;
   };
+
+  model: string;
 };
 export const AIMessageRender: React.FC<AIMessageRenderProps> = ({
   content,
   reasoningContent,
   usage,
+  model,
 }) => {
   // 1.1 State for copy feedback
   const [copied, setCopied] = useState(false);
@@ -55,6 +57,7 @@ export const AIMessageRender: React.FC<AIMessageRenderProps> = ({
             onRefresh={handleRefresh}
             onCopy={handleCopyContent}
             copied={copied}
+            model={model}
           />
         )}
       </MessageItemContainer>

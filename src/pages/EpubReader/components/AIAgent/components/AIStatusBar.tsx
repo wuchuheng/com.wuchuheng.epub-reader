@@ -6,6 +6,8 @@ type AIStatusBarProps = {
     completionTokens: number;
     totalTokens: number;
   };
+  model: string;
+
   onRefresh: () => void;
   onCopy: () => void;
   copied: boolean;
@@ -25,6 +27,11 @@ export const AIStatusBar: React.FC<AIStatusBarProps> = (props) => (
       <FaChartLine />
       <span>{props.usage.totalTokens}</span>
     </div>
+    <div className="flex items-center gap-1">
+      LLM:
+      <span>{props.model}</span>
+    </div>
+
     <div className="ml-auto flex gap-2">
       <button
         onClick={props.onRefresh}
