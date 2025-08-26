@@ -4,6 +4,7 @@ import { MessageItemContainer } from './MessageItemContainer';
 import { ChevronDown, ChevronRight } from '@/components/icons';
 import { logger } from '@/utils/logger';
 import { AIStatusBar } from './AIStatusBar';
+import { ThinkProgressing } from './ThinkingProgressing';
 
 export type AIMessageRenderProps = {
   content: string;
@@ -20,10 +21,6 @@ export const AIMessageRender: React.FC<AIMessageRenderProps> = ({
   reasoningContent,
   usage,
 }) => {
-  // 1. State management for fold/unfold functionality
-  const [isReasoningFolded, setIsReasoningFolded] = useState(false);
-  const [userTogglerFolded, setUserTogglerFolded] = useState(false);
-
   // 1.1 State for copy feedback
   const [copied, setCopied] = useState(false);
 
@@ -46,53 +43,11 @@ export const AIMessageRender: React.FC<AIMessageRenderProps> = ({
     logger.info('Refresh token usage requested');
     // This can be connected to a parent callback if needed
   };
-  useEffect(() => {
-    const contentExisted = content.trim().length > 0;
-
-    if (contentExisted && !isReasoningFolded && !userTogglerFolded) {
-      logger.info('The reasoning content is being folded.');
-
-      setIsReasoningFolded(true);
-    }
-  }, [content, userTogglerFolded, isReasoningFolded]);
 
   return (
     <>
       <MessageItemContainer roleName="Agent">
-        {reasoningContent && (
-          <div className="mb-4 rounded-r-md border-l-4 border-gray-400 bg-gray-50">
-            {/* 2. Clickable header with toggle functionality */}
-            <div
-              className="flex cursor-pointer items-center justify-between p-4 transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-
-                setIsReasoningFolded(!isReasoningFolded);
-                setUserTogglerFolded(true);
-              }}
-              aria-expanded={!isReasoningFolded}
-              aria-controls="reasoning-content"
-            >
-              <div className="flex items-center">
-                <span className="text-sm font-medium">💭 Thinking process</span>
-              </div>
-              {isReasoningFolded ? (
-                <ChevronRight className="h-4 w-4 text-gray-600" />
-              ) : (
-                <ChevronDown className="h-4 w-4 text-gray-600" />
-              )}
-            </div>
-
-            {/* 3. Conditionally rendered content */}
-            {!isReasoningFolded && (
-              <div id="reasoning-content" className="px-4 pb-4">
-                <div className="text-sm text-gray-700">
-                  <MarkdownRender content={reasoningContent} />
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+        <ThinkProgressing reasoningContent={reasoningContent} content={content} />
         <MarkdownRender content={content} />
         {usage && (
           <AIStatusBar

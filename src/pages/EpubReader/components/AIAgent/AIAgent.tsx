@@ -56,27 +56,52 @@ export const AIAgent: React.FC<AIAgentProps> = (props) => {
 
   const conversationRef = useRef<HTMLDivElement>(null);
 
-  const onUpdateAIResponse = (res: AIMessageRenderProps) => {
-    // 2. Handle logic.
-    // 2.1 Update the latest message, that must be AI type message.
-    setMessageList((prev) => {
-      const latest = prev[prev.length - 1];
-      if (latest.role !== 'assistant') {
-        throw new Error('Latest message is not AI type');
+  // Custom smooth scroll function with easing
+  const smoothScrollToBottom = useCallback(() => {
+    if (!conversationRef.current) return;
+
+    const element = conversationRef.current;
+    const start = element.scrollTop;
+    const target = element.scrollHeight - element.clientHeight;
+    const duration = 800; // Slightly longer for more fluid feel
+    const startTime = performance.now();
+
+    const easeOutCubic = (t: number): number => 1 - Math.pow(1 - t, 3);
+
+    const animateScroll = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easedProgress = easeOutCubic(progress);
+
+      element.scrollTop = start + (target - start) * easedProgress;
+
+      if (progress < 1) {
+        requestAnimationFrame(animateScroll);
       }
-      prev[prev.length - 1] = { ...latest, data: { ...latest.data, ...res } };
+    };
 
-      return [...prev];
-    });
+    requestAnimationFrame(animateScroll);
+  }, []);
 
-    // 2.2 Scroll the conversation to bottom smoothly
-    if (conversationRef.current) {
-      conversationRef.current.scrollTo({
-        top: conversationRef.current.scrollHeight,
-        behavior: 'smooth',
+  const onUpdateAIResponse = useCallback(
+    (res: AIMessageRenderProps) => {
+      // 2. Handle logic.
+      // 2.1 Update the latest message, that must be AI type message.
+      setMessageList((prev) => {
+        const latest = prev[prev.length - 1];
+        if (latest.role !== 'assistant') {
+          throw new Error('Latest message is not AI type');
+        }
+        prev[prev.length - 1] = { ...latest, data: { ...latest.data, ...res } };
+
+        return [...prev];
       });
-    }
-  };
+
+      // 2.2 Scroll the conversation to bottom with smooth easing
+      smoothScrollToBottom();
+    },
+    [smoothScrollToBottom]
+  );
 
   const fetchAIMessage = async (newMessageList: MessageItem[]) => {
     // 2. Send message to AI
