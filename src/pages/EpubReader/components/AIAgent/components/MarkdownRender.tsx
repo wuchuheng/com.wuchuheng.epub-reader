@@ -33,7 +33,7 @@ export const MarkdownRender: React.FC<MarkdownRenderProps> = (props) => {
 
       // Style code blocks (pre) with spacing
       pre: ({ children }) => (
-        <pre className="mb-4 overflow-x-auto rounded-md bg-gray-100 p-3 text-sm">{children}</pre>
+        <pre className="mb-4 overflow-x-scroll rounded-md bg-gray-100 p-3 text-sm">{children}</pre>
       ),
 
       // Style links

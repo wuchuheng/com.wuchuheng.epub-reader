@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AISettingItem, ContextMenuSettings } from '../../../types/epub';
 import { getContextMenuSettings } from '../../../services/OPFSManager';
 import { AIAgent } from './AIAgent/AIAgent';

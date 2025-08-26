@@ -1,3 +1,5 @@
+import React from 'react';
+
 export const Menu = () => (
   <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path
@@ -60,8 +62,13 @@ export const LeftArrow = () => (
   </svg>
 );
 
-export const Copy = () => (
-  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+export const Copy: React.FC<IconProps> = (props) => (
+  <svg
+    className={`h-4 w-4 ${props.className}`}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -71,8 +78,13 @@ export const Copy = () => (
   </svg>
 );
 
-export const Refresh = () => (
-  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+export const Refresh: React.FC<IconProps> = (props) => (
+  <svg
+    className={`h-4 w-4 ${props.className}`}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -106,6 +118,59 @@ export const Send = () => (
       strokeLinejoin="round"
       strokeWidth={2}
       d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+    />
+  </svg>
+);
+
+type IconProps = {
+  className?: string;
+};
+
+export const ChevronDown: React.FC<IconProps> = (props) => (
+  <svg
+    className={`h-4 w-4 ${props.className}`}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+  </svg>
+);
+
+export const ChevronRight: React.FC<IconProps> = (props) => (
+  <svg
+    className={`h-4 w-4 ${props.className}`}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+  </svg>
+);
+
+export const ArrowUp: React.FC<IconProps> = (props) => (
+  <svg
+    className={`h-4 w-4 ${props.className}`}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+  </svg>
+);
+
+export const CheckCircle: React.FC<IconProps> = (props) => (
+  <svg
+    className={`h-4 w-4 ${props.className}`}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
     />
   </svg>
 );

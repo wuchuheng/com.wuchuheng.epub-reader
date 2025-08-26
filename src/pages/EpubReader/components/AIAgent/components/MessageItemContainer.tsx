@@ -1,5 +1,3 @@
-import { PiDropSimple } from 'react-icons/pi';
-
 type MessageItemContainerProps = {
   roleName: string;
   children: React.ReactNode;

@@ -4,7 +4,8 @@ import { AISettingItem, ContextMenuSettings } from '../../../../types/epub';
 import { ContextMenuProps } from '../ContextMenu';
 import { UserMessage } from './components/UserMessage';
 import { replaceWords } from './utils';
-import { AIMessageRender } from './components/AIMessageRender';
+import { AIMessageRender, AIMessageRenderProps } from './components/AIMessageRender';
+import { logger } from '@/utils/logger';
 
 /**
  * Props for the AIAgent component.
@@ -33,19 +34,32 @@ export const AIAgent: React.FC<AIAgentProps> = (props) => {
     context: props.context,
   });
 
-  const [reasoningContent, setReasoningContent] = React.useState<string>('');
-  const [aiContent, setAIContent] = useState<string>('');
+  const [currentAIResponse, setCurrentAIResponse] = useState<AIMessageRenderProps>({
+    content: '',
+    reasoningContentCompleted: false,
+  });
 
   const conversationRef = props.conversationRef;
 
   const onUpdateAIResponse = (res: AIResponse) => {
     // 2. Update content based on response structure
     if (res.reasoning_content) {
-      setReasoningContent((prev) => prev + (res.reasoning_content ?? ''));
-    }
+      setCurrentAIResponse((prev) => {
+        const newReasoningContent = (prev.reasoningContent || '') + res.reasoning_content;
+        return { ...prev, reasoningContent: newReasoningContent };
+      });
+    } else if (res.content) {
+      logger.info('Received content chunk:', res.content);
+      setCurrentAIResponse((prev) => {
+        const newContent = prev.content + res.content;
+        const reasoningContentCompleted = newContent.length !== 0;
 
-    if (res.content) {
-      setAIContent((prev) => prev + (res.content ?? ''));
+        return {
+          ...prev,
+          content: newContent,
+          reasoningContentCompleted,
+        };
+      });
     }
 
     // 2.2 Scroll the conversation to bottom smoothly
@@ -79,11 +93,14 @@ export const AIAgent: React.FC<AIAgentProps> = (props) => {
     for await (const part of completion) {
       // 1.1 Check for usage information
       if (part?.usage) {
-        console.log('Token usage:', {
-          promptTokens: part.usage.prompt_tokens,
-          completionTokens: part.usage.completion_tokens,
-          totalTokens: part.usage.total_tokens,
-        });
+        setCurrentAIResponse((prev) => ({
+          ...prev,
+          usage: {
+            promptTokens: part.usage!.prompt_tokens,
+            completionTokens: part.usage!.completion_tokens,
+            totalTokens: part.usage!.total_tokens,
+          },
+        }));
       }
       if (part?.choices?.[0]?.delta) {
         // 1.2 Process delta content
@@ -101,7 +118,7 @@ export const AIAgent: React.FC<AIAgentProps> = (props) => {
     <div className="flex h-full flex-col">
       <div className="flex flex-1 flex-col gap-2 divide-y divide-gray-300 p-4">
         <UserMessage role="User" content={content} hightWords={props.words} />
-        <AIMessageRender content={aiContent} reasoningContent={reasoningContent} />
+        <AIMessageRender {...currentAIResponse} />
       </div>
     </div>
   );
