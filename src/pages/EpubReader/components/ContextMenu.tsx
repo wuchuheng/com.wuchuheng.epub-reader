@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AISettingItem, ContextMenuSettings } from '../../../types/epub';
 import { getContextMenuSettings } from '../../../services/OPFSManager';
 import { AIAgent } from './AIAgent/AIAgent';
@@ -19,6 +19,8 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
   useEffect(() => {
     getContextMenuSettings().then((settings) => setMenuSetting(settings));
   }, []);
+
+  const conversationRef = React.useRef<HTMLDivElement>(null);
 
   if (props.tabIndex === null || menuSetting === null) {
     return <></>;
@@ -41,9 +43,10 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex-1 overflow-y-scroll">
+        <div className="flex-1 overflow-y-scroll" ref={conversationRef}>
           {currentItem && currentItem.type === 'AI' && (
             <AIAgent
+              conversationRef={conversationRef}
               api={menuSetting.api}
               apiKey={menuSetting.key}
               words={props.words}

@@ -63,10 +63,9 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
   };
 
   const [contextMenu, setContextMenu] = useState<ContextMenu>({
-    tabIndex: 0,
-    words: 'hello',
-    context:
-      'Because they live up in heaven, and know how well God arranges everything for us, so that we need have no more fear or trouble and may be quite sure that all things will come right in the end. But then we must never forget to pray, and to ask God to remember us when He is arranging things, so that we too may feel safe and have no anxiety about what is going to happen.',
+    tabIndex: null,
+    words: '',
+    context: '',
   });
 
   const {
