@@ -20,8 +20,6 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
     getContextMenuSettings().then((settings) => setMenuSetting(settings));
   }, []);
 
-  const conversationRef = React.useRef<HTMLDivElement>(null);
-
   if (props.tabIndex === null || menuSetting === null) {
     return <></>;
   }
@@ -43,20 +41,17 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex-1 overflow-y-scroll" ref={conversationRef}>
-          {currentItem && currentItem.type === 'AI' && (
-            <AIAgent
-              conversationRef={conversationRef}
-              api={menuSetting.api}
-              apiKey={menuSetting.key}
-              words={props.words}
-              context={props.context}
-              model={AISetting!.model}
-              prompt={AISetting!.prompt}
-              reasoningEnabled={AISetting!.reasoningEnabled}
-            />
-          )}
-        </div>
+        {currentItem && currentItem.type === 'AI' && (
+          <AIAgent
+            api={menuSetting.api}
+            apiKey={menuSetting.key}
+            words={props.words}
+            context={props.context}
+            model={AISetting!.model}
+            prompt={AISetting!.prompt}
+            reasoningEnabled={AISetting!.reasoningEnabled}
+          />
+        )}
 
         <div className="flex h-12 justify-between divide-x divide-black">
           {menuSetting?.items.map((tab, index) => (

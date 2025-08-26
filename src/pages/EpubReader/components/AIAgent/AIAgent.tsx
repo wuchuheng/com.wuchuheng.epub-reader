@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import OpenAI from 'openai';
 import { AISettingItem, ContextMenuSettings } from '../../../../types/epub';
 import { ContextMenuProps } from '../ContextMenu';
 import { UserMessage } from './components/UserMessage';
 import { replaceWords } from './utils';
 import { AIMessageRender, AIMessageRenderProps } from './components/AIMessageRender';
-import { logger } from '@/utils/logger';
+import { InputBarRender, InputBarRenderProps } from './components/InputBarRender';
 
 /**
  * Props for the AIAgent component.
@@ -14,8 +14,6 @@ export type AIAgentProps = Pick<AISettingItem, 'model' | 'prompt' | 'reasoningEn
   Pick<ContextMenuProps, 'words' | 'context'> &
   Pick<ContextMenuSettings, 'api'> & {
     apiKey: string; // Renamed from 'key' to avoid React's reserved prop
-  } & {
-    conversationRef: React.RefObject<HTMLDivElement>;
   };
 
 type AIResponse = {
@@ -39,7 +37,7 @@ export const AIAgent: React.FC<AIAgentProps> = (props) => {
     reasoningContentCompleted: false,
   });
 
-  const conversationRef = props.conversationRef;
+  const conversationRef = useRef<HTMLDivElement>(null);
 
   const onUpdateAIResponse = (res: AIResponse) => {
     // 2. Update content based on response structure
@@ -49,7 +47,6 @@ export const AIAgent: React.FC<AIAgentProps> = (props) => {
         return { ...prev, reasoningContent: newReasoningContent };
       });
     } else if (res.content) {
-      logger.info('Received content chunk:', res.content);
       setCurrentAIResponse((prev) => {
         const newContent = prev.content + res.content;
         const reasoningContentCompleted = newContent.length !== 0;
@@ -84,7 +81,7 @@ export const AIAgent: React.FC<AIAgentProps> = (props) => {
       model: props.model,
       messages: [{ role: 'user', content }],
       stream: true,
-      reasoning_effort: 'medium',
+      reasoning_effort: 'low',
       stream_options: {
         include_usage: true,
       },
@@ -113,13 +110,22 @@ export const AIAgent: React.FC<AIAgentProps> = (props) => {
   useEffect(() => {
     fetchAIMessage();
   }, []);
+  const [inputBarStatus, setInputBarStatus] = useState<InputBarRenderProps['status']>('idle');
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="relative flex h-full flex-col overflow-y-scroll" ref={conversationRef}>
       <div className="flex flex-1 flex-col gap-2 divide-y divide-gray-300 p-4">
         <UserMessage role="User" content={content} hightWords={props.words} />
         <AIMessageRender {...currentAIResponse} />
       </div>
+      <InputBarRender
+        status={inputBarStatus}
+        onStop={() => setInputBarStatus('idle')}
+        onSend={() => {
+          setInputBarStatus('loading');
+          // Handle send message
+        }}
+      />
     </div>
   );
 };
