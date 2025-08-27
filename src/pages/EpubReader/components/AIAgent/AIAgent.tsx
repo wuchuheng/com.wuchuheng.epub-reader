@@ -7,6 +7,7 @@ import { AIAgentProps, MessageItem } from './types/AIAgent';
 import { useFetchAIMessage } from './hooks/useFetchAIMessage';
 import { useSmoothScrollToBottom } from './hooks/useSmoothScroll';
 import { useAutoScrollOnUpdate } from './hooks/useAutoScrollOnUpdate';
+import { ScrollGuard } from './components/ScrollGuard';
 
 /**
  * AI Agent component that provides a chat interface for AI interactions.
@@ -95,6 +96,8 @@ export const AIAgent: React.FC<AIAgentProps> = (props) => {
           return <AIMessageRender key={index} {...msg.data} />;
         })}
       </div>
+      <ScrollGuard />
+
       <InputBarRender
         status={inputBarStatus}
         onStop={() => setInputBarStatus('idle')}
