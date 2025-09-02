@@ -2,6 +2,7 @@ import OpenAI from 'openai';
 import type { ChatCompletionCreateParamsStreaming } from 'openai/resources/chat/completions';
 import { AIMessageRenderProps } from '../components/AIMessageRender';
 import { AIResponse, MessageItem } from '../types/AIAgent';
+import { thinkingConfig } from '@/config/thinkingConfig';
 
 type UseFetchAIMessageProps = {
   setMessageList: React.Dispatch<React.SetStateAction<MessageItem[]>>;
@@ -48,7 +49,7 @@ export const useFetchAIMessage = ({
     }));
 
     // Build request config and include reasoning only when enabled
-    const requestConfig: ChatCompletionCreateParamsStreaming = {
+    let requestConfig: ChatCompletionCreateParamsStreaming = {
       model: props.model,
       messages,
       stream: true,
@@ -57,12 +58,11 @@ export const useFetchAIMessage = ({
       },
     };
 
-    if (props.reasoningEnabled) {
-      requestConfig.reasoning_effort = 'low';
-    } else {
-      // Ensure no reasoning params are sent when disabled
-      // (requestConfig already lacks reasoning-specific fields)
-    }
+    requestConfig = addThinkingArgument(
+      requestConfig,
+      props.model,
+      !!props.reasoningEnabled
+    ) as ChatCompletionCreateParamsStreaming;
 
     const completion = await client.chat.completions.create(requestConfig);
 
@@ -102,4 +102,53 @@ export const useFetchAIMessage = ({
   };
 
   return fetchAIMessage;
+};
+
+const addThinkingArgument = (props: unknown, model: string, enable: boolean) => {
+  if (enable) {
+    props.reasoning_effort = 'low';
+  }
+  const lowerCaseMapKey: Map<string, string> = new Map();
+  const modelSet = new Set(
+    Object.keys(thinkingConfig).map((item) => {
+      const lowerCaseItem = item.toLowerCase();
+
+      lowerCaseMapKey.set(lowerCaseItem, item);
+
+      return lowerCaseItem;
+    })
+  );
+  const currentModel = model.toLowerCase();
+
+  const hasModel = modelSet.has(currentModel);
+  if (!hasModel) {
+    return props;
+  }
+
+  // 2.2 Find the model.
+  const keyName = lowerCaseMapKey.get(currentModel);
+  const cfg = thinkingConfig[keyName!];
+
+  if (!cfg) {
+    return props;
+  }
+
+  const queryPath = cfg.query;
+  const parts = queryPath.split('.');
+  let cur: any = props;
+  for (let i = 0; i < parts.length; i++) {
+    const key = parts[i];
+    if (i === parts.length - 1) {
+      const value = enable ? cfg.enable : cfg.disable;
+
+      cur[key] = value;
+    } else {
+      if (typeof cur[key] !== 'object' || cur[key] === null) {
+        cur[key] = {};
+      }
+      cur = cur[key];
+    }
+  }
+
+  return props;
 };

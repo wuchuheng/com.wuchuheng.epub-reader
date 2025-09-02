@@ -1,4 +1,3 @@
-import { logger } from '@/utils/logger';
 import React, { useEffect, useRef } from 'react';
 
 type ScrollGuardProps = {
@@ -9,11 +8,7 @@ type ScrollGuardProps = {
   scrollContainer?: HTMLDivElement;
 };
 
-export const ScrollGuard: React.FC<ScrollGuardProps> = ({
-  onVisible,
-  bufferPx = 100,
-  scrollContainer,
-}) => {
+export const ScrollGuard: React.FC<ScrollGuardProps> = ({ onVisible, bufferPx = 100 }) => {
   const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
