@@ -106,6 +106,7 @@ export const useFetchAIMessage = ({
 
 const addThinkingArgument = (props: unknown, model: string, enable: boolean) => {
   if (enable) {
+    // @ts-expect-error Intentionally accessing property on unknown type for dynamic configuration
     props.reasoning_effort = 'low';
   }
   const lowerCaseMapKey: Map<string, string> = new Map();

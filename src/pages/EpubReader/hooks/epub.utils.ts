@@ -5,6 +5,22 @@ import { logger } from '../../../utils/logger';
 import { SelectInfo } from '../../../types/epub';
 import { TOUCH_TIMING, SELECTION_COLORS, WORD_BOUNDARY_REGEX } from '../../../constants/epub';
 
+/**
+ * Custom CaretPosition interface representing the return value of caretPositionFromPoint
+ */
+interface CustomCaretPosition {
+  offsetNode: Node;
+  offset: number;
+}
+
+/**
+ * Extended Document type with caretPositionFromPoint method
+ * This method is available in modern browsers but missing from TypeScript's DOM types
+ */
+type DocumentWithCaretPosition = Document & {
+  caretPositionFromPoint?(x: number, y: number): CustomCaretPosition | undefined;
+};
+
 type SetupRenditionEventsProps = {
   rendition: Rendition;
   book: Book;
@@ -375,7 +391,7 @@ const createCaretRange = (
   clientY: number
 ): Range | null => {
   try {
-    const caretPosition = document.caretPositionFromPoint?.(
+    const caretPosition = (document as DocumentWithCaretPosition).caretPositionFromPoint?.(
       clientX - window.scrollX,
       clientY - window.scrollY
     );
@@ -405,7 +421,7 @@ const getWordAtPointer = (pointer: PointerEvent, contents: Contents): SelectInfo
     const y = pointer.clientY - window.scrollY;
 
     // Create a range at the pointer position
-    const caretPosition = document.caretPositionFromPoint?.(x, y);
+    const caretPosition = (document as DocumentWithCaretPosition).caretPositionFromPoint?.(x, y);
     if (!caretPosition) return null;
 
     const range = document.createRange();

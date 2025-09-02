@@ -50,7 +50,7 @@ export type TouchState = {
   isLongPress: boolean;
   startTime: number;
   startPos: { x: number; y: number };
-  timer: number | null;
+  timer: NodeJS.Timeout | null;
 };
 
 export const latestReadingLocation = createStorageManager('latestReadingLocation_');

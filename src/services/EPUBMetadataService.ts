@@ -11,10 +11,9 @@ import { performFileOperation } from '../utils/fileOperations';
 export async function extractMetadata(file: File): Promise<EPUBMetaData> {
   logger.log('Starting EPUB metadata extraction for:', file.name);
 
-  return performFileOperation(async () => {
-    logger.log('Starting EPUB metadata extraction for:', file.name);
-
-    // 1. Input handling - validate file
+  // 1. Input handling - perform file operation with proper error handling
+  const result = await performFileOperation(async () => {
+    // 1.1 Validate file
     const validationError = getEpubValidationError(file);
     if (validationError) {
       throw new Error(validationError);
@@ -47,14 +46,20 @@ export async function extractMetadata(file: File): Promise<EPUBMetaData> {
       chapterCount: spine.length || 0,
       coverPath: cover,
     };
-  }, 'extract EPUB metadata').catch((error) => {
-    logger.error('Failed to extract EPUB metadata:', error);
+  }, 'extract EPUB metadata');
+
+  // 2. Handle the result and return appropriate metadata
+  if (result.success && result.data) {
+    return result.data;
+  } else {
+    // 3. Return fallback metadata when extraction fails
+    logger.error('Failed to extract EPUB metadata:', result.error);
     return {
       title: file.name.replace(/\.epub$/i, ''),
       author: 'Unknown Author',
       chapterCount: 0,
     };
-  });
+  }
 }
 
 /**
@@ -162,6 +167,8 @@ export const getBookByBookId = async (bookId: string): Promise<Book> => {
   const bookFile = await OPFSManager.getBookFile(bookId);
 
   // 3.2 Create book instance
+  // Create book instance from ArrayBuffer. Suppress TS overload error because runtime accepts ArrayBuffer.
+  // @ts-expect-error - epubjs typings don't include ArrayBuffer overloads but the runtime works.
   const book = new Book(bookFile);
   console.log('Created book instance:', book);
 
