@@ -80,14 +80,24 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
   } = useReader({
     book: props.book,
     onClick: onClickReaderView,
-    onSelect: (selectedInfo: SelectInfo) => setContextMenu({ tabIndex: 0, ...selectedInfo }),
+    onSelect: (selectedInfo: SelectInfo) => {
+      setContextMenu({ tabIndex: 0, ...selectedInfo });
+      setMenuVisible(false);
+      setTocVisible(false);
+    },
   });
+
+  const handleChangeMenuIndex = (index: number) => {
+    setContextMenu((prev) => ({ ...prev, tabIndex: index }));
+
+    // 2.2 Hide the menu and table of contents if that is visible.
+  };
 
   return (
     <div className="relative flex h-screen flex-col bg-white">
       <ReaderHeader visible={menuVisible} onOpenToc={onToggleToc} />
       <ContextMenuComponent
-        onChangeIndex={(index) => setContextMenu((prev) => ({ ...prev, tabIndex: index }))}
+        onChangeIndex={handleChangeMenuIndex}
         tabIndex={contextMenu.tabIndex}
         words={contextMenu.words}
         context={contextMenu.context}
