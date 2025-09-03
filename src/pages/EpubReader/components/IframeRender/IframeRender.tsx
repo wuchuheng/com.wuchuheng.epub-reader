@@ -21,10 +21,13 @@ export const IframeRender: React.FC<IframeRenderProps> = ({ url, words, context 
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
+  // url encode the context.
+  const encodedContext = encodeURIComponent(context);
+
   const newUrl = replaceWords({
     template: url,
     words,
-    context,
+    context: encodedContext,
   });
 
   // 2. Core processing - event handlers
