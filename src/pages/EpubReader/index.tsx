@@ -11,6 +11,7 @@ import { InvalidBookError } from './components/ErrorRender';
 import { useReader } from './hooks/useEpubReader';
 import { ContextMenu, SelectInfo } from '../../types/epub';
 import ContextMenuComponent from './components/ContextMenu';
+import { NextPageButton, PrevPageButton } from './components/directory/NextPageButton';
 
 /**
  * Complete EPUB reader page component
@@ -115,6 +116,9 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
 
       {/* Toggle button to show menu when hidden */}
       <MenuButton visible={!menuVisible} setVisible={setMenuVisible} />
+
+      <PrevPageButton onClick={onPrev} />
+      <NextPageButton onClick={onNext} />
 
       <div className="relative h-full w-full" ref={containerRef} />
 
