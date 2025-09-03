@@ -94,6 +94,36 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
     // 2.2 Hide the menu and table of contents if that is visible.
   };
 
+  useEffect(() => {
+    // Add this to your EPUB reader's JavaScript
+    window.addEventListener('keydown', (event) => {
+      console.log('Keydown event:', event.key, event.code, event.keyCode); // Debug: Check what values are captured
+
+      const key = event.key || event.code; // Fallback to handle variations
+
+      if (key === 'AudioVolumeUp' || key === 'VolumeUp' || event.keyCode === 183) {
+        event.preventDefault(); // Try to stop system volume change (may not always work)
+        console.log('Volume Up detected - Go to next page');
+        onNext();
+
+        // yourEpubReader.nextPage();
+      } else if (key === 'AudioVolumeDown' || key === 'VolumeDown' || event.keyCode === 182) {
+        event.preventDefault();
+        console.log('Volume Down detected - Go to previous page');
+        onPrev();
+        // yourEpubReader.previousPage();
+      }
+    });
+  }, [onPrev, onNext]);
+
+  useEffect(() => {
+    function onVolumeButtonsListener(info) {
+      console.log('Button pressed: ' + info.signal);
+      onNext();
+    }
+    window.addEventListener('volumebuttonslistener', onVolumeButtonsListener, false);
+  }, []);
+
   return (
     <div className="relative flex h-screen flex-col bg-white">
       <ReaderHeader visible={menuVisible} onOpenToc={onToggleToc} />
