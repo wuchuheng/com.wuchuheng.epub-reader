@@ -82,6 +82,7 @@ export const ContextMenuSettingsPage: React.FC = () => {
                   tools={contextMenuSettings.settings.items || []}
                   onToolUpdate={contextMenuSettings.updateTool}
                   onToolRemove={contextMenuSettings.removeTool}
+                  onToolReorder={contextMenuSettings.reorderTools}
                   apiEndpoint={contextMenuSettings.settings.api || ''}
                   apiKey={contextMenuSettings.settings.key || ''}
                 />

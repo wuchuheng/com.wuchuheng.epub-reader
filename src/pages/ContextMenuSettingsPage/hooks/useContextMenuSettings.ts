@@ -99,6 +99,18 @@ export const useContextMenuSettings = () => {
     }));
   }, []);
 
+  const reorderTools = useCallback((fromIndex: number, toIndex: number) => {
+    setSettings((prev) => {
+      const newItems = [...prev.items];
+      const [reorderedItem] = newItems.splice(fromIndex, 1);
+      newItems.splice(toIndex, 0, reorderedItem);
+      return {
+        ...prev,
+        items: newItems,
+      };
+    });
+  }, []);
+
   // 3. Save settings to OPFS
   const saveSettings = useCallback(async () => {
     try {
@@ -130,6 +142,7 @@ export const useContextMenuSettings = () => {
     addTool,
     removeTool,
     updateTool,
+    reorderTools,
     saveSettings,
   };
 };

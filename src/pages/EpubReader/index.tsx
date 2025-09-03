@@ -116,14 +116,6 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
     });
   }, [onPrev, onNext]);
 
-  useEffect(() => {
-    function onVolumeButtonsListener(info) {
-      console.log('Button pressed: ' + info.signal);
-      onNext();
-    }
-    window.addEventListener('volumebuttonslistener', onVolumeButtonsListener, false);
-  }, []);
-
   return (
     <div className="relative flex h-screen flex-col bg-white">
       <ReaderHeader visible={menuVisible} onOpenToc={onToggleToc} />
