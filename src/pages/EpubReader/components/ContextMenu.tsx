@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { AISettingItem, ContextMenuSettings } from '../../../types/epub';
+import { AISettingItem, ContextMenuSettings, IframeSettingItem } from '../../../types/epub';
 import { getContextMenuSettings } from '../../../services/OPFSManager';
 import { AIAgent } from './AIAgent/AIAgent';
+import { IframeRender } from './IframeRender/IframeRender';
 
 export interface ContextMenuProps {
   tabIndex: number | null;
@@ -28,6 +29,9 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
   const AISetting: AISettingItem | null =
     currentItem && currentItem.type === 'AI' ? (currentItem as AISettingItem) : null;
 
+  const iframeSettings: IframeSettingItem | null =
+    currentItem && currentItem.type === 'iframe' ? (currentItem as IframeSettingItem) : null;
+
   return (
     <div
       className="absolute bottom-0 left-0 right-0 top-0 z-50 flex items-center justify-center shadow-lg"
@@ -51,6 +55,10 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
             prompt={AISetting!.prompt}
             reasoningEnabled={AISetting!.reasoningEnabled}
           />
+        )}
+
+        {currentItem && currentItem.type === 'iframe' && (
+          <IframeRender url={iframeSettings!.url} words={props.words} context={props.context} />
         )}
 
         <div className="flex h-12 justify-between divide-x divide-black">
