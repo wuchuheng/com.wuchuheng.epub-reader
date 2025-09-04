@@ -3,10 +3,11 @@ import { Book, Rendition } from 'epubjs';
 import { logger } from '../../../utils/logger';
 import { SelectInfo, TocItem } from '../../../types/epub';
 import { useParams } from 'react-router-dom';
-import { createStorageManager, setupRenditionEvents } from './epub.utils';
+import { createStorageManager } from './epub.utils';
 import { debounce } from '@wuchuheng/helper';
 import { RENDERING_CONFIG } from '../../../constants/epub';
 import { useKeyboardNavigation } from './useKeyboardNavigator';
+import { setupRenditionEvents } from '../services/renditionEvent.service';
 
 // Types
 export type RenditionLocation = {

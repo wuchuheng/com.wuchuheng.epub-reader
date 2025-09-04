@@ -2,6 +2,8 @@
  * EPUB.js type extensions and application-specific types
  */
 
+import Contents from 'epubjs/types/contents';
+
 // Table of Contents item structure
 export interface TocItem {
   href: string;
@@ -83,3 +85,18 @@ export type ContextMenuSettings = {
   // An array of ContextMenuItem objects representing individual menu items.
   items: ContextMenuItem[];
 };
+
+/**
+ * Interface representing the IframeView from epub.js
+ * This is the second parameter passed to the 'rendered' event handler
+ */
+export interface EpubIframeView {
+  /** The actual HTML iframe element */
+  iframe: HTMLIFrameElement;
+  /** The document object inside the iframe */
+  document: Document;
+  /** The window object inside the iframe */
+  window: Window;
+  /** Contents object for manipulating the iframe content */
+  contents: Contents;
+}
