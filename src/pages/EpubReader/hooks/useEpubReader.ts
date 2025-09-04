@@ -213,10 +213,10 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
   });
 
   const onSelectionCompleted = useCallback(
-    debounce<void>(() => {
-      if (selectedInfoRef.current) {
-        logger.log(`Omit event:`, selectedInfoRef.current);
-        props.onSelect(selectedInfoRef.current);
+    debounce<SelectInfo>((selectedInfo: SelectInfo) => {
+      if (selectedInfo) {
+        logger.log(`Omit event:`, selectedInfo);
+        props.onSelect(selectedInfo);
       }
     }, 200),
     []
@@ -240,13 +240,6 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
       book: props.book,
       bookId: bookId!,
       onSelectionCompleted,
-      onSelected: async (cfiRange) => {
-        const info = await extractSelectedInfo({
-          book: props.book,
-          cfiRange,
-        });
-        onSelectedInfo(info);
-      },
       onClick: props.onClick,
       onClickContent: (selected) => onSelectedInfo(selected),
       touchState: touchStateRef,
