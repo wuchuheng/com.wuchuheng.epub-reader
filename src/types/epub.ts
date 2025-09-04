@@ -87,21 +87,6 @@ export type ContextMenuSettings = {
 };
 
 /**
- * Interface representing the IframeView from epub.js
- * This is the second parameter passed to the 'rendered' event handler
- */
-export interface EpubIframeView {
-  /** The actual HTML iframe element */
-  iframe: HTMLIFrameElement;
-  /** The document object inside the iframe */
-  document: Document;
-  /** The window object inside the iframe */
-  window: Window;
-  /** Contents object for manipulating the iframe content */
-  contents: Contents;
-}
-
-/**
  * Touch state for mobile selection handling
  */
 export interface TouchState {
@@ -109,4 +94,18 @@ export interface TouchState {
   startTime: number;
   startPos: { x: number; y: number };
   timer: NodeJS.Timeout | null;
+}
+
+/**
+ * Extended Rendition interface with manager property
+ */
+export interface ExtendedRendition {
+  manager?: {
+    container?: HTMLElement;
+  };
+  currentLocation(): {
+    start?: {
+      cfi?: string;
+    };
+  };
 }
