@@ -23,7 +23,6 @@ export const AIAgent: React.FC<AIAgentProps> = (props) => {
     {
       role: 'user',
       content,
-      highlightWords: props.words,
     },
   ]);
 

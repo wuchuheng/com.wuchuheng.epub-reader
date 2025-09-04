@@ -57,7 +57,11 @@ function extractSelectionToWords(doc: Document): SelectInfo | undefined {
 
   // 2.4 Extract additional context
   const selectedText = selection.toString();
-  const context = getContext(range);
+
+  const startContent = range.startContainer.textContent!.slice(0, range.startOffset);
+  const endContent = range.endContainer.textContent!.slice(range.endOffset);
+
+  const context = `${startContent}**${selectedText}**${endContent}`;
 
   // 3. return result.
   return { words: selectedText, context };
