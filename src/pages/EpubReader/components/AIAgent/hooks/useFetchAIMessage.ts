@@ -136,7 +136,7 @@ const addThinkingArgument = (props: unknown, model: string, enable: boolean) => 
 
   const queryPath = cfg.query;
   const parts = queryPath.split('.');
-  let cur: any = props;
+  let cur: Record<string, unknown> = props as Record<string, unknown>;
   for (let i = 0; i < parts.length; i++) {
     const key = parts[i];
     if (i === parts.length - 1) {
@@ -147,7 +147,7 @@ const addThinkingArgument = (props: unknown, model: string, enable: boolean) => 
       if (typeof cur[key] !== 'object' || cur[key] === null) {
         cur[key] = {};
       }
-      cur = cur[key];
+      cur = cur[key] as Record<string, unknown>;
     }
   }
 

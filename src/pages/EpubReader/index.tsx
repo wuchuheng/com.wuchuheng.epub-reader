@@ -88,11 +88,8 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
     },
   });
 
-  const handleChangeMenuIndex = (index: number) => {
+  const handleChangeMenuIndex = (index: number) =>
     setContextMenu((prev) => ({ ...prev, tabIndex: index }));
-
-    // 2.2 Hide the menu and table of contents if that is visible.
-  };
 
   useEffect(() => {
     // Add this to your EPUB reader's JavaScript

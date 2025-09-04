@@ -33,9 +33,6 @@ function extractSelectionToWords(doc: Document): SelectInfo | undefined {
 
   const range = selection.getRangeAt(0);
 
-  // If collapsed (no selection), skip
-  if (range.collapsed) return;
-
   // 2. Handle logic.
   // 2.1 Adjust start to word boundaries
   while (
