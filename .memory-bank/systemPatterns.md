@@ -8,7 +8,8 @@
 Application Layer
 ├── Pages (Route-level)
 ├── Components (Reusable UI)
-├── Services (Business logic)
+├── Hooks (Business logic)
+├── Services (External integrations)
 └── Store (State management)
 ```
 
@@ -79,6 +80,44 @@ export const uploadBook = createAsyncThunk(
 );
 ```
 
+## **Text Selection Patterns**
+
+### **Selection Handler Pattern**
+
+```typescript
+// Text extraction with context
+const extractSelectedInfo = async ({
+  book,
+  cfiRange,
+}: SelectionHandlerProps): Promise<SelectInfo | undefined> => {
+  // 1. Input validation
+  // 2. Core processing - get range and extract text
+  // 3. Output handling - return structured selection info
+};
+```
+
+### **Context Extraction Pattern**
+
+```typescript
+// Find paragraph context for selected text
+const findParagraphElement = (node: Node): HTMLElement | null => {
+  // Traverse up DOM to find paragraph container
+  // Return context for AI analysis
+};
+```
+
+### **Touch Event Pattern**
+
+```typescript
+// Touch state management for mobile
+type TouchState = {
+  isLongPress: boolean;
+  startTime: number;
+  startPos: { x: number; y: number };
+  timer: NodeJS.Timeout | null;
+};
+```
+
 ## **Navigation & Settings Patterns**
 
 ### **Container Layout**
@@ -136,6 +175,16 @@ const result = template.replace(/\{words\}/g, selectedWords).replace(/\{context\
 - Token usage status bar
 - Copy/refresh functionality
 
+### **Auto-scroll Pattern**
+
+```typescript
+// Smart scrolling based on user behavior
+const useAutoScrollOnUpdate = (conversationRef, messageList, smoothScrollToBottom, threshold) => {
+  // Auto-scroll when new messages arrive if user is near bottom
+  // Respect user scroll position to prevent unwanted scrolling
+};
+```
+
 ## **Type Safety Patterns**
 
 ### **Interface Design**
@@ -159,6 +208,18 @@ interface UseReaderReturn {
 
 ## **Performance Patterns**
 
+### **Debouncing Pattern**
+
+```typescript
+// Debounced user interactions
+const onSelectionCompleted = useCallback(
+  debounce<void>(() => {
+    // Handle selection after user stops interacting
+  }, 200),
+  []
+);
+```
+
 ### **Code Splitting**
 
 - Lazy loading for routes
@@ -170,12 +231,14 @@ interface UseReaderReturn {
 - Proper cleanup in useEffect
 - Event listener removal
 - Resource disposal
+- Timer cleanup for debounced operations
 
 ### **Optimization**
 
 - Bundle size reduction
 - Lazy loading strategies
 - Efficient rendering
+- Smart scrolling behavior
 
 ---
 

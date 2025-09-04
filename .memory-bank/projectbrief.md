@@ -2,13 +2,13 @@
 
 ## **Project Overview**
 
-A modern EPUB reader application with AI-powered text analysis and explanation capabilities. Built with React and TypeScript, featuring a clean interface and advanced reading features.
+A modern EPUB reader application with AI-powered text analysis and explanation capabilities. Built with React and TypeScript, featuring a clean interface and advanced reading features with sophisticated AI integration.
 
 ## **Current Status**
 
-- **Phase**: 3 AI Integration (60% Complete)
-- **Focus**: Implementing AI Agent system for text analysis
-- **Next Milestone**: Complete text selection and context menu integration
+- **Phase**: 3 AI Integration (75% Complete)
+- **Focus**: Completing context menu system and reading customization
+- **Next Milestone**: Full AI feature integration with dictionary support
 
 ## **Key Features**
 
@@ -19,55 +19,59 @@ A modern EPUB reader application with AI-powered text analysis and explanation c
 - Reading progress persistence
 - Responsive design for all devices
 - Keyboard navigation support
+- Touch event handling for mobile devices
 
-### **AI Integration (In Development)**
+### **AI Integration (Mostly Complete)**
 
-- OpenAI-powered text analysis
-- Real-time conversation interface
-- Streaming AI responses
-- Token usage tracking
-- Reasoning content display
-- Word highlighting and explanations
+- OpenAI-powered text analysis and explanations
+- Real-time conversation interface with streaming responses
+- Advanced text selection with paragraph context extraction
+- Token usage tracking and cost monitoring
+- Reasoning content display with foldable interface
+- Word highlighting and automatic emphasis
+- Template processing with dynamic variable replacement
 
 ### **User Interface**
 
-- Clean, modern design
-- Intuitive navigation controls
-- Settings management system
-- Mobile-optimized interface
-- Accessibility features
+- Clean, modern design with responsive layout
+- Intuitive navigation controls and breadcrumbs
+- Comprehensive settings management system
+- Mobile-optimized interface with touch support
+- Accessibility features with ARIA labels
+- Auto-scroll management with user behavior detection
 
 ## **Technology Highlights**
 
-- React 18 + TypeScript for type safety
-- EPUB.js for book rendering
-- OPFS for browser-based storage
-- OpenAI API for AI features
-- TailwindCSS for styling
-- Redux Toolkit for state management
+- React 18 + TypeScript for type safety and performance
+- EPUB.js for robust book rendering and navigation
+- OPFS for browser-based file storage and management
+- OpenAI API for advanced AI features and streaming responses
+- TailwindCSS for modern, utility-first styling
+- Redux Toolkit for efficient state management
+- Advanced utilities: jszip, dompurify, dayjs, uuid
 
 ## **Current Development Focus**
 
-1. **Text Selection Integration**: Connect AI Agent to selected text
-2. **Context Menu System**: Right-click menu for AI tools
-3. **Reading Customization**: Font, theme, and layout options
-4. **Dictionary Integration**: Word definition lookup
-5. **Performance Optimization**: Smooth user experience
+1. **Context Menu System**: Right-click menu for AI tools and dictionary
+2. **Reading Customization**: Font, theme, and layout options
+3. **Dictionary Integration**: Word definition lookup with Eudic API
+4. **Performance Optimization**: Enhanced memory management and smooth UX
+5. **Final Polish**: Testing, accessibility improvements, and user experience refinements
 
 ## **Target Audience**
 
-- Students and researchers
-- Book enthusiasts and readers
-- Users needing AI-powered text analysis
-- Anyone looking for a modern reading experience
+- Students and researchers needing AI-powered text analysis
+- Book enthusiasts and readers seeking modern reading experience
+- Users requiring advanced text explanation and context features
+- Anyone looking for intelligent, AI-enhanced reading capabilities
 
 ## **Success Metrics**
 
-- User engagement with AI features
-- Reading session duration
-- Feature adoption rates
-- Performance and load times
-- User satisfaction scores
+- User engagement with AI features and conversation interface
+- Reading session duration and text selection frequency
+- Feature adoption rates and user satisfaction scores
+- Performance metrics: load times, memory usage, battery impact
+- AI response quality and token usage efficiency
 
 ---
 
