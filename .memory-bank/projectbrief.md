@@ -2,13 +2,13 @@
 
 ## **Project Overview**
 
-A modern EPUB reader application with AI-powered text analysis and explanation capabilities. Built with React and TypeScript, featuring a clean interface and advanced reading features with sophisticated AI integration.
+A modern EPUB reader application with AI-powered text analysis and explanation capabilities. Built with React and TypeScript, featuring a clean interface and advanced reading features with sophisticated AI integration and context menu system.
 
 ## **Current Status**
 
-- **Phase**: 3 AI Integration (75% Complete)
-- **Focus**: Completing context menu system and reading customization
-- **Next Milestone**: Full AI feature integration with dictionary support
+- **Phase**: 3 AI Integration (85% Complete)
+- **Focus**: Completing dictionary integration and reading customization
+- **Next Milestone**: Full feature completion with performance optimization
 
 ## **Key Features**
 
@@ -18,8 +18,9 @@ A modern EPUB reader application with AI-powered text analysis and explanation c
 - Table of contents with chapter tracking
 - Reading progress persistence
 - Responsive design for all devices
-- Keyboard navigation support
+- Enhanced keyboard navigation (arrow keys + volume keys)
 - Touch event handling for mobile devices
+- Dedicated next/previous page buttons
 
 ### **AI Integration (Mostly Complete)**
 
@@ -30,15 +31,26 @@ A modern EPUB reader application with AI-powered text analysis and explanation c
 - Reasoning content display with foldable interface
 - Word highlighting and automatic emphasis
 - Template processing with dynamic variable replacement
+- Context menu system for quick AI access
 
 ### **User Interface**
 
 - Clean, modern design with responsive layout
 - Intuitive navigation controls and breadcrumbs
 - Comprehensive settings management system
-- Mobile-optimized interface with touch support
+- Mobile-optimized interface with touch and volume key support
 - Accessibility features with ARIA labels
 - Auto-scroll management with user behavior detection
+- Dynamic context menu with multiple tool support
+
+### **Advanced Features**
+
+- Sophisticated text selection with word boundary detection
+- Service-based architecture for clean separation of concerns
+- Context menu system supporting AI tools and iframe tools
+- Enhanced event handling with proper cleanup
+- Multiple navigation methods for different devices
+- OPFS-based storage for efficient file management
 
 ## **Technology Highlights**
 
@@ -48,15 +60,14 @@ A modern EPUB reader application with AI-powered text analysis and explanation c
 - OpenAI API for advanced AI features and streaming responses
 - TailwindCSS for modern, utility-first styling
 - Redux Toolkit for efficient state management
-- Advanced utilities: jszip, dompurify, dayjs, uuid
+- Advanced utilities: jszip, dompurify, dayjs, uuid, @wuchuheng/helper
 
 ## **Current Development Focus**
 
-1. **Context Menu System**: Right-click menu for AI tools and dictionary
+1. **Dictionary Integration**: Eudic API for word definitions and explanations
 2. **Reading Customization**: Font, theme, and layout options
-3. **Dictionary Integration**: Word definition lookup with Eudic API
-4. **Performance Optimization**: Enhanced memory management and smooth UX
-5. **Final Polish**: Testing, accessibility improvements, and user experience refinements
+3. **Performance Optimization**: Enhanced memory management and smooth UX
+4. **Final Polish**: Testing, accessibility improvements, and user experience refinements
 
 ## **Target Audience**
 
@@ -64,14 +75,17 @@ A modern EPUB reader application with AI-powered text analysis and explanation c
 - Book enthusiasts and readers seeking modern reading experience
 - Users requiring advanced text explanation and context features
 - Anyone looking for intelligent, AI-enhanced reading capabilities
+- Mobile users who prefer volume key navigation
 
 ## **Success Metrics**
 
 - User engagement with AI features and conversation interface
 - Reading session duration and text selection frequency
+- Context menu usage and tool adoption rates
 - Feature adoption rates and user satisfaction scores
 - Performance metrics: load times, memory usage, battery impact
 - AI response quality and token usage efficiency
+- Mobile navigation satisfaction with volume key support
 
 ---
 

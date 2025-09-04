@@ -33,6 +33,7 @@
 - Table of contents management and chapter tracking
 - Location persistence and progress tracking
 - Range selection and text extraction
+- Event handling for rendition and user interactions
 
 ### **Storage**
 
@@ -56,6 +57,39 @@
 - **Markdown Rendering**: Formatted AI responses with GFM support
 - **Word Highlighting**: Visual emphasis in user messages
 - **Context Awareness**: Paragraph-level text context extraction
+
+## **Service Architecture**
+
+### **Event Management**
+
+- **Service Separation**: Dedicated services for rendition events and selection handling
+- **Clean Event Setup**: Centralized event configuration with proper cleanup
+- **Debounced Operations**: User interactions optimized with debouncing
+- **State Coordination**: Coordinated state updates between services
+
+### **Text Processing**
+
+- **Word Boundary Detection**: Advanced text selection with intelligent boundary detection
+- **Context Extraction**: Paragraph-level context extraction for AI analysis
+- **Selection Management**: Sophisticated text selection with range manipulation
+
+## **Navigation Systems**
+
+### **Enhanced Navigation**
+
+- **Keyboard Navigation**: Arrow key support for desktop navigation
+- **Volume Key Navigation**: Mobile device volume key support for page turning
+- **Dedicated Buttons**: Custom next/previous page buttons with proper styling
+- **Touch Support**: Long press and touch event handling for mobile devices
+
+## **Context Menu System**
+
+### **Dynamic Context Menu**
+
+- **Multi-Tool Support**: AI tools and iframe tools in unified interface
+- **Dynamic Loading**: Settings loaded from OPFS on demand
+- **Tab Management**: Seamless switching between different tool types
+- **Context Injection**: Selected text and context passed to tools
 
 ## **Development Tools**
 
@@ -93,7 +127,14 @@
 - **Cleanup Patterns**: Proper resource disposal in useEffect
 - **Event Listeners**: Removal and prevention of memory leaks
 - **Timer Management**: Cleanup for debounced operations
-- **Bundle Size**: Optimized imports and tree shaking
+- **Service Separation**: Clean separation of concerns for better resource management
+
+### **Bundle Size**
+
+- **Optimized Imports**: Efficient import strategies
+- **Tree Shaking**: Removal of unused code
+- **Vendor Separation**: Manual chunking for better caching
+- **Lazy Loading**: On-demand loading of components and routes
 
 ## **Utility Libraries**
 
@@ -103,7 +144,7 @@
 - **dompurify**: HTML sanitization for security
 - **dayjs**: Date and time manipulation
 - **uuid**: Unique identifier generation
-- **@wuchuheng/helper**: Utility functions for common operations
+- **@wuchuheng/helper**: Utility functions for common operations including debouncing
 
 ### **UI Components**
 
@@ -131,7 +172,7 @@
 - **Chrome/Edge**: Full feature support with latest APIs
 - **Firefox**: Good support with some limitations on OPFS
 - **Safari**: Partial support, progressive enhancement approach
-- **Mobile**: Touch-optimized interface with responsive design
+- **Mobile**: Touch-optimized interface with responsive design and volume key navigation
 
 ---
 

@@ -1,5 +1,4 @@
 import { SelectInfo } from '@/types/epub';
-import { getContext } from '../hooks/epub.utils';
 
 type OnExtractSelection = (selectedInfo: SelectInfo) => void;
 

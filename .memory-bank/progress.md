@@ -1,6 +1,6 @@
 # Progress: EPUB Reader Development
 
-## **Current Status: Phase 3 AI Integration - 75% Complete**
+## **Current Status: Phase 3 AI Integration - 85% Complete**
 
 ### **Completed Features**
 
@@ -14,13 +14,16 @@
 - ✅ **Template System**: Dynamic prompt replacement with variables
 - ✅ **Settings System**: Complete configuration interface
 - ✅ **Navigation Components**: Consistent navigation patterns
-- ✅ **Text Selection System**: Complete text extraction and context handling
-- ✅ **Keyboard Navigation**: Arrow key support for page navigation
+- ✅ **Text Selection System**: Complete text extraction with paragraph context
+- ✅ **Keyboard Navigation**: Arrow key and volume key support for page navigation
 - ✅ **Auto-scroll Management**: Smooth scrolling with user behavior detection
+- ✅ **Context Menu System**: Right-click menu with AI tools and iframe support
+- ✅ **Service Architecture**: Clean separation of rendition events and selection handling
+- ✅ **Advanced Text Selection**: Word boundary detection and context extraction
 
 ### **Phase 3 AI Integration - Progress**
 
-#### **Completed (75%)**
+#### **Completed (85%)**
 
 - ✅ **OpenAI Integration**: Streaming API with token tracking
 - ✅ **AI Agent Components**: Complete chat interface system
@@ -31,32 +34,30 @@
 - ✅ **Text Selection Integration**: Full text extraction with paragraph context
 - ✅ **Touch Event Handling**: Long press and selection management
 - ✅ **Performance Optimization**: Debounced selection and smooth scrolling
+- ✅ **Context Menu System**: Complete implementation with AI and iframe tools
+- ✅ **Volume Key Navigation**: Mobile device navigation support
+- ✅ **Service Architecture**: Separation of concerns with dedicated services
 
-#### **In Progress (15%)**
-
-- 🔄 **Context Menu System**: Right-click menu for AI features
-
-#### **Pending (10%)**
+#### **Pending (15%)**
 
 - ❌ **Dictionary Integration**: Eudic API for word definitions
 - ❌ **Reading Customization**: Font, theme, and layout settings
 
 ### **Technical Progress**
 
-- **Architecture**: Clean component structure with proper separation
+- **Architecture**: Clean component structure with proper separation and service layer
 - **Type Safety**: 100% TypeScript coverage with zero 'any' types
-- **Performance**: Optimized rendering with debounced operations
-- **User Experience**: Responsive design with accessibility features
-- **Code Quality**: Zero ESLint warnings, clean imports, proper error handling
-- **Memory Management**: Proper cleanup and resource disposal
+- **Performance**: Optimized rendering with debounced operations and clean event handling
+- **User Experience**: Responsive design with accessibility features and mobile navigation
+- **Code Quality**: Zero ESLint warnings, clean imports, proper error handling and cleanup
+- **Memory Management**: Proper cleanup and resource disposal with service separation
 
 ### **Next Development Steps**
 
-1. Implement context menu interface for AI features
+1. Implement dictionary integration with Eudic API
 2. Add reading customization options (fonts, themes, layout)
-3. Integrate dictionary functionality
-4. Performance optimization and testing
-5. Final polish and user experience improvements
+3. Performance optimization and testing
+4. Final polish and user experience improvements
 
 ---
 
