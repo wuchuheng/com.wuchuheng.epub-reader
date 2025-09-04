@@ -100,3 +100,13 @@ export interface EpubIframeView {
   /** Contents object for manipulating the iframe content */
   contents: Contents;
 }
+
+/**
+ * Touch state for mobile selection handling
+ */
+export interface TouchState {
+  isLongPress: boolean;
+  startTime: number;
+  startPos: { x: number; y: number };
+  timer: NodeJS.Timeout | null;
+}

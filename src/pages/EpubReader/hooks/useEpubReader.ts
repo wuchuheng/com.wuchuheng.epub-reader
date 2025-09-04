@@ -48,13 +48,6 @@ type UseReaderProps = {
   onSelect: (selectedInfo: SelectInfo) => void;
 };
 
-export type TouchState = {
-  isLongPress: boolean;
-  startTime: number;
-  startPos: { x: number; y: number };
-  timer: NodeJS.Timeout | null;
-};
-
 export const latestReadingLocation = createStorageManager('latestReadingLocation_');
 
 /**

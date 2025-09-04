@@ -1,11 +1,11 @@
 import { Book, Rendition } from 'epubjs';
 import Section from 'epubjs/types/section';
-import { logger } from '../../../utils/logger';
-import { EpubIframeView, SelectInfo } from '../../../types/epub';
-import { handleSelectionEnd as handleSelectionEnd } from '../services/selection.service';
+import { EpubIframeView, SelectInfo, TouchState } from '../../../types/epub';
 import { latestReadingLocation, RenditionLocation } from '../hooks/useEpubReader';
+import { setupMobileTextSelection } from './mobileSelection.service';
+import { handleComputerSelection } from './computerSelection.service';
 
-type SetupRenditionEventsProps = {
+export type SetupRenditionEventsProps = {
   rendition: Rendition;
   book: Book;
   bookId: string;
@@ -18,15 +18,13 @@ type SetupRenditionEventsProps = {
   };
 };
 
+// Device detection
+export const isMobileDevice = () =>
+  /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
 /**
  * Sets up event listeners for the EPUB.js rendition.
- * @param rendition The EPUB.js rendition instance.
- * @param book The EPUB.js book instance.
- * @param bookId The ID of the book.
- * @param onSelectionHandler The callback to call when text is selected.
- * @param onContentClick The callback to call when the content is clicked.
- * @param touchState The mutable ref object to track touch state.
- * @param setters
+ * @param props The setup properties for rendition events.
  */
 export const setupRenditionEvents = (props: SetupRenditionEventsProps) => {
   // Location tracking
@@ -48,24 +46,14 @@ export const setupRenditionEvents = (props: SetupRenditionEventsProps) => {
       props.setter.setCurrentChapterHref(current.href);
     }
 
-    props.rendition.on('touchend', () => {
-      logger.log('Touch end event detected');
-
-      const doc = iframeView.document;
-      handleSelectionEnd(doc, props.onSelectionCompleted);
-    });
-
-    props.rendition.on('mouseup', (_event: MouseEvent) => {
-      logger.log(`Mouse up event detected`);
-      const doc = iframeView.document;
-      handleSelectionEnd(doc, props.onSelectionCompleted);
-    });
-
     props.rendition.on('click', () => {
       if (props.onClick) props.onClick();
     });
-    props.rendition.on('select', () => {
-      debugger;
-    });
+
+    if (isMobileDevice()) {
+      setupMobileTextSelection(props);
+    } else {
+      handleComputerSelection(props, iframeView);
+    }
   });
 };
