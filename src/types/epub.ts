@@ -1,9 +1,3 @@
-/**
- * EPUB.js type extensions and application-specific types
- */
-
-import Contents from 'epubjs/types/contents';
-
 // Table of Contents item structure
 export interface TocItem {
   href: string;
