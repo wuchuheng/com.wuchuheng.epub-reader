@@ -10,6 +10,7 @@ import {
   safeGetFileHandle,
 } from '../utils/fileOperations';
 import { DEFAULT_CONFIG } from '../constants/epub';
+import { menuItemDefaultConfig } from '@/config/config';
 
 /**
  * Check if OPFS is supported in the current browser
@@ -69,7 +70,7 @@ async function ensureConfigExists(): Promise<void> {
         contextMenu: {
           api: '',
           key: '',
-          items: [],
+          items: menuItemDefaultConfig,
         },
       },
       lastSync: Date.now(),
