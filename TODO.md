@@ -26,3 +26,5 @@
 - [x] Issue: Make the cursor in the prompt input bar automatically focused when the input bar has been display.
 
 - [ ] Issue: AI completion suggestions are not stopping when the user is component is destroyed.
+
+- [x] Issue: When a user clicks on a blank area, a context menu will also pop up. This is not as expected.

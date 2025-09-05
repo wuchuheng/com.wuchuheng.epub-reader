@@ -82,7 +82,9 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
     book: props.book,
     onClick: onClickReaderView,
     onSelect: (selectedInfo: SelectInfo) => {
-      setContextMenu({ tabIndex: 0, ...selectedInfo });
+      if (selectedInfo.words.trim() !== '') {
+        setContextMenu({ tabIndex: 0, ...selectedInfo });
+      }
       setMenuVisible(false);
       setTocVisible(false);
     },
