@@ -1,6 +1,6 @@
 ## TODO list.
 
-- [ ] Implement the autoscroll guard feature in the context menu.
+- [x] Implement the autoscroll guard feature in the context menu.
 - [ ] Simplify the upload UI,
 - [ ] Upload the epub file while the user drags it into the window.
 - [ ] Add a switch to enable the specified context menu item.

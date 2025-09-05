@@ -101,7 +101,7 @@ export const InputBarRender: React.FC<InputBarRenderProps> = ({ onSend, onVisibl
             <textarea
               name="message"
               ref={textareaRef}
-              className="flex-1 resize-y rounded-l-lg border-0 px-3 py-2 outline-none focus:ring-2"
+              className="flex-1 resize-y rounded-l-lg border-0 px-3 outline-none focus:ring-0"
               placeholder={
                 isDesktop
                   ? 'Type your message... (Press Enter to send, Shift+Enter for new line)'

@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { AIAgentProps } from './types/AIAgent';
 import { useSmoothScrollToBottom } from './hooks/useSmoothScroll';
-import { ScrollGuard } from './components/ScrollGuard';
 import { MessageList } from './components/MessageList/MessageList';
 
 /**
@@ -12,12 +11,17 @@ export const AIAgent: React.FC<AIAgentProps> = (props) => {
   const scrollContainerRef: React.RefObject<HTMLDivElement> = useRef<HTMLDivElement>(null);
   const isAutoScrollRef = useRef(true);
   const isGoToBottomRef = useRef<boolean>(true);
-  const { scrollToBottom, handleOnPauseAutoScroll, handleResumeAutoScroll, bufferPx } =
-    useSmoothScrollToBottom({
-      isAutoScrollRef,
-      isGoToBottomRef,
-      scrollContainerRef,
-    });
+  const {
+    scrollToBottom,
+    handleOnPauseAutoScroll,
+    handleResumeAutoScroll,
+    bufferPx,
+    handleWheelEvent,
+  } = useSmoothScrollToBottom({
+    isAutoScrollRef,
+    isGoToBottomRef,
+    scrollContainerRef,
+  });
 
   // Make the scrollbar go to the bottom as the component set tup.
   useEffect(() => {
@@ -45,6 +49,14 @@ export const AIAgent: React.FC<AIAgentProps> = (props) => {
       onMouseDown={handleOnPauseAutoScroll}
       onTouchEnd={handleResumeAutoScroll}
       onMouseUp={handleResumeAutoScroll}
+      onWheel={handleWheelEvent}
+      onScroll={(e) => {
+        const isGoToBottom =
+          e.currentTarget.scrollTop + e.currentTarget.clientHeight >=
+          e.currentTarget.scrollHeight - bufferPx;
+        isGoToBottomRef.current = isGoToBottom;
+        console.log('onScroll - isGoToBottom:', isGoToBottom);
+      }}
     >
       <MessageList
         onChangeMessageList={handleMessageListChange}
@@ -55,14 +67,7 @@ export const AIAgent: React.FC<AIAgentProps> = (props) => {
         }}
         {...props}
       />
-      <ScrollGuard
-        bufferPx={bufferPx}
-        scrollContainer={scrollContainerRef.current}
-        onGuardVisible={(visible) => {
-          isGoToBottomRef.current = visible;
-          console.log('Guard visible:', visible);
-        }}
-      />
+      <div className="w-full text-center text-sm text-gray-400">-- You've reached the end! --</div>
     </div>
   );
 };

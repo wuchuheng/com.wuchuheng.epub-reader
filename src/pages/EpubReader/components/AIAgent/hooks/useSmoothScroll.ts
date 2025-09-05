@@ -1,3 +1,4 @@
+import { debounce } from '@wuchuheng/helper';
 import React, { useCallback, useEffect, useRef } from 'react';
 
 /**
@@ -11,6 +12,8 @@ interface UseSmoothScrollReturn {
   handleResumeAutoScroll: (e: React.MouseEvent | React.TouchEvent) => void;
 
   handleOnPauseAutoScroll: (e: React.MouseEvent | React.TouchEvent) => void;
+
+  handleWheelEvent: (e: React.WheelEvent) => void;
 
   bufferPx: number;
 }
@@ -99,6 +102,7 @@ export function useSmoothScrollToBottom({
     e.stopPropagation();
     isAutoScrollRef.current = false;
     cancelScroll();
+    console.log('Pause auto scroll');
   };
 
   const bufferPx = 100;
@@ -110,7 +114,27 @@ export function useSmoothScrollToBottom({
     isGoToBottomRef.current =
       e.currentTarget.scrollTop + e.currentTarget.clientHeight >=
       e.currentTarget.scrollHeight - bufferPx;
+    console.log('Resume auto scroll. Is at bottom:', isGoToBottomRef.current);
   };
 
-  return { scrollToBottom, handleOnPauseAutoScroll, handleResumeAutoScroll, bufferPx };
+  const handleWheelStopEvent = useCallback(
+    debounce<void>(() => {
+      isAutoScrollRef.current = true;
+    }, 200),
+    []
+  );
+
+  const handleWheelEvent = () => {
+    cancelScroll();
+    isAutoScrollRef.current = false;
+    handleWheelStopEvent();
+  };
+
+  return {
+    scrollToBottom,
+    handleOnPauseAutoScroll,
+    handleResumeAutoScroll,
+    bufferPx,
+    handleWheelEvent,
+  };
 }
