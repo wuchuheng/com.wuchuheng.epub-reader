@@ -10,3 +10,5 @@
 - [ ] Make the app support PWA features.
 - [x] The page-turning keys should be centered at the top and bottom.
 - [ ] Volume keys should be used for page turning. I think may be we can play some mp3 (the file is not included any metadata) files and then to listen to the volume change as user taps the volume keys.
+
+- [x] Minimize the menu bar ICONS and page-turning ICONS to give as much space as possible to display book content.

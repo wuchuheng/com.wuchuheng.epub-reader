@@ -2,9 +2,6 @@ import React, { useEffect } from 'react';
 import { FaChevronLeft } from 'react-icons/fa';
 import { FaChevronRight } from 'react-icons/fa';
 
-// Centralized icon styling to avoid duplication
-const ICON_CLASS_NAME = 'h-20 w-4';
-
 type ButtonContainerProps = {
   onClick: () => void;
   className?: string;
@@ -34,7 +31,7 @@ const ButtonContainer: React.FC<ButtonContainerProps> = ({ onClick, className, i
       }}
       className={`${commonClassName} ${className}`}
     >
-      {icon({ className: ICON_CLASS_NAME })}
+      {icon({ className: 'h-20 w-4 opacity-10' })}
     </button>
   );
 };

@@ -13,12 +13,12 @@ export const MenuButton: React.FC<MenuButtonProps> = (props) => {
         e.stopPropagation();
         props.setVisible(true);
       }}
-      className="absolute left-4 top-4 z-20 rounded-lg bg-white bg-opacity-90 p-2 text-gray-700 shadow-md transition-all duration-200 hover:bg-opacity-100 hover:shadow-lg"
+      className="absolute left-1 top-1 z-20 rounded-sm bg-opacity-90 text-gray-700 shadow-md transition-all duration-200 hover:bg-opacity-100 hover:shadow-lg"
       title="Show menu"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        className="h-6 w-6"
+        className="size-4 text-black"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
