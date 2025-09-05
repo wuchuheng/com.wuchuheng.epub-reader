@@ -1,6 +1,6 @@
 import React from 'react';
 import * as Icons from '../../../components/icons';
-import { useActionData, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 interface ReaderHeaderProps {
   visible: boolean;
