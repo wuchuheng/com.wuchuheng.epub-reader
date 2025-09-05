@@ -47,6 +47,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
       >
         {currentItem && currentItem.type === 'AI' && (
           <AIAgent
+            key={props.tabIndex} // Use key to force remount when switching tabs
             api={menuSetting.api}
             apiKey={menuSetting.key}
             words={props.words}

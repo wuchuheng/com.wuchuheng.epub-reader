@@ -21,7 +21,7 @@
   - [ ] 火山在线翻译引擎
   - [ ] Bing在线翻译引擎
 
-  - [ ] Issue: The switching of the AI context menu was unsuccessful when users attempted to switch the AI tab to another one; consequently, the tab body would not be visible for the expected tab.
+  - [x] Issue: The switching of the AI context menu was unsuccessful when users attempted to switch the AI tab to another one; consequently, the tab body would not be visible for the expected tab.
 
 - [x] Issue: Make the cursor in the prompt input bar automatically focused when the input bar has been display.
 
