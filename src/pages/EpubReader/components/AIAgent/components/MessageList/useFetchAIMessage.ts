@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
 import type { ChatCompletionCreateParamsStreaming } from 'openai/resources/chat/completions';
-import { AIMessageRenderProps } from '../components/AIMessageRender';
-import { AIResponse, MessageItem } from '../types/AIAgent';
+import { AIMessageRenderProps } from '../AIMessageRender';
+import { AIResponse, MessageItem } from '../../types/AIAgent';
 import { thinkingConfig } from '@/config/thinkingConfig';
 
 type UseFetchAIMessageProps = {
