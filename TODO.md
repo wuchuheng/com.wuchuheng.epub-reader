@@ -24,3 +24,5 @@
   - [ ] Issue: The switching of the AI context menu was unsuccessful when users attempted to switch the AI tab to another one; consequently, the tab body would not be visible for the expected tab.
 
 - [ ] Issue: Make the cursor in the prompt input bar automatically focused when the input bar has been display.
+
+- [ ] Issue: AI completion suggestions are not stopping when the user is component is destroyed.
