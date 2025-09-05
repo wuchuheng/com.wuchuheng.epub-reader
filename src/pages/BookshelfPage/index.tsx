@@ -60,13 +60,13 @@ export const BookshelfPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-900">My Bookshelf</h1>
+      <header className="border-b bg-white shadow-sm">
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-gray-900">Epub reader</h1>
             <button
               onClick={() => setShowUploadZone(!showUploadZone)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200"
+              className="rounded-md bg-blue-600 px-4 py-2 text-white transition-colors duration-200 hover:bg-blue-700"
             >
               {showUploadZone ? 'Cancel' : 'Upload Book'}
             </button>
@@ -75,10 +75,10 @@ export const BookshelfPage: React.FC = () => {
       </header>
 
       {/* Main content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Error state */}
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
+          <div className="mb-6 rounded-md border border-red-200 bg-red-50 p-4">
             <div className="flex">
               <div className="flex-shrink-0">
                 <span className="text-red-400">⚠️</span>
@@ -103,7 +103,7 @@ export const BookshelfPage: React.FC = () => {
 
         {/* Browser compatibility warning */}
         {!OPFSManager.isSupported() && (
-          <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-md p-4">
+          <div className="mb-6 rounded-md border border-yellow-200 bg-yellow-50 p-4">
             <div className="flex">
               <div className="flex-shrink-0">
                 <span className="text-yellow-400">⚠️</span>
@@ -130,23 +130,23 @@ export const BookshelfPage: React.FC = () => {
 
         {/* Loading state */}
         {isLoading && books.length === 0 && (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="py-12 text-center">
+            <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
             <p className="text-gray-600">Loading your bookshelf...</p>
           </div>
         )}
 
         {/* Empty state */}
         {!isLoading && books.length === 0 && !showUploadZone && (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">📚</div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">No books yet</h2>
-            <p className="text-gray-600 mb-4">
+          <div className="py-12 text-center">
+            <div className="mb-4 text-6xl">📚</div>
+            <h2 className="mb-2 text-xl font-semibold text-gray-900">No books yet</h2>
+            <p className="mb-4 text-gray-600">
               Start building your digital library by uploading your first EPUB book.
             </p>
             <button
               onClick={() => setShowUploadZone(true)}
-              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200"
+              className="rounded-md bg-blue-600 px-6 py-2 text-white transition-colors duration-200 hover:bg-blue-700"
             >
               Upload Your First Book
             </button>
@@ -155,7 +155,7 @@ export const BookshelfPage: React.FC = () => {
 
         {/* Books grid */}
         {!isLoading && books.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {books.map((book) => (
               <BookCard
                 key={book.id}
