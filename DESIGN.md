@@ -227,7 +227,7 @@ interface TOCSidebarProps {
 
 ```typescript
 const EUDIC_API =
-  'https://dict.eudic.net/dicts/MiniDictSearch2?word={word}&context={context}&platform=extension';
+  'https://dict.eudic.net/dicts/MiniDictSearch2?word={{word}}&context={context}&platform=extension';
 
 interface SelectionContext {
   selectedText: string;

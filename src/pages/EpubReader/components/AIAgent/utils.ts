@@ -10,10 +10,10 @@ type ReplaceWordsProps = {
  * @returns The modified template string with placeholders replaced.
  */
 export const replaceWords = ({ template, words, context }: ReplaceWordsProps): string => {
-  let result = template.replace(/\{words\}/g, words);
+  let result = template.replace(/\{\{words\}\}/g, words);
 
   if (context) {
-    result = result.replace(/\{context\}/g, context);
+    result = result.replace(/\{\{context\}\}/g, context);
   }
 
   return result;

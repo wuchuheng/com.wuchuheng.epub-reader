@@ -255,7 +255,9 @@ User Message → AI Processing → Response Display
 
 ```typescript
 // Dynamic prompt replacement
-const result = template.replace(/\{words\}/g, selectedWords).replace(/\{context\}/g, context);
+const result = template
+  .replace(/\{\{words\}\}/g, selectedWords)
+  .replace(/\{\{context\}\}/g, context);
 ```
 
 ### **Message Rendering**
