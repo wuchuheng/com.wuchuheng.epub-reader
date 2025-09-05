@@ -6,7 +6,6 @@ import { InputBarRender, InputBarRenderProps } from './components/InputBarRender
 import { AIAgentProps, MessageItem } from './types/AIAgent';
 import { useFetchAIMessage } from './hooks/useFetchAIMessage';
 import { useSmoothScrollToBottom } from './hooks/useSmoothScroll';
-import { useAutoScrollOnUpdate } from './hooks/useAutoScrollOnUpdate';
 import { ScrollGuard } from './components/ScrollGuard';
 
 /**
@@ -27,13 +26,10 @@ export const AIAgent: React.FC<AIAgentProps> = (props) => {
   ]);
 
   const conversationRef = useRef<HTMLDivElement>(null);
-  const smoothScrollToBottom = useSmoothScrollToBottom(conversationRef, 600);
-
-  // Auto-scroll when messages update if user is already near the bottom.
-  useAutoScrollOnUpdate(conversationRef, messageList, smoothScrollToBottom, 120);
+  const { scrollToBottom, cancelScroll } = useSmoothScrollToBottom(conversationRef, 600);
+  const isAutoScrollRef = useRef(true);
 
   // Cleanup handled by useSmoothScrollToBottom
-
   const onUpdateAIResponse = useCallback(
     (res: AIMessageRenderProps) => {
       // 2. Handle logic.
@@ -47,11 +43,8 @@ export const AIAgent: React.FC<AIAgentProps> = (props) => {
 
         return [...prev];
       });
-
-      // 2.2 Scroll the conversation to bottom with smooth easing
-      smoothScrollToBottom();
     },
-    [smoothScrollToBottom]
+    [scrollToBottom, isAutoScrollRef]
   );
   const fetchAIMessage = useFetchAIMessage({
     setMessageList,
@@ -79,8 +72,45 @@ export const AIAgent: React.FC<AIAgentProps> = (props) => {
     [messageList, fetchAIMessage]
   );
 
+  // Make the scrollbar go to the bottom as the component set tup.
+  useEffect(() => {
+    if (!conversationRef.current) return;
+
+    const scrollTop = conversationRef.current.scrollHeight - conversationRef.current.clientHeight;
+    conversationRef.current.scrollTop = scrollTop;
+    console.log('Initial scrollTop:', scrollTop);
+  }, [conversationRef]);
+
+  const isGoToBottomRef = useRef<boolean>(true);
+
+  // Listen to  the message list change to trigger the scroll when in auto scroll mode.
+  useEffect(() => {
+    // 2.2 Scroll the conversation to bottom with smooth easing
+    if (isAutoScrollRef.current && isGoToBottomRef.current) {
+      scrollToBottom();
+    }
+  }, [messageList]);
+
+  const handleOnPauseAutoScroll = (e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    isAutoScrollRef.current = false;
+    cancelScroll();
+  };
+
+  const handleResumeAutoScroll = (e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    isAutoScrollRef.current = true;
+  };
+
   return (
-    <div className="relative flex h-full flex-col overflow-y-scroll" ref={conversationRef}>
+    <div
+      className="relative flex h-full flex-col overflow-y-scroll"
+      ref={conversationRef}
+      onTouchStart={handleOnPauseAutoScroll}
+      onMouseDown={handleOnPauseAutoScroll}
+      onTouchEnd={handleResumeAutoScroll}
+      onMouseUp={handleResumeAutoScroll}
+    >
       <div className="flex flex-1 flex-col gap-2 divide-y divide-gray-300 p-4">
         {messageList.map((msg, index) => {
           if (msg.role === 'user') {
@@ -95,7 +125,13 @@ export const AIAgent: React.FC<AIAgentProps> = (props) => {
           return <AIMessageRender key={index} {...msg.data} />;
         })}
       </div>
-      <ScrollGuard />
+      <ScrollGuard
+        bufferPx={100}
+        scrollContainer={conversationRef.current}
+        onGuardVisible={(visible) => {
+          isGoToBottomRef.current = visible;
+        }}
+      />
 
       <InputBarRender
         status={inputBarStatus}

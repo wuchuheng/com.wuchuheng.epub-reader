@@ -1,13 +1,24 @@
 import { useCallback, useEffect, useRef } from 'react';
 
 /**
- * Provides a smooth scroll-to-bottom function for a scrollable container.
+ * Return type for useSmoothScrollToBottom hook
+ */
+interface UseSmoothScrollReturn {
+  /** Initiates smooth scroll to bottom of container */
+  scrollToBottom: () => void;
+  /** Cancels any ongoing smooth scroll animation */
+  cancelScroll: () => void;
+}
+
+/**
+ * Provides smooth scroll functionality for a scrollable container.
  * Handles RAF cancellation and dynamic target recalculation during streaming content.
+ * Returns both scroll initiation and cancellation functions.
  */
 export function useSmoothScrollToBottom(
   containerRef: React.RefObject<HTMLDivElement>,
   duration = 600
-) {
+): UseSmoothScrollReturn {
   const rafIdRef = useRef<number | null>(null);
 
   const scrollToBottom = useCallback(() => {
@@ -45,6 +56,15 @@ export function useSmoothScrollToBottom(
     rafIdRef.current = requestAnimationFrame(animate);
   }, [containerRef, duration]);
 
+  const cancelScroll = useCallback(() => {
+    // 1. Check if there's an active animation
+    if (rafIdRef.current) {
+      // 2. Cancel the animation frame
+      cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
+    }
+  }, []);
+
   // 3. Output: cleanup on unmount
   useEffect(
     () => () => {
@@ -53,5 +73,5 @@ export function useSmoothScrollToBottom(
     []
   );
 
-  return scrollToBottom;
+  return { scrollToBottom, cancelScroll };
 }
