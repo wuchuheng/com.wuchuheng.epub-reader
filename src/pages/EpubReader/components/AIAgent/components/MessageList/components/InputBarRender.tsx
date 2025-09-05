@@ -90,6 +90,13 @@ export const InputBarRender: React.FC<InputBarRenderProps> = ({ onSend, onVisibl
     setVisible(visible);
   };
 
+  React.useEffect(() => {
+    // Auto-focus textarea when it becomes visible
+    if (visible && textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, [visible]);
+
   return (
     <>
       {visible && (
@@ -111,7 +118,7 @@ export const InputBarRender: React.FC<InputBarRenderProps> = ({ onSend, onVisibl
               value={textareaValue}
               onChange={handleTextareaChange}
               onKeyDown={handleKeyDown}
-              style={{ resize: 'vertical' }}
+              style={{ resize: 'none' }}
             />
             <button
               type="button"
