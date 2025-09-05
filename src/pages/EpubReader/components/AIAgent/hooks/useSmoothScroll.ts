@@ -1,29 +1,51 @@
-import { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 
 /**
  * Return type for useSmoothScrollToBottom hook
  */
 interface UseSmoothScrollReturn {
   /** Initiates smooth scroll to bottom of container */
+
   scrollToBottom: () => void;
-  /** Cancels any ongoing smooth scroll animation */
-  cancelScroll: () => void;
+
+  handleResumeAutoScroll: (e: React.MouseEvent | React.TouchEvent) => void;
+
+  handleOnPauseAutoScroll: (e: React.MouseEvent | React.TouchEvent) => void;
+
+  bufferPx: number;
 }
+
+type UseSmoothScrollProps = {
+  scrollContainerRef: React.RefObject<HTMLDivElement>;
+  isAutoScrollRef: React.MutableRefObject<boolean>;
+  isGoToBottomRef: React.MutableRefObject<boolean>;
+  duration?: number;
+};
 
 /**
  * Provides smooth scroll functionality for a scrollable container.
  * Handles RAF cancellation and dynamic target recalculation during streaming content.
  * Returns both scroll initiation and cancellation functions.
  */
-export function useSmoothScrollToBottom(
-  containerRef: React.RefObject<HTMLDivElement>,
-  duration = 600
-): UseSmoothScrollReturn {
+export function useSmoothScrollToBottom({
+  scrollContainerRef,
+
+  /** Ref to track if the auto scroll is enabled */
+  isAutoScrollRef,
+
+  /** Ref to track if the scroll is at the bottom */
+  isGoToBottomRef,
+
+  duration = 600,
+}: UseSmoothScrollProps): UseSmoothScrollReturn {
   const rafIdRef = useRef<number | null>(null);
 
   const scrollToBottom = useCallback(() => {
     // 1. Input: verify container exists
-    const element = containerRef.current;
+    if (scrollContainerRef === null) {
+      return;
+    }
+    const element = scrollContainerRef.current;
     if (!element) return;
 
     // 2. Core: cancel previous RAF and animate with easing
@@ -54,7 +76,7 @@ export function useSmoothScrollToBottom(
     };
 
     rafIdRef.current = requestAnimationFrame(animate);
-  }, [containerRef, duration]);
+  }, [scrollContainerRef, duration]);
 
   const cancelScroll = useCallback(() => {
     // 1. Check if there's an active animation
@@ -73,5 +95,22 @@ export function useSmoothScrollToBottom(
     []
   );
 
-  return { scrollToBottom, cancelScroll };
+  const handleOnPauseAutoScroll = (e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    isAutoScrollRef.current = false;
+    cancelScroll();
+  };
+
+  const bufferPx = 100;
+
+  const handleResumeAutoScroll = (e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    isAutoScrollRef.current = true;
+
+    isGoToBottomRef.current =
+      e.currentTarget.scrollTop + e.currentTarget.clientHeight >=
+      e.currentTarget.scrollHeight - bufferPx;
+  };
+
+  return { scrollToBottom, handleOnPauseAutoScroll, handleResumeAutoScroll, bufferPx };
 }

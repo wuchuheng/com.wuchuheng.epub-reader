@@ -6,6 +6,7 @@ export type InputBarRenderProps = {
   status: 'idle' | 'loading';
   onStop: () => void;
   onSend: (msg: string) => void;
+  onVisible?: () => void;
 };
 
 /**
@@ -23,7 +24,7 @@ const isDesktopDevice = (): boolean => {
   return !isTouchDevice || isLargeScreen;
 };
 
-export const InputBarRender: React.FC<InputBarRenderProps> = ({ onSend }) => {
+export const InputBarRender: React.FC<InputBarRenderProps> = ({ onSend, onVisible }) => {
   const [visible, setVisible] = React.useState(false);
   const [textareaValue, setTextareaValue] = React.useState('');
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
@@ -82,6 +83,13 @@ export const InputBarRender: React.FC<InputBarRenderProps> = ({ onSend }) => {
     handleSubmit();
   };
 
+  const handleOnChangeVisible = (visible: boolean) => {
+    if (onVisible && visible) {
+      onVisible();
+    }
+    setVisible(visible);
+  };
+
   return (
     <>
       {visible && (
@@ -114,7 +122,7 @@ export const InputBarRender: React.FC<InputBarRenderProps> = ({ onSend }) => {
             </button>
             <button
               className="flex size-16 items-center justify-center rounded-r-lg"
-              onClick={() => setVisible(false)}
+              onClick={() => handleOnChangeVisible(false)}
             >
               <MdClose className="size-6" />
             </button>
@@ -126,7 +134,7 @@ export const InputBarRender: React.FC<InputBarRenderProps> = ({ onSend }) => {
         <div className="sticky bottom-0 h-0 w-full">
           <div className="absolute bottom-4 right-4 z-10">
             <button
-              onClick={() => setVisible(true)}
+              onClick={() => handleOnChangeVisible(true)}
               className="flex h-12 w-12 items-center justify-center rounded-full border bg-white shadow-lg transition-colors hover:bg-gray-50"
             >
               <FaPen className="size-6" />
