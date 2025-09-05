@@ -57,8 +57,11 @@ export const MarkdownRender: React.FC<MarkdownRenderProps> = (props) => {
       ),
 
       // Style lists with spacing
-      ul: ({ children }) => <ul className="mb-4 space-y-1 pl-6">{children}</ul>,
-      ol: ({ children }) => <ol className="mb-4 space-y-1 pl-6">{children}</ol>,
+      ul: ({ children }) => <ul className="mb-2 pl-4">{children}</ul>,
+
+      ol: ({ children }) => (
+        <ol className="mb-2 list-inside list-decimal space-y-1 pl-2">{children}</ol>
+      ),
 
       // Style list items
       li: ({ children }) => <li className="leading-relaxed">{children}</li>,
