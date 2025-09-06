@@ -18,6 +18,7 @@ dist-ssr
 *.suo
 *.ntvs*
 *.njsproj
+.vite/
 *.sln
 *.sw?
 tsconfig.app.tsbuildinfo
