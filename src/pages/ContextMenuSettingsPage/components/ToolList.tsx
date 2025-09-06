@@ -125,9 +125,26 @@ const SortableToolItem: React.FC<SortableToolItemProps> = ({
                 placeholder="https://example.com?words={words}&context={context}"
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
               />
-              <p className="mt-1 text-xs text-gray-500">
-                Use {'{words}'} and {'{context}'} as placeholders for selected text
-              </p>
+              <div className="mt-2 text-sm">
+                <div className="mb-1 font-medium text-gray-700">Tips:</div>
+
+                <ul className="list-inside list-disc space-y-1 text-xs text-gray-500">
+                  <li>
+                    <span className="font-medium">{'{{words}}'}</span>: The currently selected text
+                    in the ebook. Use this to pass the user's selection into the iframe URL or AI
+                    prompt. Example:{' '}
+                    <code className="font-mono">https://example.com?q={'{{words}}'}</code>
+                  </li>
+
+                  <li>
+                    <span className="font-medium">{'{{context}}'}</span>: Additional surrounding
+                    context (nearby paragraph, chapter title, or other metadata) to provide more
+                    information to the tool. Use this when the tool needs surrounding text or
+                    context. Example:{' '}
+                    <code className="font-mono">https://example.com?ctx={'{{context}}'}</code>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         )}

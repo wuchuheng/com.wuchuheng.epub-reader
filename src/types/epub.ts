@@ -54,7 +54,7 @@ export type AISettingItem = {
  */
 export type IframeSettingItem = {
   // The URL to be loaded in the iframe. this url can access both parameters: "words" and "context"
-  // For example: https://example.com?words={words}&context={context},
+  // For example: https://example.com?words={{words}}&context={{context}},
   // this will replace the parameters with actual values
   url: string;
 } & ContextMenuItemCommon;
