@@ -3,6 +3,10 @@ name: Deploy to GitHub Pages on Release
 on:
   release:
     types: [published]
+  push:
+    tags:
+      - 'v*.*.*'
+      - 'v*'
   workflow_dispatch: # Allow manual triggering for testing
 
 jobs:
