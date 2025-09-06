@@ -22,3 +22,4 @@ dist-ssr
 *.sln
 *.sw?
 tsconfig.app.tsbuildinfo
+tmp.md
