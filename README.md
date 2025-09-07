@@ -1,4 +1,4 @@
-# EPUB Reader with AI Integration
+# Context-based AI Immersive Reader(Immersive Reader - 沉浸式阅读器)
 
 <p align="center">
   <a href="https://github.com/wuchuheng/com.wuchuheng.epub-reader">
@@ -15,11 +15,23 @@
   </a>
 </p>
 
-A modern EPUB reader application with AI-powered text analysis and conversation capabilities. Built with React and TypeScript, featuring a clean interface, advanced reading features, and sophisticated AI integration.
-
 ## 📖 Overview
 
-The EPUB Reader is a cutting-edge reading application that combines traditional EPUB reading capabilities with advanced AI-powered text analysis. Currently in Phase 3 of AI Integration (90% complete), the project offers a comprehensive reading experience with real-time AI conversations, multiple navigation methods, and mobile-optimized interactions.
+The inefficiency in reading stems from the need to interrupt the flow to seek answers when encountering unavoidable questions. These questions can be categorized into two types: semantic questions, such as encountering unfamiliar words, and extended questions, which arise from the current context. If either type of question cannot be resolved quickly and effectively, the reading experience suffers.
+
+So, how does the traditional process of seeking answers consume time?
+
+How do unfamiliar words waste time? When you look up an unfamiliar word in a dictionary, you face information overload. The dictionary presents all possible definitions, ranging from a few to dozens, forcing you to spend time filtering through the options. Furthermore, and more time-consuming, is the inability to make a correct judgment due to a lack of background knowledge.
+
+Another cause of reading interruption is extended questions. These questions typically cannot be resolved with indexed tools like dictionaries and often require searching online or asking others for the answer. However, this process is very time-consuming.
+
+In essence, the smoothness of the reading experience depends on the efficiency with which questions are answered. This is precisely why this tool was created.
+
+To provide immediate and precise answers to unfamiliar words, the reader sends the selected word and its surrounding context to the AI. This allows the AI to pinpoint the exact meaning of the word as it applies to the specific context, thereby saving time.
+
+Furthermore, to quickly address the reader's extended questions, when a user queries the AI, it generates answers based on the current contextual information.
+
+Through these features, the overall reading experience is enhanced.
 
 ### Current Status
 
