@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://github.com/wuchuheng/com.wuchuheng.epub-reader">
-    <img src="https://img.shields.io/badge/version-0.0.8-blue" alt="Version" />
+    <img src="https://img.shields.io/badge/version-0.0.9-blue" alt="Version" />
   </a>
   <a href="https://github.com/wuchuheng/com.wuchuheng.epub-reader">
     <img src="https://img.shields.io/badge/status-Phase%203%20AI%20Integration%20%2890%25%29-yellow" alt="Status" />
@@ -34,6 +34,39 @@ The EPUB Reader is a cutting-edge reading application that combines traditional 
 - **Casual Readers**: Modern reading experience with AI assistance
 - **Power Users**: Advanced customization and extensible AI tools
 - **Mobile Users**: Optimized interface with volume key navigation
+
+## 📋 TODO List
+
+The following features and improvements are currently in development or planned for future releases:
+
+- [x] Implement the autoscroll guard feature in the context menu.
+- [ ] Simplify the upload UI,
+- [ ] Upload epub files while users drag them into the window.
+- [ ] Add a switch to enable the specified context menu item.
+- [ ] Add a settings icon to the home page.
+- [ ] Make the input box of the prompt adjustable in size.
+- [ ] Add built-in prompt recommendations.
+- [ ] Make the app support PWA features.
+- [x] The page-turning keys should be centered at the top and bottom.
+- [ ] Volume keys should be used for page turning. We could play MP3 files (without metadata) and listen for volume changes when users tap the volume keys.
+
+- [x] Minimize menu bar icons and page-turning icons to give as much space as possible to display book content.
+- [ ] Add a built-in context menu component that serves as an aggregated translation component supporting multiple translations, with customizable enable/disable functionality.
+
+  - [ ] 有道翻译
+  - [ ] DeepL在线翻译引擎
+  - [ ] Google在线翻译
+  - [ ] 腾讯交互式在线翻译引擎
+  - [ ] 火山在线翻译引擎
+  - [ ] Bing在线翻译引擎
+
+  - [x] Issue: AI context menu tab switching was unsuccessful when users attempted to switch tabs; consequently, the tab body was not visible for the expected tab.
+
+- [x] Issue: Make the cursor in the prompt input bar automatically focused when the input bar is displayed.
+
+- [ ] Issue: AI completion suggestions are not stopping when the component is destroyed.
+
+- [x] Issue: Context menu appears when users click on blank areas, which is unexpected behavior.
 
 ## ✨ Features
 
