@@ -81,6 +81,9 @@
 - **Volume Key Navigation**: Mobile device volume key support for page turning
 - **Dedicated Buttons**: Custom next/previous page buttons with proper styling
 - **Touch Support**: Long press and touch event handling for mobile devices
+- **Multiple Navigation Methods**: Users can choose preferred navigation method
+- **Event Handling**: Proper cleanup and management of navigation events
+- **Mobile Optimization**: Volume key navigation with event prevention
 
 ## **Context Menu System**
 

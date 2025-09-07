@@ -6,9 +6,10 @@ A modern EPUB reader application with AI-powered text analysis and explanation c
 
 ## **Current Status**
 
-- **Phase**: 3 AI Integration (85% Complete)
-- **Focus**: Completing dictionary integration and reading customization
-- **Next Milestone**: Full feature completion with performance optimization
+- **Phase**: 3 AI Integration (90% Complete)
+- **Version**: v0.0.8 (Latest Release)
+- **Focus**: Final polish and remaining minor features
+- **Next Milestone**: Complete feature implementation and optimization
 
 ## **Key Features**
 
@@ -20,7 +21,9 @@ A modern EPUB reader application with AI-powered text analysis and explanation c
 - Responsive design for all devices
 - Enhanced keyboard navigation (arrow keys + volume keys)
 - Touch event handling for mobile devices
-- Dedicated next/previous page buttons
+- Dedicated next/previous page buttons with proper styling
+- Volume key navigation for mobile devices
+- Multiple navigation methods for user preference
 
 ### **AI Integration (Mostly Complete)**
 
@@ -51,6 +54,9 @@ A modern EPUB reader application with AI-powered text analysis and explanation c
 - Enhanced event handling with proper cleanup
 - Multiple navigation methods for different devices
 - OPFS-based storage for efficient file management
+- Password visibility toggle for API configuration security
+- Enhanced context menu with improved AI tool integration
+- Auto-scroll management with user behavior detection
 
 ## **Technology Highlights**
 
@@ -65,9 +71,10 @@ A modern EPUB reader application with AI-powered text analysis and explanation c
 ## **Current Development Focus**
 
 1. **Dictionary Integration**: Eudic API for word definitions and explanations
-2. **Reading Customization**: Font, theme, and layout options
+2. **Reading Customization**: Font, theme, and layout preferences
 3. **Performance Optimization**: Enhanced memory management and smooth UX
 4. **Final Polish**: Testing, accessibility improvements, and user experience refinements
+5. **Minor UI Improvements**: Refining user interface based on feedback
 
 ## **Target Audience**
 
@@ -86,6 +93,8 @@ A modern EPUB reader application with AI-powered text analysis and explanation c
 - Performance metrics: load times, memory usage, battery impact
 - AI response quality and token usage efficiency
 - Mobile navigation satisfaction with volume key support
+- Navigation method preference analysis (keyboard, volume keys, buttons)
+- Context menu interaction completion rates
 
 ---
 

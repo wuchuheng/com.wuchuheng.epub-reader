@@ -183,11 +183,34 @@ const useKeyboardNavigation = (goToNext: () => void, goToPrev: () => void) => {
   // Arrow key navigation
   // Volume key navigation for mobile
   // Custom navigation button support
+  // Event handling with proper cleanup
 };
 
-// Dedicated navigation buttons
-const NextPageButton = ({ onClick }) => <button onClick={onClick}>Next</button>;
-const PrevPageButton = ({ onClick }) => <button onClick={onClick}>Previous</button>;
+// Dedicated navigation buttons with proper styling
+const NextPageButton = ({ onClick }) => (
+  <button onClick={onClick} className="nav-button next">Next</button>
+);
+const PrevPageButton = ({ onClick }) => (
+  <button onClick={onClick} className="nav-button prev">Previous</button>
+);
+
+// Volume key navigation for mobile devices
+const useVolumeKeyNavigation = (goToNext: () => void, goToPrev: () => void) => {
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'AudioVolumeUp' || event.key === 'VolumeUp') {
+        event.preventDefault();
+        goToNext();
+      } else if (event.key === 'AudioVolumeDown' || event.key === 'VolumeDown') {
+        event.preventDefault();
+        goToPrev();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [goToNext, goToPrev]);
+};
 ```
 
 ### **Container Layout**
