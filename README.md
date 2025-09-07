@@ -1,4 +1,4 @@
-# Context-based AI Immersive Reader(Immersive Reader - 沉浸式阅读器)
+# Immersive Reader(沉浸式阅读器)
 
 <p align="center">
   <a href="https://github.com/wuchuheng/com.wuchuheng.epub-reader">
@@ -16,6 +16,10 @@
 </p>
 
 ## 📖 Overview
+
+"Immersive Reader" is based on Context-based AI technology, designed to enhance the reading experience by providing instant explanations and answers to questions that arise during reading.
+
+When reading, people often encounter unfamiliar words or concepts that require further explanation. Additionally, readers may have extended questions related to the current context. If these questions cannot be answered quickly and effectively, it can lead to interruptions in the reading flow and a diminished experience.
 
 The inefficiency in reading stems from the need to interrupt the flow to seek answers when encountering unavoidable questions. These questions can be categorized into two types: semantic questions, such as encountering unfamiliar words, and extended questions, which arise from the current context. If either type of question cannot be resolved quickly and effectively, the reading experience suffers.
 
