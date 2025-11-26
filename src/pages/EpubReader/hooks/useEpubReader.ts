@@ -99,6 +99,13 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
   const containerRef = useRef<HTMLDivElement>(null);
   const renditionRef = useRef<Rendition | null>(null);
   const currentLocationRef = useRef<RenditionLocation | null>(null);
+  const onSelectRef = useRef(props.onSelect);
+  const onClickRef = useRef(props.onClick);
+
+  useEffect(() => {
+    onSelectRef.current = props.onSelect;
+    onClickRef.current = props.onClick;
+  }, [props.onSelect, props.onClick]);
 
   // State
   const [totalPages, setTotalPages] = useState<number>(0);
@@ -117,7 +124,7 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
     debounce<SelectInfo>((selectedInfo: SelectInfo) => {
       if (selectedInfo) {
         logger.log(`Omit event:`, selectedInfo);
-        props.onSelect(selectedInfo);
+        onSelectRef.current(selectedInfo);
       }
     }, 200),
     []
@@ -137,7 +144,7 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
       book: props.book,
       bookId: bookId!,
       onSelectionCompleted,
-      onClick: props.onClick,
+      onClick: () => onClickRef.current?.(),
       setter: {
         setCurrentPage,
         setCurrentChapterHref,
