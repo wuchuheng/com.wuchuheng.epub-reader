@@ -11,20 +11,23 @@ export const UserMessageRender: React.FC<MessageRenderProps> = (props) => {
   const [content, setContent] = React.useState(props.content);
 
   const onHightWords = useCallback(() => {
-    if (!props.hightWords) return;
-    // 1. Input validation
-    const searchTerm = props.hightWords;
-    if (!searchTerm || !props.content) return;
+    let newContent = props.content;
 
-    // 2. Core processing - highlight words using markdown bold syntax
-    // 2.1 Escape special regex characters in the search term
-    const escapedTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // 1. Pre-processing: Convert XML selection tags to Markdown for display
+    newContent = newContent.replace(/<selected>(.*?)<\/selected>/g, '**$1**');
 
-    // 2.2 Build a case-insensitive word boundary regex for the search term
-    const highlightRegex = new RegExp(`\\b(${escapedTerm})\\b`, 'gi');
-
-    // 2.3 Replace matched words with markdown bold syntax for highlighting
-    const newContent = props.content.replace(highlightRegex, '**$1**');
+    // 2. Core processing: Highlight specific words if requested
+    if (props.hightWords) {
+      const searchTerm = props.hightWords;
+      if (searchTerm) {
+        // 2.1 Escape special regex characters
+        const escapedTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        // 2.2 Build case-insensitive word boundary regex
+        const highlightRegex = new RegExp(`\\b(${escapedTerm})\\b`, 'gi');
+        // 2.3 Apply markdown bold syntax
+        newContent = newContent.replace(highlightRegex, '**$1**');
+      }
+    }
 
     setContent(newContent);
   }, [props.content, props.hightWords]);
