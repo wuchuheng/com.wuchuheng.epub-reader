@@ -7,7 +7,7 @@ import { createStorageManager } from './epub.utils';
 import { debounce } from '@wuchuheng/helper';
 import { RENDERING_CONFIG } from '../../../constants/epub';
 import { useKeyboardNavigation } from './useKeyboardNavigator';
-import { setupRenditionEvents } from '../services/renditionEvent.service';
+import { isMobileDevice, setupRenditionEvents } from '../services/renditionEvent.service';
 
 // Types
 export type RenditionLocation = {
@@ -172,7 +172,9 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
   };
 
   // Setup keyboard navigation
-  useKeyboardNavigation(navigation.goToNext, navigation.goToPrev);
+  useKeyboardNavigation(navigation.goToNext, navigation.goToPrev, {
+    enableVolumeKeys: isMobileDevice(),
+  });
 
   // Effects
   useEffect(() => {
@@ -192,3 +194,4 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
     goToSelectChapter: navigation.goToSelectChapter,
   };
 };
+
