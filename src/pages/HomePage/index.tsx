@@ -12,6 +12,7 @@ import { BookCard } from '../../components/BookCard';
 import * as OPFSManager from '../../services/OPFSManager';
 import { DragOverlay } from './components/DragOverlay';
 import { getEpubValidationError, isValidEpubFile } from '../../utils/epubValidation';
+import { Plus, Settings } from '../../components/icons';
 
 /**
  * Main bookshelf page component
@@ -173,12 +174,24 @@ export const BookshelfPage: React.FC = () => {
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-gray-900">Epub reader</h1>
-            <button
-              onClick={handleUploadBtnClick}
-              className="rounded-md bg-blue-600 px-4 py-2 text-white transition-colors duration-200 hover:bg-blue-700"
-            >
-              Upload Book
-            </button>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate('/settings')}
+                className="text-gray-600 hover:text-gray-900"
+                aria-label="Settings"
+                title="Settings"
+              >
+                <Settings />
+              </button>
+              <button
+                onClick={handleUploadBtnClick}
+                className="text-gray-600 hover:text-gray-900"
+                aria-label="Upload Book"
+                title="Upload Book"
+              >
+                <Plus />
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -244,7 +257,8 @@ export const BookshelfPage: React.FC = () => {
             <div className="mb-4 text-6xl">📚</div>
             <h2 className="mb-2 text-xl font-semibold text-gray-900">No books yet</h2>
             <p className="mb-4 text-gray-600">
-              Start building your digital library by dragging an EPUB file here or clicking Upload.
+              Start building your digital library by dragging an EPUB file here or clicking the Plus
+              icon.
             </p>
             <button
               onClick={handleUploadBtnClick}
