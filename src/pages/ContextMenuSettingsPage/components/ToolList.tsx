@@ -68,10 +68,12 @@ const SortableToolItem: React.FC<SortableToolItemProps> = ({
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <h4 className="text-base font-medium text-gray-900">{tool.name}</h4>
-          <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
-            {tool.type === 'AI' ? 'AI' : 'Iframe'}
-          </span>
+          <div className="flex w-24 gap-2">
+            <h4 className="text-base font-medium text-gray-900">{tool.name}</h4>
+            <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
+              {tool.type === 'AI' ? 'AI' : 'Iframe'}
+            </span>
+          </div>
 
           {/* Default Toggles */}
           <div className="ml-4 flex items-center gap-4 border-l border-gray-200 pl-4">

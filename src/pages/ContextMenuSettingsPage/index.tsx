@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ApiConfig } from './components/ApiConfig';
+import { ModelSearchInput } from './components/ModelSearchInput';
 import { ToolList } from './components/ToolList';
 import { useContextMenuSettings } from './hooks/useContextMenuSettings';
 
@@ -15,6 +16,13 @@ export const ContextMenuSettingsPage: React.FC = () => {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   const handleSaveSettings = async () => {
+    // Validation: Check if default model is set when AI tools exist
+    const hasAITools = contextMenuSettings.settings.items.some((item) => item.type === 'AI');
+    if (hasAITools && !contextMenuSettings.settings.defaultModel) {
+      alert('Please select a Default Model for your AI tools.');
+      return;
+    }
+
     const success = await contextMenuSettings.saveSettings();
     if (success) {
       setSaveStatus('success');
@@ -59,6 +67,21 @@ export const ContextMenuSettingsPage: React.FC = () => {
             onApiEndpointChange={contextMenuSettings.updateApiEndpoint}
             onApiKeyChange={contextMenuSettings.updateApiKey}
           />
+
+          {/* Global Default Model Configuration */}
+          <div className="mb-6 rounded-lg bg-gray-50 p-4">
+            <h4 className="mb-2 text-md font-medium text-gray-900">Global Default Model</h4>
+            <div className="mb-2 text-sm text-gray-500">
+              Select the default AI model to be used by all AI tools.
+            </div>
+            <ModelSearchInput
+              value={contextMenuSettings.settings.defaultModel || ''}
+              onChange={contextMenuSettings.updateDefaultModel}
+              apiEndpoint={contextMenuSettings.settings.api || ''}
+              apiKey={contextMenuSettings.settings.key || ''}
+              placeholder="Search or enter model name (e.g. gpt-3.5-turbo)"
+            />
+          </div>
 
           {/* Custom AI Tools Section */}
           <div className="mb-6">

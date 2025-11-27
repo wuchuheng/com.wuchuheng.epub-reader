@@ -75,6 +75,7 @@ The project follows a clean, feature-based modular architecture.
 
 ## 💡 Coding Conventions
 - **Style:** Functional components with Hooks.
+- **Paradigm:** Strong preference for functional programming patterns (pure functions, immutability, composition).
 - **Naming:** PascalCase for components, camelCase for functions/variables.
 - **State:** Redux for global state (bookshelf, settings), local state for UI interactions.
 - **Comments:** Use JSDoc for public APIs and services. Comments should explain *why*, not *what*.

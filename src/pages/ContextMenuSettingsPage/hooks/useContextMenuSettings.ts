@@ -29,10 +29,26 @@ export const useContextMenuSettings = () => {
         setError(null);
         const savedSettings = await getContextMenuSettings();
 
+        // Migration logic:
+        // If defaultModel is missing, derive it from the first AI tool's model (if present),
+        // else fallback to 'gpt-3.5-turbo' when AI tools exist.
+        let defaultModel = savedSettings.defaultModel;
+        const hasAITools = savedSettings.items?.some((item) => item.type === 'AI');
+        
+        if (!defaultModel && hasAITools) {
+          const firstAITool = savedSettings.items?.find((item) => item.type === 'AI' && (item as any).model);
+          if (firstAITool) {
+             defaultModel = (firstAITool as any).model;
+          } else {
+             defaultModel = 'gpt-3.5-turbo';
+          }
+        }
+
         // Ensure we have valid settings object
-        const validSettings = {
+        const validSettings: ContextMenuSettings = {
           api: savedSettings?.api || '',
           key: savedSettings?.key || '',
+          defaultModel: defaultModel || '',
           items: savedSettings?.items || [],
         };
 
@@ -44,6 +60,7 @@ export const useContextMenuSettings = () => {
         setSettings({
           api: '',
           key: '',
+          defaultModel: '',
           items: [],
         });
       } finally {
@@ -72,6 +89,13 @@ export const useContextMenuSettings = () => {
   const updateApiKey = useCallback(
     (key: string) => {
       updateSettings('key', key);
+    },
+    [updateSettings]
+  );
+
+  const updateDefaultModel = useCallback(
+    (model: string) => {
+      updateSettings('defaultModel', model);
     },
     [updateSettings]
   );
@@ -258,6 +282,7 @@ export const useContextMenuSettings = () => {
     updateSettings,
     updateApiEndpoint,
     updateApiKey,
+    updateDefaultModel,
     addTool,
     removeTool,
     updateTool,

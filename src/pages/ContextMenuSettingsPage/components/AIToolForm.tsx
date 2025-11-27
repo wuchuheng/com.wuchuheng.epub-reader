@@ -1,5 +1,4 @@
 import React from 'react';
-import { ModelSearchInput } from './ModelSearchInput';
 import { SelectionSituation } from '../../../types/epub';
 
 /**
@@ -8,20 +7,12 @@ import { SelectionSituation } from '../../../types/epub';
 interface AIToolFormProps {
   /** Current prompt value. */
   prompt: string;
-  /** Current model value. */
-  model: string;
   /** Whether reasoning is enabled. */
   reasoningEnabled: boolean;
   /** Current default behavior. */
   defaultFor?: SelectionSituation;
-  /** API endpoint for fetching models. */
-  apiEndpoint?: string;
-  /** API key for authentication. */
-  apiKey?: string;
   /** Handler for prompt changes. */
   onPromptChange: (prompt: string) => void;
-  /** Handler for model changes. */
-  onModelChange: (model: string) => void;
   /** Handler for reasoning toggle. */
   onReasoningToggle: (enabled: boolean) => void;
   /** Handler for default behavior changes. */
@@ -34,13 +25,9 @@ interface AIToolFormProps {
  */
 export const AIToolForm: React.FC<AIToolFormProps> = ({
   prompt,
-  model,
   reasoningEnabled,
   defaultFor,
-  apiEndpoint,
-  apiKey,
   onPromptChange,
-  onModelChange,
   onReasoningToggle,
   onDefaultForChange,
 }) => (
@@ -68,16 +55,6 @@ export const AIToolForm: React.FC<AIToolFormProps> = ({
           </li>
         </ul>
       </div>
-    </div>
-
-    <div>
-      <ModelSearchInput
-        value={model}
-        onChange={onModelChange}
-        apiEndpoint={apiEndpoint || ''}
-        apiKey={apiKey || ''}
-        placeholder="Search or enter model name..."
-      />
     </div>
 
     {/* Reasoning Toggle */}

@@ -180,6 +180,19 @@ export const ApiConfig: React.FC<ApiConfigProps> = ({
     }
   };
 
+  const getStatusBg = (type: 'error' | 'warning' | 'success') => {
+    switch (type) {
+      case 'error':
+        return 'bg-red-50 border-red-100';
+      case 'warning':
+        return 'bg-yellow-50 border-yellow-100';
+      case 'success':
+        return 'bg-green-50 border-green-100';
+      default:
+        return 'bg-gray-50 border-gray-100';
+    }
+  };
+
   return (
     <div className="space-y-4">
       {/* API Endpoint Field */}
@@ -227,19 +240,21 @@ export const ApiConfig: React.FC<ApiConfigProps> = ({
 
       {/* Summary Status Line */}
       {summaryStatus && (
-        <div className="flex items-center justify-between rounded-md border p-3">
-          <div className="flex items-center">
-            {isTesting ? (
-              <div className="flex items-center text-blue-600">
-                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-blue-600"></div>
-                <span className="text-sm">Testing API connection...</span>
-              </div>
-            ) : (
-              <div className={`text-sm ${getStatusColor(summaryStatus.type)}`}>
-                {getStatusIcon(summaryStatus.type)} {summaryStatus.message}
-              </div>
-            )}
-          </div>
+        <div
+          className={`flex items-center gap-2 rounded-md border px-2 py-1 text-xs ${getStatusBg(
+            summaryStatus.type
+          )}`}
+        >
+          {isTesting ? (
+            <div className="flex items-center text-blue-600">
+              <div className="mr-2 h-3 w-3 animate-spin rounded-full border-b-2 border-blue-600"></div>
+              <span className="leading-tight">Testing API connection...</span>
+            </div>
+          ) : (
+            <div className={`${getStatusColor(summaryStatus.type)} leading-tight`}>
+              {getStatusIcon(summaryStatus.type)} {summaryStatus.message}
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -32,6 +32,9 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
   const iframeSettings: IframeSettingItem | null =
     currentItem && currentItem.type === 'iframe' ? (currentItem as IframeSettingItem) : null;
 
+  // Resolve model: Global Default -> Tool Legacy -> Fallback
+  const resolvedModel = menuSetting.defaultModel || AISetting?.model || 'gpt-3.5-turbo';
+
   return (
     <div
       className="absolute bottom-0 left-0 right-0 top-0 z-50 flex items-center justify-center px-3 py-3 sm:px-6 sm:py-6 shadow-lg"
@@ -54,7 +57,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
             apiKey={menuSetting.key}
             words={props.words}
             context={props.context}
-            model={AISetting!.model}
+            model={resolvedModel}
             prompt={AISetting!.prompt}
             reasoningEnabled={AISetting!.reasoningEnabled}
           />

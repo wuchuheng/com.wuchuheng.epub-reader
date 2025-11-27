@@ -52,8 +52,8 @@ export type AISettingItem = {
   type: 'AI';
   /** The prompt string to be used by the AI model. */
   prompt: string;
-  /** The identifier or name of the AI model. */
-  model: string;
+  /** The identifier or name of the AI model. Optional/Deprecated in favor of global default. */
+  model?: string;
   /** Optional flag indicating if reasoning with LLM is enabled. */
   reasoningEnabled?: boolean;
 } & ContextMenuItemCommon;
@@ -89,6 +89,8 @@ export type ContextMenuSettings = {
   api: string;
   // The authentication key required for API access.
   key: string;
+  // Global default model for all AI tools
+  defaultModel?: string;
 
   // An array of ContextMenuItem objects representing individual menu items.
   items: ContextMenuItem[];

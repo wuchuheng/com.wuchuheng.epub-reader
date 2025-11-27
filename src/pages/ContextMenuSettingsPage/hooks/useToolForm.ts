@@ -11,7 +11,6 @@ export const useToolForm = () => {
   const [toolName, setToolName] = useState('');
   const [toolShortName, setToolShortName] = useState('');
   const [toolPrompt, setToolPrompt] = useState('');
-  const [toolModel, setToolModel] = useState('');
   const [toolUrl, setToolUrl] = useState('');
   const [reasoningEnabled, setReasoningEnabled] = useState(false);
   const [defaultFor, setDefaultFor] = useState<SelectionSituation | undefined>(undefined);
@@ -41,7 +40,6 @@ export const useToolForm = () => {
         name: toolName.trim(),
         shortName,
         prompt: toolPrompt.trim(),
-        model: toolModel.trim() || 'gpt-3.5-turbo',
         reasoningEnabled,
         defaultFor,
       };
@@ -56,7 +54,7 @@ export const useToolForm = () => {
       };
       return newTool;
     }
-  }, [toolName, toolShortName, toolPrompt, toolModel, toolUrl, reasoningEnabled, toolType, isValid, defaultFor]);
+  }, [toolName, toolShortName, toolPrompt, toolUrl, reasoningEnabled, toolType, isValid, defaultFor]);
 
   // 4. Reset logic
   const resetForm = useCallback(() => {
@@ -64,7 +62,6 @@ export const useToolForm = () => {
     setToolName('');
     setToolShortName('');
     setToolPrompt('');
-    setToolModel('');
     setToolUrl('');
     setReasoningEnabled(false);
     setDefaultFor(undefined);
@@ -78,13 +75,11 @@ export const useToolForm = () => {
 
     if (tool.type === 'AI') {
       setToolPrompt(tool.prompt);
-      setToolModel(tool.model || '');
       setReasoningEnabled(Boolean(tool.reasoningEnabled));
       setToolUrl('');
     } else {
       setToolUrl(tool.url);
       setToolPrompt('');
-      setToolModel('');
       setReasoningEnabled(false);
     }
   }, []);
@@ -96,7 +91,6 @@ export const useToolForm = () => {
     toolName,
     toolShortName,
     toolPrompt,
-    toolModel,
     toolUrl,
     reasoningEnabled,
     defaultFor,
@@ -106,7 +100,6 @@ export const useToolForm = () => {
     setToolName,
     setToolShortName,
     setToolPrompt,
-    setToolModel,
     setToolUrl,
     setReasoningEnabled,
     setDefaultFor,

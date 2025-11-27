@@ -70,6 +70,7 @@ async function ensureConfigExists(): Promise<void> {
         contextMenu: {
           api: '',
           key: '',
+          defaultModel: '',
           items: menuItemDefaultConfig,
         },
       },
@@ -297,19 +298,21 @@ export async function getAllBooks(): Promise<BookMetadata[]> {
 export async function updateContextMenuSettings(settings: {
   api: string;
   key: string;
+  defaultModel?: string;
   items: ContextMenuItem[];
 }): Promise<void> {
   const config = await loadConfig();
 
   // Ensure settings structure exists
   if (!config.settings) {
-    config.settings = { contextMenu: { api: '', key: '', items: [] } };
+    config.settings = { contextMenu: { api: '', key: '', defaultModel: '', items: [] } };
   }
 
   // Update context menu settings
   config.settings.contextMenu = {
     api: settings.api || '',
     key: settings.key || '',
+    defaultModel: settings.defaultModel || '',
     items: settings.items || [],
   };
 
@@ -323,6 +326,7 @@ export async function updateContextMenuSettings(settings: {
 export async function getContextMenuSettings(): Promise<{
   api: string;
   key: string;
+  defaultModel?: string;
   items: ContextMenuItem[];
 }> {
   const config = await loadConfig();
@@ -332,6 +336,7 @@ export async function getContextMenuSettings(): Promise<{
   return {
     api: contextMenuSettings?.api || '',
     key: contextMenuSettings?.key || '',
+    defaultModel: contextMenuSettings?.defaultModel || '',
     items: contextMenuSettings?.items || [],
   };
 }
@@ -358,7 +363,6 @@ export async function loadConfig(): Promise<OPFSConfig> {
       return JSON.parse(content);
     } catch {
       // If JSON is corrupted, recreate with default config
-      console.warn('Corrupted config.json detected, recreating...');
       const defaultConfig: OPFSConfig = {
         version: DEFAULT_CONFIG.CONFIG_VERSION,
         books: [],
@@ -366,11 +370,13 @@ export async function loadConfig(): Promise<OPFSConfig> {
           contextMenu: {
             api: '',
             key: '',
+            defaultModel: '',
             items: [],
           },
         },
         lastSync: Date.now(),
       };
+
       await saveConfig(defaultConfig);
       return defaultConfig;
     }
@@ -384,6 +390,7 @@ export async function loadConfig(): Promise<OPFSConfig> {
           contextMenu: {
             api: '',
             key: '',
+            defaultModel: '',
             items: [],
           },
         },

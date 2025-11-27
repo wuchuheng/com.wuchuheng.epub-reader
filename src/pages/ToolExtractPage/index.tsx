@@ -116,13 +116,9 @@ export const ToolExtractPage: React.FC = () => {
             {form.toolType === 'AI' ? (
               <AIToolForm
                 prompt={form.toolPrompt}
-                model={form.toolModel}
                 reasoningEnabled={form.reasoningEnabled}
                 defaultFor={form.defaultFor}
-                apiEndpoint={contextMenuSettings.settings.api || ''}
-                apiKey={contextMenuSettings.settings.key || ''}
                 onPromptChange={form.setToolPrompt}
-                onModelChange={form.setToolModel}
                 onReasoningToggle={form.setReasoningEnabled}
                 onDefaultForChange={form.setDefaultFor}
               />
