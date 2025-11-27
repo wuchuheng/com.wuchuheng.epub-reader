@@ -39,6 +39,9 @@ The project follows a clean, feature-based modular architecture.
 - pnpm (preferred)
 
 ### Key Commands
+- **Package Manager:**
+  **ALWAYS use `pnpm` instead of `npm`.**
+
 - **Start Development Server:**
   ```bash
   pnpm dev
@@ -47,17 +50,17 @@ The project follows a clean, feature-based modular architecture.
 
 - **Build for Production:**
   ```bash
-  npm run build
+  pnpm build
   ```
 
 - **Preview Production Build:**
   ```bash
-  npm run preview
+  pnpm preview
   ```
 
 - **Linting:**
   ```bash
-  npm run lint
+  pnpm lint
   ```
 
 ### Testing

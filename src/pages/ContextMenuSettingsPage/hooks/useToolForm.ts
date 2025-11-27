@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { ContextMenuItem, AISettingItem, IframeSettingItem, ContextMenuItemCommon } from '../../../types/epub';
+import { ContextMenuItem, AISettingItem, IframeSettingItem, SelectionSituation } from '../../../types/epub';
 
 /**
  * Hook for managing tool creation form state and logic.
@@ -7,13 +7,14 @@ import { ContextMenuItem, AISettingItem, IframeSettingItem, ContextMenuItemCommo
  */
 export const useToolForm = () => {
   // 1. State management
-  const [toolType, setToolType] = useState<ContextMenuItemCommon['type']>('AI');
+  const [toolType, setToolType] = useState<ContextMenuItem['type']>('AI');
   const [toolName, setToolName] = useState('');
   const [toolShortName, setToolShortName] = useState('');
   const [toolPrompt, setToolPrompt] = useState('');
   const [toolModel, setToolModel] = useState('');
   const [toolUrl, setToolUrl] = useState('');
   const [reasoningEnabled, setReasoningEnabled] = useState(false);
+  const [defaultFor, setDefaultFor] = useState<SelectionSituation | undefined>(undefined);
 
   // 2. Validation logic
   const isValid = useCallback(() => {
@@ -42,6 +43,7 @@ export const useToolForm = () => {
         prompt: toolPrompt.trim(),
         model: toolModel.trim() || 'gpt-3.5-turbo',
         reasoningEnabled,
+        defaultFor,
       };
       return newTool;
     } else {
@@ -50,26 +52,29 @@ export const useToolForm = () => {
         name: toolName.trim(),
         shortName,
         url: toolUrl.trim(),
+        defaultFor,
       };
       return newTool;
     }
-  }, [toolName, toolShortName, toolPrompt, toolModel, toolUrl, reasoningEnabled, toolType, isValid]);
+  }, [toolName, toolShortName, toolPrompt, toolModel, toolUrl, reasoningEnabled, toolType, isValid, defaultFor]);
 
   // 4. Reset logic
   const resetForm = useCallback(() => {
-    setToolType('AI' as ContextMenuItemCommon['type']);
+    setToolType('AI');
     setToolName('');
     setToolShortName('');
     setToolPrompt('');
     setToolModel('');
     setToolUrl('');
     setReasoningEnabled(false);
+    setDefaultFor(undefined);
   }, []);
 
   const loadTool = useCallback((tool: ContextMenuItem) => {
     setToolType(tool.type);
     setToolName(tool.name);
     setToolShortName(tool.shortName || '');
+    setDefaultFor(tool.defaultFor);
 
     if (tool.type === 'AI') {
       setToolPrompt(tool.prompt);
@@ -94,6 +99,7 @@ export const useToolForm = () => {
     toolModel,
     toolUrl,
     reasoningEnabled,
+    defaultFor,
     
     // Actions
     setToolType,
@@ -103,6 +109,7 @@ export const useToolForm = () => {
     setToolModel,
     setToolUrl,
     setReasoningEnabled,
+    setDefaultFor,
 
     // Computed
     isValid,

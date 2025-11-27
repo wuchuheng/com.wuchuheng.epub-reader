@@ -9,9 +9,10 @@ import { ReaderFooter } from './components/ReaderFooter';
 import { TOCSidebar } from './components/TOCSidebar';
 import { InvalidBookError } from './components/ErrorRender';
 import { useReader } from './hooks/useEpubReader';
-import { ContextMenu, SelectInfo } from '../../types/epub';
+import { ContextMenu, SelectInfo, SelectionSituation } from '../../types/epub';
 import ContextMenuComponent from './components/ContextMenu';
 import { NextPageButton, PrevPageButton } from './components/directory/NextPageButton';
+import { useContextMenuSettings } from '../ContextMenuSettingsPage/hooks/useContextMenuSettings';
 
 /**
  * Complete EPUB reader page component
@@ -49,6 +50,8 @@ type EpubReaderRenderProps = {
 const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
   const [menuVisible, setMenuVisible] = useState<boolean>(false);
   const [tocVisible, setTocVisible] = useState(false);
+  const { settings: contextMenuSettings } = useContextMenuSettings();
+
   const onToggleToc = () => {
     if (tocVisible) {
       setTocVisible(false);
@@ -83,7 +86,20 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
     onClick: onClickReaderView,
     onSelect: (selectedInfo: SelectInfo) => {
       if (selectedInfo.words.trim() !== '') {
-        setContextMenu({ tabIndex: 0, ...selectedInfo });
+        const wordCount = selectedInfo.words.trim().split(/\s+/).length;
+        const situation: SelectionSituation = wordCount === 1 ? 'word' : 'sentence';
+
+        // Find the index of the tool that is set as default for this situation
+        let targetIndex = contextMenuSettings.items.findIndex(
+          (item) => item.defaultFor === situation
+        );
+
+        // Fallback to 0 if no specific default is found
+        if (targetIndex === -1) {
+          targetIndex = 0;
+        }
+
+        setContextMenu({ tabIndex: targetIndex, ...selectedInfo });
       }
       setMenuVisible(false);
       setTocVisible(false);

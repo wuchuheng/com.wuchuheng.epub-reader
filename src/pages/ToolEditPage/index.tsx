@@ -127,14 +127,21 @@ export const ToolEditPage: React.FC = () => {
                   prompt={form.toolPrompt}
                   model={form.toolModel}
                   reasoningEnabled={form.reasoningEnabled}
+                  defaultFor={form.defaultFor}
                   apiEndpoint={contextMenuSettings.settings.api || ''}
                   apiKey={contextMenuSettings.settings.key || ''}
                   onPromptChange={form.setToolPrompt}
                   onModelChange={form.setToolModel}
                   onReasoningToggle={form.setReasoningEnabled}
+                  onDefaultForChange={form.setDefaultFor}
                 />
               ) : (
-                <IframeToolForm url={form.toolUrl} onUrlChange={form.setToolUrl} />
+                <IframeToolForm
+                  url={form.toolUrl}
+                  defaultFor={form.defaultFor}
+                  onUrlChange={form.setToolUrl}
+                  onDefaultForChange={form.setDefaultFor}
+                />
               )}
             </div>
 

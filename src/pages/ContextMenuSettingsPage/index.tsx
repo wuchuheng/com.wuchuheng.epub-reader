@@ -82,6 +82,7 @@ export const ContextMenuSettingsPage: React.FC = () => {
                   tools={contextMenuSettings.settings.items || []}
                   onToolRemove={contextMenuSettings.removeTool}
                   onToolReorder={contextMenuSettings.reorderTools}
+                  onToggleDefault={contextMenuSettings.toggleDefaultTool}
                 />
               </div>
 

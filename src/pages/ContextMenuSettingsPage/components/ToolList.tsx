@@ -16,7 +16,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Link } from 'react-router-dom';
-import { ContextMenuItem } from '../../../types/epub';
+import { ContextMenuItem, SelectionSituation } from '../../../types/epub';
 import { DragHandle } from '../../../components/icons';
 
 /**
@@ -29,6 +29,8 @@ interface ToolListProps {
   onToolRemove: (index: number) => void;
   /** Handler for reordering tools. */
   onToolReorder: (fromIndex: number, toIndex: number) => void;
+  /** Handler for toggling default tool status. */
+  onToggleDefault: (index: number, situation: SelectionSituation) => void;
 }
 
 /**
@@ -38,12 +40,14 @@ interface SortableToolItemProps {
   tool: ContextMenuItem;
   index: number;
   onToolRemove: (index: number) => void;
+  onToggleDefault: (index: number, situation: SelectionSituation) => void;
 }
 
 const SortableToolItem: React.FC<SortableToolItemProps> = ({
   tool,
   index,
   onToolRemove,
+  onToggleDefault,
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: index.toString(),
@@ -68,6 +72,37 @@ const SortableToolItem: React.FC<SortableToolItemProps> = ({
           <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
             {tool.type === 'AI' ? 'AI Tool' : 'Iframe Tool'}
           </span>
+          
+          {/* Default Toggles */}
+          <div className="flex items-center gap-4 ml-4 border-l pl-4 border-gray-200">
+            <label className="flex items-center gap-1.5 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={tool.defaultFor === 'word'}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  onToggleDefault(index, 'word');
+                }}
+                onClick={(e) => e.stopPropagation()}
+                className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
+              />
+              <span className="text-xs font-medium text-gray-600">Word</span>
+            </label>
+            
+            <label className="flex items-center gap-1.5 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={tool.defaultFor === 'sentence'}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  onToggleDefault(index, 'sentence');
+                }}
+                onClick={(e) => e.stopPropagation()}
+                className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
+              />
+              <span className="text-xs font-medium text-gray-600">Sentence</span>
+            </label>
+          </div>
         </div>
 
         <div className="flex items-center gap-2 self-end sm:self-auto">
@@ -105,6 +140,7 @@ export const ToolList: React.FC<ToolListProps> = ({
   tools,
   onToolRemove,
   onToolReorder,
+  onToggleDefault,
 }) => {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -147,6 +183,7 @@ export const ToolList: React.FC<ToolListProps> = ({
               tool={tool}
               index={index}
               onToolRemove={onToolRemove}
+              onToggleDefault={onToggleDefault}
             />
           ))}
         </div>

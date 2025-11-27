@@ -1,14 +1,14 @@
 import React from 'react';
-import { ContextMenuItemCommon } from '../../../types/epub';
+import { ContextMenuItem } from '../../../types/epub';
 
 /**
  * Props for tool type selector component.
  */
 interface ToolTypeSelectorProps {
   /** Current selected tool type. */
-  selectedType: ContextMenuItemCommon['type'];
+  selectedType: ContextMenuItem['type'];
   /** Handler for type selection changes. */
-  onTypeChange: (type: ContextMenuItemCommon['type']) => void;
+  onTypeChange: (type: ContextMenuItem['type']) => void;
 }
 
 /**
@@ -26,7 +26,7 @@ export const ToolTypeSelector: React.FC<ToolTypeSelectorProps> = ({
     <div className="flex space-x-4">
       <button
         type="button"
-        onClick={() => onTypeChange('AI' as ContextMenuItemCommon['type'])}
+        onClick={() => onTypeChange('AI')}
         className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
           selectedType === 'AI'
             ? 'bg-blue-500 text-white'
@@ -37,7 +37,7 @@ export const ToolTypeSelector: React.FC<ToolTypeSelectorProps> = ({
       </button>
       <button
         type="button"
-        onClick={() => onTypeChange('iframe' as ContextMenuItemCommon['type'])}
+        onClick={() => onTypeChange('iframe')}
         className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
           selectedType === 'iframe'
             ? 'bg-blue-500 text-white'

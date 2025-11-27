@@ -14,17 +14,29 @@ export type ContextMenu = {
 export type SelectInfo = Pick<ContextMenu, 'words' | 'context'>;
 
 /**
+ * Defines the selection situation for default tool behavior.
+ * 'word' - The selection is a single word.
+ * 'sentence' - The selection is multiple words (phrase or sentence).
+ */
+export type SelectionSituation = 'word' | 'sentence';
+
+/**
  * Represents a common context menu item.
  *
  * @property name - The display name of the menu item.
  * @property shortName - (Optional) A short name for the menu item.
+ * @property defaultFor - (Optional) Specifies if this tool is the default for a specific selection situation.
  */
 export type ContextMenuItemCommon = {
-  type: 'AI' | 'iframe';
   // The display name of the context menu item.
   name: string;
   // An optional short name for the context menu item.
   shortName?: string;
+  /**
+   * Specifies if this tool is the default for a specific selection situation.
+   * null/undefined means it's never a default (unless it's the first item).
+   */
+  defaultFor?: SelectionSituation;
 };
 
 /**
@@ -37,6 +49,7 @@ export type ContextMenuItemCommon = {
  * This type extends {@link ContextMenuItemCommon} to include common context menu properties.
  */
 export type AISettingItem = {
+  type: 'AI';
   /** The prompt string to be used by the AI model. */
   prompt: string;
   /** The identifier or name of the AI model. */
@@ -53,6 +66,7 @@ export type AISettingItem = {
  * This type extends {@link ContextMenuItemCommon}, inheriting its properties.
  */
 export type IframeSettingItem = {
+  type: 'iframe';
   // The URL to be loaded in the iframe. this url can access both parameters: "words" and "context"
   // For example: https://example.com?words={{words}}&context={{context}},
   // this will replace the parameters with actual values
