@@ -78,11 +78,22 @@ export const useContextMenuSettings = () => {
 
   const addTool = useCallback(
     async (tool: ContextMenuItem) => {
-      const newSettings = { ...settings, items: [...settings.items, tool] };
-      await updateContextMenuSettings(newSettings);
-      setSettings(newSettings);
+      try {
+        setIsSaving(true);
+        setError(null);
+        const newSettings = { ...settingsRef.current, items: [...settingsRef.current.items, tool] };
+        await updateContextMenuSettings(newSettings);
+        setSettings(newSettings);
+        return true;
+      } catch (err) {
+        setError('Failed to add tool');
+        console.error('Error adding tool:', err);
+        return false;
+      } finally {
+        setIsSaving(false);
+      }
     },
-    [settings]
+    []
   );
 
   const removeTool = useCallback((index: number) => {
@@ -110,6 +121,35 @@ export const useContextMenuSettings = () => {
       };
     });
   }, []);
+
+  const saveTool = useCallback(
+    async (index: number, updatedTool: ContextMenuItem) => {
+      try {
+        setIsSaving(true);
+        setError(null);
+
+        if (index < 0 || index >= settingsRef.current.items.length) {
+          setError('Tool not found');
+          return false;
+        }
+
+        const items = [...settingsRef.current.items];
+        items[index] = updatedTool;
+        const newSettings = { ...settingsRef.current, items };
+
+        await updateContextMenuSettings(newSettings);
+        setSettings(newSettings);
+        return true;
+      } catch (err) {
+        setError('Failed to update tool');
+        console.error('Error updating tool:', err);
+        return false;
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    []
+  );
 
   // 3. Save settings to OPFS
   const saveSettings = useCallback(async () => {
@@ -143,6 +183,7 @@ export const useContextMenuSettings = () => {
     removeTool,
     updateTool,
     reorderTools,
+    saveTool,
     saveSettings,
   };
 };

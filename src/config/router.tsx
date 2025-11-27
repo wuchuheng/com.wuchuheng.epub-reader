@@ -4,6 +4,7 @@ import { EpubReader } from '../pages/EpubReader';
 import SettingsPage from '../pages/SettingsPage';
 import ContextMenuSettingsPage from '../pages/ContextMenuSettingsPage';
 import ToolExtractPage from '../pages/ToolExtractPage';
+import ToolEditPage from '../pages/ToolEditPage';
 
 const router = createBrowserRouter([
   {
@@ -21,6 +22,10 @@ const router = createBrowserRouter([
   {
     path: '/settings/contextmenu',
     element: <ContextMenuSettingsPage />,
+  },
+  {
+    path: '/settings/contextmenu/:id/edit',
+    element: <ToolEditPage />,
   },
   {
     path: '/settings/contextmenu/add-tool',

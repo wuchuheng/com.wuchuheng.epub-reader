@@ -66,6 +66,24 @@ export const useToolForm = () => {
     setReasoningEnabled(false);
   }, []);
 
+  const loadTool = useCallback((tool: ContextMenuItem) => {
+    setToolType(tool.type);
+    setToolName(tool.name);
+    setToolShortName(tool.shortName || '');
+
+    if (tool.type === 'AI') {
+      setToolPrompt(tool.prompt);
+      setToolModel(tool.model || '');
+      setReasoningEnabled(Boolean(tool.reasoningEnabled));
+      setToolUrl('');
+    } else {
+      setToolUrl(tool.url);
+      setToolPrompt('');
+      setToolModel('');
+      setReasoningEnabled(false);
+    }
+  }, []);
+
   // 5. Export interface
   return {
     // State
@@ -85,11 +103,12 @@ export const useToolForm = () => {
     setToolModel,
     setToolUrl,
     setReasoningEnabled,
-    
+
     // Computed
     isValid,
     createTool,
     resetForm,
+    loadTool,
   };
 };
 

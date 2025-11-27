@@ -15,8 +15,8 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { Link } from 'react-router-dom';
 import { AISettingItem, ContextMenuItem, IframeSettingItem } from '../../../types/epub';
-import { ToolForm } from './ToolForm';
 import { DragHandle } from '../../../components/icons';
 
 /**
@@ -25,16 +25,10 @@ import { DragHandle } from '../../../components/icons';
 interface ToolListProps {
   /** Array of tools to display. */
   tools: ContextMenuItem[];
-  /** Handler for updating a tool at specific index. */
-  onToolUpdate: (index: number, updatedTool: AISettingItem | IframeSettingItem) => void;
   /** Handler for removing a tool at specific index. */
   onToolRemove: (index: number) => void;
   /** Handler for reordering tools. */
   onToolReorder: (fromIndex: number, toIndex: number) => void;
-  /** API endpoint for fetching models. */
-  apiEndpoint?: string;
-  /** API key for authentication. */
-  apiKey?: string;
 }
 
 /**
@@ -43,19 +37,13 @@ interface ToolListProps {
 interface SortableToolItemProps {
   tool: ContextMenuItem;
   index: number;
-  onToolUpdate: (index: number, updatedTool: AISettingItem | IframeSettingItem) => void;
   onToolRemove: (index: number) => void;
-  apiEndpoint?: string;
-  apiKey?: string;
 }
 
 const SortableToolItem: React.FC<SortableToolItemProps> = ({
   tool,
   index,
-  onToolUpdate,
   onToolRemove,
-  apiEndpoint,
-  apiKey,
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: index.toString(),
@@ -75,79 +63,59 @@ const SortableToolItem: React.FC<SortableToolItemProps> = ({
       }`}
     >
       <div className="mb-3 flex items-start justify-between">
-        <div className="flex items-start space-x-3">
-          <div>
-            <h4 className="font-medium text-gray-900">{tool.name}</h4>
-            <p className="text-sm text-gray-500">{tool.shortName}</p>
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <h4 className="text-lg font-semibold text-gray-900">{tool.name}</h4>
             <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
               {tool.type === 'AI' ? 'AI Tool' : 'Iframe Tool'}
             </span>
           </div>
+          {tool.shortName && <p className="text-sm text-gray-500">Shortcut: {tool.shortName}</p>}
+          {tool.type === 'AI' ? (
+            <div className="text-sm text-gray-700">
+              <div className="font-medium">Model</div>
+              <div className="text-gray-600">{(tool as AISettingItem).model || 'Not set'}</div>
+              <div className="mt-2 font-medium">Prompt</div>
+              <div className="text-gray-600">
+                {((tool as AISettingItem).prompt || '').slice(0, 140)}
+                {((tool as AISettingItem).prompt || '').length > 140 ? '...' : ''}
+              </div>
+              {(tool as AISettingItem).reasoningEnabled && (
+                <div className="mt-2 inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-700">
+                  Reasoning enabled
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-sm text-gray-700">
+              <div className="font-medium">URL</div>
+              <div className="break-all text-gray-600">{(tool as IframeSettingItem).url}</div>
+            </div>
+          )}
         </div>
 
-        {/* Right side: Action buttons */}
-        <div className="flex items-center space-x-2">
-          {/* Drag handle */}
+        <div className="flex items-start gap-2">
+          <Link
+            to={`/settings/contextmenu/${index}/edit`}
+            className="rounded-md bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
+          >
+            Edit
+          </Link>
+          <button
+            onClick={() => onToolRemove(index)}
+            className="rounded-md bg-red-50 px-3 py-1 text-sm font-medium text-red-600 transition-colors hover:bg-red-100"
+          >
+            Remove
+          </button>
           <div
             {...attributes}
             {...listeners}
             className="cursor-move touch-none p-1 text-gray-400 hover:text-gray-600"
+            aria-label="Drag to reorder"
           >
             <DragHandle />
           </div>
-
-          {/* Remove button */}
-          <button
-            onClick={() => onToolRemove(index)}
-            className="text-red-500 transition-colors hover:text-red-700"
-          >
-            Remove
-          </button>
         </div>
-      </div>
-
-      <div className="space-y-3">
-        {tool.type === 'AI' ? (
-          <ToolForm
-            tool={tool as AISettingItem}
-            onChange={(updatedTool) => onToolUpdate(index, updatedTool)}
-            apiEndpoint={apiEndpoint}
-            apiKey={apiKey}
-          />
-        ) : (
-          <div className="space-y-3">
-            <div>
-              <label className="mb-1 block text-sm text-gray-700">URL</label>
-              <input
-                type="url"
-                value={(tool as IframeSettingItem).url}
-                onChange={(e) => onToolUpdate(index, { ...tool, url: e.target.value })}
-                placeholder="https://example.com?words={words}&context={context}"
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-              />
-              <div className="mt-2 text-sm">
-                <div className="mb-1 font-medium text-gray-700">Tips:</div>
-
-                <ul className="list-inside list-disc space-y-1 text-xs text-gray-500">
-                  <li>
-                    <span className="font-medium">{'{{words}}'}</span>: The currently selected text
-                    in the ebook. Use this to pass the user's selection into the iframe URL or AI
-                    prompt. Example:{' '}
-                    <code className="font-mono">https://example.com?q={'{{words}}'}</code>
-                  </li>
-
-                  <li>
-                    <span className="font-medium">{'{{context}}'}</span>: Additional surrounding
-                    context (nearby paragraph, chapter title, or other metadata) to provide more
-                    information to the tool. Use this when the tool needs surrounding text or
-                    context. Example:{' '}
-                    <code className="font-mono">https://example.com?ctx={'{{context}}'}</code>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -159,11 +127,8 @@ const SortableToolItem: React.FC<SortableToolItemProps> = ({
  */
 export const ToolList: React.FC<ToolListProps> = ({
   tools,
-  onToolUpdate,
   onToolRemove,
   onToolReorder,
-  apiEndpoint,
-  apiKey,
 }) => {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -205,10 +170,7 @@ export const ToolList: React.FC<ToolListProps> = ({
               key={index}
               tool={tool}
               index={index}
-              onToolUpdate={onToolUpdate}
               onToolRemove={onToolRemove}
-              apiEndpoint={apiEndpoint}
-              apiKey={apiKey}
             />
           ))}
         </div>

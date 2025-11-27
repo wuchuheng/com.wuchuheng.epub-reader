@@ -18,12 +18,13 @@ export const ToolExtractPage: React.FC = () => {
   const navigate = useNavigate();
   const contextMenuSettings = useContextMenuSettings();
   const form = useToolForm();
+  const { resetForm } = form;
 
   // 2. Effects
   // 2.1 Reset form when component mounts
   useEffect(() => {
-    form.resetForm();
-  }, [form.resetForm]);
+    resetForm();
+  }, [resetForm]);
 
   // 3. Event handlers
   // 3.1 Handle form submission
@@ -31,10 +32,11 @@ export const ToolExtractPage: React.FC = () => {
     const newTool = form.createTool();
     if (newTool) {
       // Add the tool
-      await contextMenuSettings.addTool(newTool);
-
-      // Navigate back to context menu settings
-      navigate('/settings/contextmenu');
+      const success = await contextMenuSettings.addTool(newTool);
+      if (success) {
+        // Navigate back to context menu settings
+        navigate('/settings/contextmenu');
+      }
     }
   };
 
