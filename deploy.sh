@@ -19,7 +19,7 @@ remotePath=/opt/1panel/apps/openresty/openresty/www/sites/epub.wareflow.cn/index
 #2.2.1 Upload it to remote service.
 log "Uploading files to ${remoteHostName}..."
 
-remoteHostName='daye'
+remoteHostName='nida'
 
 sftp ${remoteHostName} << EOF
 put -r ${localPath}/* ${remotePath}/

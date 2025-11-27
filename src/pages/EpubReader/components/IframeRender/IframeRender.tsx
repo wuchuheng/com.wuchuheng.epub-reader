@@ -20,6 +20,7 @@ export const IframeRender: React.FC<IframeRenderProps> = ({ url, words, context 
   // 1. Input validation and preparation
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
   // url encode the context.
   const encodedContext = encodeURIComponent(context);
@@ -34,6 +35,7 @@ export const IframeRender: React.FC<IframeRenderProps> = ({ url, words, context 
   const handleIframeLoad = () => {
     setIsLoading(false);
     setHasError(false);
+    setHasLoadedOnce(true);
   };
 
   const handleIframeError = () => {
@@ -54,18 +56,23 @@ export const IframeRender: React.FC<IframeRenderProps> = ({ url, words, context 
   }
 
   return (
-    <>
-      {isLoading && <Loading />}
+    <div className="relative flex-1 overflow-hidden">
+      {isLoading && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-50">
+          <Loading />
+        </div>
+      )}
       <iframe
         src={newUrl}
-        style={{
-          display: isLoading ? 'none' : 'block',
-        }}
         title="Iframe"
-        className="h-full w-full"
+        className="h-full w-full border-0"
+        style={{
+          visibility: isLoading && !hasLoadedOnce ? 'hidden' : 'visible',
+          borderRadius: 'inherit',
+        }}
         onLoad={handleIframeLoad}
         onError={handleIframeError}
       />
-    </>
+    </div>
   );
 };

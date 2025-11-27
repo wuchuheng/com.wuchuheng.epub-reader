@@ -34,14 +34,16 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
 
   return (
     <div
-      className="absolute bottom-0 left-0 right-0 top-0 z-50 flex items-center justify-center shadow-lg"
+      className="absolute bottom-0 left-0 right-0 top-0 z-50 flex items-center justify-center px-3 py-3 sm:px-6 sm:py-6 shadow-lg"
       onClick={props.onClose}
     >
       <div
-        className="flex flex-col divide-y divide-black rounded border border-black bg-white text-black"
+        className="flex flex-col divide-y divide-black rounded border border-black bg-white text-black overflow-hidden"
         style={{
           width: `${defaultSize}rem`,
           height: `${defaultSize}rem`,
+          maxWidth: 'calc(100vw - 1.5rem)',
+          maxHeight: 'calc(100vh - 1.5rem)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
