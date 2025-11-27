@@ -13,9 +13,6 @@ export const UserMessageRender: React.FC<MessageRenderProps> = (props) => {
   const onHightWords = useCallback(() => {
     let newContent = props.content;
 
-    // 1. Pre-processing: Convert XML selection tags to Markdown for display
-    newContent = newContent.replace(/<selected>(.*?)<\/selected>/g, '**$1**');
-
     // 2. Core processing: Highlight specific words if requested
     if (props.hightWords) {
       const searchTerm = props.hightWords;

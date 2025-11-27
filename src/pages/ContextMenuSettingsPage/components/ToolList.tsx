@@ -16,7 +16,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Link } from 'react-router-dom';
-import { AISettingItem, ContextMenuItem, IframeSettingItem } from '../../../types/epub';
+import { ContextMenuItem } from '../../../types/epub';
 import { DragHandle } from '../../../components/icons';
 
 /**
@@ -58,43 +58,19 @@ const SortableToolItem: React.FC<SortableToolItemProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={`rounded-md border border-gray-200 p-4 transition-all duration-200 ${
-        isDragging ? 'opacity-50 shadow-lg' : ''
+      className={`rounded-md border border-gray-200 px-4 py-3 transition-all duration-200 ${
+        isDragging ? 'opacity-50 shadow-lg' : 'hover:bg-gray-50'
       }`}
     >
-      <div className="mb-3 flex items-start justify-between">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <h4 className="text-lg font-semibold text-gray-900">{tool.name}</h4>
-            <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
-              {tool.type === 'AI' ? 'AI Tool' : 'Iframe Tool'}
-            </span>
-          </div>
-          {tool.shortName && <p className="text-sm text-gray-500">Shortcut: {tool.shortName}</p>}
-          {tool.type === 'AI' ? (
-            <div className="text-sm text-gray-700">
-              <div className="font-medium">Model</div>
-              <div className="text-gray-600">{(tool as AISettingItem).model || 'Not set'}</div>
-              <div className="mt-2 font-medium">Prompt</div>
-              <div className="text-gray-600">
-                {((tool as AISettingItem).prompt || '').slice(0, 140)}
-                {((tool as AISettingItem).prompt || '').length > 140 ? '...' : ''}
-              </div>
-              {(tool as AISettingItem).reasoningEnabled && (
-                <div className="mt-2 inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-700">
-                  Reasoning enabled
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="text-sm text-gray-700">
-              <div className="font-medium">URL</div>
-              <div className="break-all text-gray-600">{(tool as IframeSettingItem).url}</div>
-            </div>
-          )}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <h4 className="text-base font-medium text-gray-900">{tool.name}</h4>
+          <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
+            {tool.type === 'AI' ? 'AI Tool' : 'Iframe Tool'}
+          </span>
         </div>
 
-        <div className="flex items-start gap-2">
+        <div className="flex items-center gap-2 self-end sm:self-auto">
           <Link
             to={`/settings/contextmenu/${index}/edit`}
             className="rounded-md bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
