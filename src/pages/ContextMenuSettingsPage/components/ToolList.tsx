@@ -70,12 +70,12 @@ const SortableToolItem: React.FC<SortableToolItemProps> = ({
         <div className="flex items-center gap-3">
           <h4 className="text-base font-medium text-gray-900">{tool.name}</h4>
           <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
-            {tool.type === 'AI' ? 'AI Tool' : 'Iframe Tool'}
+            {tool.type === 'AI' ? 'AI' : 'Iframe'}
           </span>
-          
+
           {/* Default Toggles */}
-          <div className="flex items-center gap-4 ml-4 border-l pl-4 border-gray-200">
-            <label className="flex items-center gap-1.5 cursor-pointer select-none">
+          <div className="ml-4 flex items-center gap-4 border-l border-gray-200 pl-4">
+            <label className="flex cursor-pointer select-none items-center gap-1.5">
               <input
                 type="checkbox"
                 checked={tool.defaultFor === 'word'}
@@ -84,12 +84,12 @@ const SortableToolItem: React.FC<SortableToolItemProps> = ({
                   onToggleDefault(index, 'word');
                 }}
                 onClick={(e) => e.stopPropagation()}
-                className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
+                className="h-4 w-4 cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <span className="text-xs font-medium text-gray-600">Word</span>
             </label>
-            
-            <label className="flex items-center gap-1.5 cursor-pointer select-none">
+
+            <label className="flex cursor-pointer select-none items-center gap-1.5">
               <input
                 type="checkbox"
                 checked={tool.defaultFor === 'sentence'}
@@ -98,7 +98,7 @@ const SortableToolItem: React.FC<SortableToolItemProps> = ({
                   onToggleDefault(index, 'sentence');
                 }}
                 onClick={(e) => e.stopPropagation()}
-                className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
+                className="h-4 w-4 cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <span className="text-xs font-medium text-gray-600">Sentence</span>
             </label>
