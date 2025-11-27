@@ -1,7 +1,9 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import BookshelfPage from '../pages/HomePage';
 import { EpubReader } from '../pages/EpubReader';
-import SettingsPage from '../pages/SettingsPage';
+import SettingsLayout from '../pages/SettingsPage/SettingsLayout';
+import GeneralPage from '../pages/SettingsPage';
+import AboutPage from '../pages/SettingsPage/AboutPage';
 import ContextMenuSettingsPage from '../pages/ContextMenuSettingsPage';
 import ToolExtractPage from '../pages/ToolExtractPage';
 import ToolEditPage from '../pages/ToolEditPage';
@@ -17,11 +19,25 @@ const router = createBrowserRouter([
   },
   {
     path: '/settings',
-    element: <SettingsPage />,
-  },
-  {
-    path: '/settings/contextmenu',
-    element: <ContextMenuSettingsPage />,
+    element: <SettingsLayout />,
+    children: [
+      {
+        index: true,
+        element: <Navigate to="general" replace />,
+      },
+      {
+        path: 'general',
+        element: <GeneralPage />,
+      },
+      {
+        path: 'contextmenu',
+        element: <ContextMenuSettingsPage />,
+      },
+      {
+        path: 'about',
+        element: <AboutPage />,
+      },
+    ],
   },
   {
     path: '/settings/contextmenu/:id/edit',
