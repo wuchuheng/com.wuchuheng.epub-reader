@@ -1,5 +1,5 @@
 import { FaChartLine, FaArrowUp, FaArrowDown } from 'react-icons/fa6';
-import { CheckCircle, Copy, Refresh } from '@/components/icons';
+import { CheckCircle, Copy, Refresh, ChatBubble } from '@/components/icons';
 type AIStatusBarProps = {
   usage: {
     promptTokens: number;
@@ -10,10 +10,11 @@ type AIStatusBarProps = {
 
   onRefresh: () => void;
   onCopy: () => void;
+  onChatClick?: () => void;
   copied: boolean;
 };
 export const AIStatusBar: React.FC<AIStatusBarProps> = (props) => (
-  <div className="mt-4 flex items-center gap-4 text-sm text-gray-700">
+  <div className="mt-4 flex flex-wrap items-center gap-1 sm:gap-4 text-xs sm:text-sm text-gray-700">
     <span className="font-medium">Usage:</span>
     <div className="flex items-center gap-1">
       <FaArrowUp />
@@ -33,6 +34,16 @@ export const AIStatusBar: React.FC<AIStatusBarProps> = (props) => (
     </div>
 
     <div className="ml-auto flex gap-2">
+      {props.onChatClick && (
+        <button
+          onClick={props.onChatClick}
+          className="rounded p-1 transition-colors hover:bg-gray-200"
+          aria-label="Open conversation"
+          title="Open conversation"
+        >
+          <ChatBubble className="h-4 w-4 text-gray-600" />
+        </button>
+      )}
       <button
         onClick={props.onRefresh}
         className="rounded p-1 transition-colors hover:bg-gray-200"

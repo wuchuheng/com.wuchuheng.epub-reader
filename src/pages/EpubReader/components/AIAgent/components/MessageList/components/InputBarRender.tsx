@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaArrowUp, FaPen } from 'react-icons/fa6';
+import { FaArrowUp } from 'react-icons/fa6';
 import { MdClose } from 'react-icons/md';
 
 export type InputBarRenderProps = {
@@ -22,7 +22,6 @@ const isDesktopDevice = (): boolean => {
 
 export const InputBarRender: React.FC<InputBarRenderProps> = ({
   onSend,
-  onVisible,
   mode,
   onModeChange,
 }) => {
@@ -120,19 +119,5 @@ export const InputBarRender: React.FC<InputBarRenderProps> = ({
     );
   }
 
-  return (
-    <div className="sticky bottom-0 h-0 w-full">
-      <div className="absolute bottom-4 right-4 z-10">
-        <button
-          onClick={() => {
-            onModeChange('conversation');
-            onVisible?.();
-          }}
-          className="flex h-12 w-12 items-center justify-center rounded-full border bg-white shadow-lg transition-colors hover:bg-gray-50"
-        >
-          <FaPen className="size-6" />
-        </button>
-      </div>
-    </div>
-  );
+  return null;
 };

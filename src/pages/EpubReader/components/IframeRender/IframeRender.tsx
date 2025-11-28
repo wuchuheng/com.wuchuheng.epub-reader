@@ -6,6 +6,7 @@ type IframeRenderProps = {
   url: string;
   context: string;
   words: string;
+  minHeight?: number | string;
 };
 
 /**
@@ -16,7 +17,12 @@ type IframeRenderProps = {
  * @param words - Words to replace in the URL template
  * @returns Iframe component with loading state
  */
-export const IframeRender: React.FC<IframeRenderProps> = ({ url, words, context }) => {
+export const IframeRender: React.FC<IframeRenderProps> = ({
+  url,
+  words,
+  context,
+  minHeight,
+}) => {
   // 1. Input validation and preparation
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -58,7 +64,10 @@ export const IframeRender: React.FC<IframeRenderProps> = ({ url, words, context 
   }
 
   return (
-    <div className="relative h-full w-full overflow-hidden">
+    <div
+      className="relative w-full overflow-hidden"
+      style={{ height: minHeight || '100%' }}
+    >
       {isLoading && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-50">
           <Loading />

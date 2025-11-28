@@ -19,6 +19,7 @@ export type AIMessageRenderProps = {
 
   model: string;
   hideRoleLabel?: boolean;
+  onChatClick?: () => void;
 };
 export type AIMessageRenderComponentProps = AIMessageRenderProps & {
   onDrilldownSelect?: (selection: SelectInfo) => void;
@@ -33,6 +34,7 @@ export const AIMessageRender: React.FC<AIMessageRenderComponentProps> = ({
   hideRoleLabel = false,
   onDrilldownSelect,
   contextContainer,
+  onChatClick,
 }) => {
   // 1.1 State for copy feedback
   const [copied, setCopied] = useState(false);
@@ -89,6 +91,7 @@ export const AIMessageRender: React.FC<AIMessageRenderComponentProps> = ({
             usage={usage}
             onRefresh={handleRefresh}
             onCopy={handleCopyContent}
+            onChatClick={onChatClick}
             copied={copied}
             model={model}
           />

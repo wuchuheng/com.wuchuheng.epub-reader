@@ -12,6 +12,7 @@ type MessageListProps = {
   onChangeMessageList: (mode: ViewMode) => void;
   inputBarVisit: () => void;
   onDrilldownSelect?: (selection: SelectInfo) => void;
+  viewMode?: ViewMode;
 } & AIAgentProps;
 
 export type ViewMode = 'simple' | 'conversation';
@@ -20,6 +21,7 @@ export const MessageList: React.FC<MessageListProps> = ({
   onChangeMessageList,
   inputBarVisit,
   onDrilldownSelect,
+  viewMode: propViewMode,
   ...props
 }) => {
   const content = replaceWords({
@@ -34,7 +36,8 @@ export const MessageList: React.FC<MessageListProps> = ({
     },
   ]);
   const abortControllerRef = useRef<AbortController | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>('simple');
+  const [internalViewMode, setInternalViewMode] = useState<ViewMode>('simple');
+  const viewMode = propViewMode ?? internalViewMode;
   const conversationContainerRef = useRef<HTMLDivElement>(null);
 
   const onUpdateAIResponse = useCallback((res: AIMessageRenderProps) => {
@@ -68,9 +71,22 @@ export const MessageList: React.FC<MessageListProps> = ({
     [messageList, fetchAIMessage]
   );
 
-  useEffect(() => {
-    onChangeMessageList(viewMode);
-  }, [messageList, viewMode, onChangeMessageList]);
+  const handleModeChange = useCallback(
+    (mode: ViewMode) => {
+      if (propViewMode === undefined) {
+        setInternalViewMode(mode);
+      }
+      // We need to ensure the parent is notified even if controlled,
+      // so the parent can update the prop.
+      onChangeMessageList(mode);
+      
+      if (mode === 'conversation') {
+        inputBarVisit();
+      }
+    },
+    [inputBarVisit, propViewMode, onChangeMessageList]
+  );
+
   const hasFetchedInitiallyRef = useRef(false);
   useEffect(() => {
     if (hasFetchedInitiallyRef.current) return;
@@ -83,16 +99,6 @@ export const MessageList: React.FC<MessageListProps> = ({
       abortControllerRef.current?.abort();
     },
     []
-  );
-
-  const handleModeChange = useCallback(
-    (mode: ViewMode) => {
-      setViewMode(mode);
-      if (mode === 'conversation') {
-        inputBarVisit();
-      }
-    },
-    [inputBarVisit]
   );
 
   return (
@@ -128,6 +134,7 @@ export const MessageList: React.FC<MessageListProps> = ({
             messageList={messageList}
             fallbackModel={props.model}
             onDrilldownSelect={onDrilldownSelect}
+            onChatClick={() => handleModeChange('conversation')}
           />
         )}
       </div>

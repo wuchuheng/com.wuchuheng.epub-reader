@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { AIAgentProps } from './types/AIAgent';
 import { useSmoothScrollToBottom } from './hooks/useSmoothScroll';
 import { MessageList, ViewMode } from './components/MessageList/MessageList';
@@ -10,13 +10,16 @@ import { SelectInfo } from '@/types/epub';
  */
 export type AIAgentComponentProps = AIAgentProps & {
   onDrilldownSelect?: (selection: SelectInfo) => void;
+  viewMode?: ViewMode;
+  onViewModeChange?: (mode: ViewMode) => void;
 };
 
 export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
   const scrollContainerRef: React.RefObject<HTMLDivElement> = useRef<HTMLDivElement>(null);
   const isAutoScrollRef = useRef(true);
   const isGoToBottomRef = useRef<boolean>(true);
-  const [viewMode, setViewMode] = useState<ViewMode>('simple');
+  const viewMode = props.viewMode ?? 'simple';
+
   const {
     scrollToBottom,
     handleOnPauseAutoScroll,
@@ -29,34 +32,33 @@ export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
     scrollContainerRef,
   });
 
-  // Reset scroll position when the component sets up.
+  // Reset scroll position or scroll to bottom when viewMode changes.
   useEffect(() => {
     if (!scrollContainerRef.current) return;
-
-    scrollContainerRef.current.scrollTop = 0;
-  }, [scrollContainerRef]);
+    
+    if (viewMode === 'simple') {
+        scrollContainerRef.current.scrollTop = 0;
+    } else if (viewMode === 'conversation') {
+        // When entering conversation mode, scroll to bottom to show latest messages
+        // Use a small timeout to ensure layout has updated (especially if switching from hidden)
+        setTimeout(() => {
+            scrollToBottom();
+            isGoToBottomRef.current = true;
+        }, 0);
+    }
+  }, [scrollContainerRef, viewMode, scrollToBottom]);
 
   // Listen to  the message list change to trigger the scroll when in auto scroll mode.
-  const handleMessageListChange = (mode: ViewMode) => {
-    setViewMode(mode);
-
-    if (!scrollContainerRef.current) {
-      return;
-    }
-
-    if (mode === 'simple') {
-      scrollContainerRef.current.scrollTop = 0;
-      return;
-    }
-
-    if (isAutoScrollRef.current && isGoToBottomRef.current) {
-      scrollToBottom();
-    }
+  const forwardViewModeChange = (mode: ViewMode) => {
+    props.onViewModeChange?.(mode);
   };
 
   return (
     <div
-      className="relative flex h-full flex-col overflow-y-scroll"
+      className={`relative flex h-full flex-col ${props.viewMode === 'simple' ? '' : 'overflow-y-scroll'}`}
+      // In simple mode (stacked), the scrolling is handled by the parent (ContextMenu), 
+      // so we should probably disable overflow-y-scroll here or make it auto.
+      // Actually, if ContextMenu is managing the scroll, AIAgent shouldn't be a scroll container in simple mode.
       ref={scrollContainerRef}
       onTouchStart={handleOnPauseAutoScroll}
       onMouseDown={handleOnPauseAutoScroll}
@@ -72,7 +74,7 @@ export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
       }}
     >
       <MessageList
-        onChangeMessageList={handleMessageListChange}
+        onChangeMessageList={forwardViewModeChange}
         inputBarVisit={() => {
           if (isGoToBottomRef.current) {
             scrollToBottom();
@@ -80,6 +82,7 @@ export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
         }}
         onDrilldownSelect={props.onDrilldownSelect}
         {...props}
+        viewMode={viewMode} // Pass viewMode to MessageList
       />
       {viewMode === 'conversation' && (
         <div className="w-full text-center text-sm text-gray-400">-- You've reached the end! --</div>

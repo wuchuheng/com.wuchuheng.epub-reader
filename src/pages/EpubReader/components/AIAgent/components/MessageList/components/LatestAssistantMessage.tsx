@@ -7,12 +7,14 @@ type LatestAssistantMessageProps = {
   messageList: MessageItem[];
   fallbackModel: string;
   onDrilldownSelect?: (selection: SelectInfo) => void;
+  onChatClick?: () => void;
 };
 
 export const LatestAssistantMessage: React.FC<LatestAssistantMessageProps> = ({
   messageList,
   fallbackModel,
   onDrilldownSelect,
+  onChatClick,
 }) => {
   const latestAssistant = [...messageList].reverse().find((msg) => msg.role === 'assistant');
 
@@ -44,6 +46,7 @@ export const LatestAssistantMessage: React.FC<LatestAssistantMessageProps> = ({
         model={latestAssistant.data.model || fallbackModel}
         hideRoleLabel
         onDrilldownSelect={onDrilldownSelect}
+        onChatClick={onChatClick}
       />
     </div>
   );

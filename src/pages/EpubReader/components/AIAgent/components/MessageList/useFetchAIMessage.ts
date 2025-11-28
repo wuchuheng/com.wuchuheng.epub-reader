@@ -43,14 +43,16 @@ export const useFetchAIMessage = ({
       }
       const clone = [...prev];
       const latest = clone[clone.length - 1];
-      clone[clone.length - 1] = {
-        role: 'assistant',
-        data: {
-          ...latest.data,
-          content: message,
-          reasoningContentCompleted: true,
-        },
-      };
+      if (latest.role === 'assistant') {
+        clone[clone.length - 1] = {
+          role: 'assistant',
+          data: {
+            ...latest.data,
+            content: message,
+            reasoningContentCompleted: true,
+          },
+        };
+      }
       return clone;
     });
   };
@@ -90,7 +92,6 @@ export const useFetchAIMessage = ({
       stream_options: {
         include_usage: true,
       },
-      signal: abortController.signal,
     };
 
     requestConfig = addThinkingArgument(
@@ -100,7 +101,9 @@ export const useFetchAIMessage = ({
     ) as ChatCompletionCreateParamsStreaming;
 
     try {
-      const completion = await client.chat.completions.create(requestConfig);
+      const completion = await client.chat.completions.create(requestConfig, {
+        signal: abortController.signal,
+      });
 
       for await (const part of completion) {
         if (abortController.signal.aborted) {

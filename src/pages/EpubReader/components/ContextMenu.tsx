@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { AISettingItem, ContextMenuSettings, SelectInfo } from '../../../types/epub';
 import { AIAgent } from './AIAgent/AIAgent';
 import { IframeRender } from './IframeRender/IframeRender';
+import { ViewMode } from './AIAgent/components/MessageList/MessageList';
 
 type WindowState = 'normal' | 'maximized';
 
@@ -174,6 +175,12 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
     []
   );
 
+  // Refactor: Added viewLayout state
+  const [viewLayout, setViewLayout] = useState<'stackedSimple' | 'tabbedConversation'>('stackedSimple');
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const isScrollingRef = useRef(false);
+
   useEffect(() => {
     viewportRef.current = viewportSize;
   }, [viewportSize]);
@@ -220,6 +227,53 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
       return clampedSize;
     });
   }, [viewportSize, windowState]);
+
+  // Scroll Spy Logic
+  useEffect(() => {
+    if (viewLayout !== 'stackedSimple') return;
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      if (!container) return;
+      
+      // Simple intersection check using middle of viewport
+      const containerRect = container.getBoundingClientRect();
+      const threshold = containerRect.top + containerRect.height / 2;
+
+      let newActiveIndex = -1;
+      
+      sectionRefs.current.forEach((section, index) => {
+        if (!section) return;
+        const rect = section.getBoundingClientRect();
+        if (rect.top <= threshold && rect.bottom >= threshold) {
+          newActiveIndex = index;
+        }
+      });
+
+      if (newActiveIndex !== -1 && newActiveIndex !== tabIndex) {
+        isScrollingRef.current = true;
+        onChangeIndex(newActiveIndex);
+        // Reset scroll flag after a short delay to allow prop update
+        setTimeout(() => { isScrollingRef.current = false; }, 100);
+      }
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [viewLayout, tabIndex, activeItems, onChangeIndex]);
+
+  // Scroll to tab logic (only when layout switches or initial load)
+  useEffect(() => {
+    if (viewLayout === 'stackedSimple' && !isScrollingRef.current) {
+       if (tabIndex !== null && sectionRefs.current[tabIndex]) {
+           // Use a small timeout to ensure rendering is complete
+           setTimeout(() => {
+               sectionRefs.current[tabIndex]?.scrollIntoView({ block: 'start' });
+           }, 0);
+       }
+    }
+  }, [viewLayout, props.selectionId]);
 
   const handlePointerMove = useCallback((event: PointerEvent) => {
     const dragState = dragStateRef.current;
@@ -300,6 +354,23 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
     setPosition(restorePosition);
   }, []);
 
+  const handleTabClick = (index: number) => {
+      onChangeIndex(index);
+      if (viewLayout === 'stackedSimple') {
+          sectionRefs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+  };
+
+  const handleViewModeChange = (mode: ViewMode, index: number) => {
+      if (mode === 'conversation') {
+          setViewLayout('tabbedConversation');
+          onChangeIndex(index);
+      } else {
+          setViewLayout('stackedSimple');
+          // Note: We might want to scroll to the active index here, handled by useEffect
+      }
+  };
+
   if (tabIndex === null) {
     return <></>;
   }
@@ -377,6 +448,13 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
     </div>
   );
 
+  // Calculate content min-height for iframe sections in stacked mode
+  // Header (40px) + Footer (48px) + Borders (2px) = 90px
+  // Section Header: py-2 (16px) + text-xs line-height (16px) + border-b (1px) = 33px
+  // Peek buffer: 40px (to allow next section to peek and improve scroll chaining)
+  // Total offset = 90 + 33 + 40 = 163px.
+  const contentMinHeight = Math.max(windowSize.height - 163, 200);
+
   return (
     <div
       className="absolute inset-0 z-50 px-3 py-3 sm:px-6 sm:py-6"
@@ -398,54 +476,73 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
           <div className="flex flex-1 items-center justify-center select-none">Context Menu</div>
           {!isMac ? controls : null}
         </div>
+        
         <div className="relative flex-1 overflow-hidden">
-          {activeItems.map((item, index) => {
-            const isActive = index === tabIndex;
-            const paneKey = `${props.selectionId}-${index}`;
+            <div 
+                ref={scrollContainerRef} 
+                className={viewLayout === 'stackedSimple' 
+                    ? "h-full w-full overflow-y-auto scroll-smooth" 
+                    : "relative h-full w-full overflow-hidden"
+                }
+            >
+                {activeItems.map((item, index) => {
+                    const paneKey = `${props.selectionId}-${index}`;
+                    const isActive = index === tabIndex;
+                    
+                    // Determine wrapper classes based on layout
+                    let wrapperClass = '';
+                    if (viewLayout === 'stackedSimple') {
+                        wrapperClass = "border-b border-gray-200 last:border-b-0 relative";
+                    } else {
+                        wrapperClass = `absolute inset-0 ${
+                            isActive ? 'z-10 opacity-100' : 'opacity-0 pointer-events-none'
+                        }`;
+                    }
 
-            if (item.type === 'AI') {
-              const aiItem = item as AISettingItem;
-              const resolvedModel = resolveModel(aiItem);
-              return (
-                <div
-                  key={paneKey}
-                  className={`absolute inset-0 ${
-                    isActive ? 'z-10 opacity-100' : 'opacity-0 pointer-events-none'
-                  }`}
-                  aria-hidden={isActive ? undefined : true}
-                >
-                  <AIAgent
-                    api={props.api}
-                    apiKey={props.apiKey}
-                    words={props.words}
-                    context={props.context}
-                    model={resolvedModel}
-                    prompt={aiItem.prompt}
-                    reasoningEnabled={aiItem.reasoningEnabled}
-                    onDrilldownSelect={props.onDrilldownSelect}
-                  />
-                </div>
-              );
-            }
+                    return (
+                        <div 
+                          key={paneKey} 
+                          ref={(el) => (sectionRefs.current[index] = el)}
+                          className={wrapperClass}
+                        >
+                            {/* Section Header - Only visible in Stacked Mode */}
+                            <div className={`sticky top-0 z-20 border-b border-gray-100 bg-gray-50 px-4 py-2 text-xs font-semibold uppercase text-gray-500 ${viewLayout === 'tabbedConversation' ? 'hidden' : ''}`}>
+                                {item.shortName || item.name}
+                            </div>
 
-            return (
-              <div
-                key={paneKey}
-                className={`absolute inset-0 ${
-                  isActive ? 'z-10 opacity-100' : 'opacity-0 pointer-events-none'
-                }`}
-                aria-hidden={isActive ? undefined : true}
-              >
-                <IframeRender url={item.url} words={props.words} context={props.context} />
-              </div>
-            );
-          })}
+                            {item.type === 'AI' ? (
+                                 <div className={viewLayout === 'stackedSimple' ? "" : "h-full"}>
+                                     <AIAgent
+                                       api={props.api}
+                                       apiKey={props.apiKey}
+                                       words={props.words}
+                                       context={props.context}
+                                       model={resolveModel(item as AISettingItem)}
+                                       prompt={(item as AISettingItem).prompt}
+                                       reasoningEnabled={(item as AISettingItem).reasoningEnabled}
+                                       onDrilldownSelect={props.onDrilldownSelect}
+                                       viewMode={viewLayout === 'tabbedConversation' && isActive ? 'conversation' : 'simple'}
+                                       onViewModeChange={(mode) => handleViewModeChange(mode, index)}
+                                     />
+                                 </div>
+                            ) : (
+                                <IframeRender 
+                                   url={item.url} 
+                                   words={props.words} 
+                                   context={props.context}
+                                   minHeight={viewLayout === 'stackedSimple' ? `${contentMinHeight}px` : undefined}
+                                />
+                            )}
+                        </div>
+                    )
+                })}
+            </div>
         </div>
 
         <div className="flex h-12 justify-between divide-x divide-black">
           {activeItems.map((tab, index) => (
             <button
-              onClick={() => onChangeIndex(index)}
+              onClick={() => handleTabClick(index)}
               key={index}
               className={`w-full ${index === tabIndex ? 'bg-black text-white' : ''}`}
             >
