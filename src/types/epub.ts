@@ -32,6 +32,8 @@ export type ContextMenuItemCommon = {
   name: string;
   // An optional short name for the context menu item.
   shortName?: string;
+  // Indicates whether the tool is active in the context menu.
+  enabled?: boolean;
   /**
    * Specifies if this tool is the default for a specific selection situation.
    * null/undefined means it's never a default (unless it's the first item).

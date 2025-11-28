@@ -220,6 +220,7 @@ export const ContextMenuSettingsPage: React.FC = () => {
                 onToolRemove={contextMenuSettings.removeTool}
                 onToolReorder={contextMenuSettings.reorderTools}
                 onToggleDefault={contextMenuSettings.toggleDefaultTool}
+                onToggleEnabled={contextMenuSettings.toggleToolEnabled}
               />
             </SectionCard>
           </div>

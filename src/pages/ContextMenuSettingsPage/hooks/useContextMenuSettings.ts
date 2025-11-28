@@ -179,6 +179,9 @@ export const useContextMenuSettings = () => {
     });
   };
 
+  const sanitizeTool = (tool: ContextMenuItem): ContextMenuItem =>
+    tool.enabled === false ? { ...tool, defaultFor: undefined } : tool;
+
   const addTool = useCallback(
     async (tool: ContextMenuItem) => {
       try {
@@ -186,12 +189,13 @@ export const useContextMenuSettings = () => {
         setError(null);
         
         // Enforce exclusivity before adding
+        const sanitizedTool = sanitizeTool(tool);
         let currentItems = settingsRef.current.items;
-        if (tool.defaultFor) {
-          currentItems = enforceDefaultExclusivity(currentItems, tool);
+        if (sanitizedTool.defaultFor) {
+          currentItems = enforceDefaultExclusivity(currentItems, sanitizedTool);
         }
 
-        const newSettings = { ...settingsRef.current, items: [...currentItems, tool] };
+        const newSettings = { ...settingsRef.current, items: [...currentItems, sanitizedTool] };
         await updateContextMenuSettings(newSettings);
         setSettings(newSettings);
         return true;
@@ -216,7 +220,11 @@ export const useContextMenuSettings = () => {
   const updateTool = useCallback((index: number, updatedTool: Partial<ContextMenuItem>) => {
     setSettings((prev) => ({
       ...prev,
-      items: prev.items.map((item, i) => (i === index ? { ...item, ...updatedTool } as ContextMenuItem : item)),
+      items: prev.items.map((item, i) => {
+        if (i !== index) return item;
+        const merged = { ...item, ...updatedTool } as ContextMenuItem;
+        return merged.enabled === false ? { ...merged, defaultFor: undefined } : merged;
+      }),
     }));
   }, []);
 
@@ -246,11 +254,12 @@ export const useContextMenuSettings = () => {
         let items = [...settingsRef.current.items];
         
         // Enforce exclusivity
-        if (updatedTool.defaultFor) {
-          items = enforceDefaultExclusivity(items, updatedTool, index);
+        const sanitizedTool = sanitizeTool(updatedTool);
+        if (sanitizedTool.defaultFor) {
+          items = enforceDefaultExclusivity(items, sanitizedTool, index);
         }
         
-        items[index] = updatedTool;
+        items[index] = sanitizedTool;
         const newSettings = { ...settingsRef.current, items };
 
         await updateContextMenuSettings(newSettings);
@@ -277,6 +286,7 @@ export const useContextMenuSettings = () => {
         if (index < 0 || index >= items.length) return;
 
         const tool = items[index];
+        if (tool.enabled === false) return;
         const isAlreadyDefault = tool.defaultFor === situation;
 
         // Prepare the updated tool
@@ -302,6 +312,37 @@ export const useContextMenuSettings = () => {
         setSettings(newSettings);
       } catch (err) {
         setError('Failed to toggle default tool');
+        console.error(err);
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    []
+  );
+
+  const toggleToolEnabled = useCallback(
+    async (index: number, enabled: boolean) => {
+      try {
+        setIsSaving(true);
+        setError(null);
+
+        const items = [...settingsRef.current.items];
+        if (index < 0 || index >= items.length) return;
+
+        const tool = items[index];
+        const updatedTool = {
+          ...tool,
+          enabled,
+          defaultFor: enabled ? tool.defaultFor : undefined,
+        };
+
+        items[index] = updatedTool;
+        const newSettings = { ...settingsRef.current, items };
+
+        await updateContextMenuSettings(newSettings);
+        setSettings(newSettings);
+      } catch (err) {
+        setError('Failed to toggle tool');
         console.error(err);
       } finally {
         setIsSaving(false);
@@ -347,6 +388,7 @@ export const useContextMenuSettings = () => {
     saveTool,
     saveSettings,
     toggleDefaultTool,
+    toggleToolEnabled,
   };
 };
 

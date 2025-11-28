@@ -31,6 +31,8 @@ interface ToolListProps {
   onToolReorder: (fromIndex: number, toIndex: number) => void;
   /** Handler for toggling default tool status. */
   onToggleDefault: (index: number, situation: SelectionSituation) => void;
+  /** Handler for toggling enabled state. */
+  onToggleEnabled: (index: number, enabled: boolean) => void;
 }
 
 /**
@@ -41,6 +43,7 @@ interface SortableToolItemProps {
   index: number;
   onToolRemove: (index: number) => void;
   onToggleDefault: (index: number, situation: SelectionSituation) => void;
+  onToggleEnabled: (index: number, enabled: boolean) => void;
 }
 
 const SortableToolItem: React.FC<SortableToolItemProps> = ({
@@ -48,6 +51,7 @@ const SortableToolItem: React.FC<SortableToolItemProps> = ({
   index,
   onToolRemove,
   onToggleDefault,
+  onToggleEnabled,
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: index.toString(),
@@ -82,6 +86,7 @@ const SortableToolItem: React.FC<SortableToolItemProps> = ({
               <input
                 type="checkbox"
                 checked={tool.defaultFor === 'word'}
+                disabled={tool.enabled === false}
                 onChange={(e) => {
                   e.stopPropagation();
                   onToggleDefault(index, 'word');
@@ -96,6 +101,7 @@ const SortableToolItem: React.FC<SortableToolItemProps> = ({
               <input
                 type="checkbox"
                 checked={tool.defaultFor === 'sentence'}
+                disabled={tool.enabled === false}
                 onChange={(e) => {
                   e.stopPropagation();
                   onToggleDefault(index, 'sentence');
@@ -109,6 +115,23 @@ const SortableToolItem: React.FC<SortableToolItemProps> = ({
         </div>
 
         <div className="flex items-center gap-2 self-start md:self-center">
+          <button
+            type="button"
+            aria-pressed={tool.enabled !== false}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleEnabled(index, !(tool.enabled !== false));
+            }}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+              tool.enabled !== false ? 'bg-blue-600' : 'bg-gray-300'
+            }`}
+          >
+            <span
+              className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
+                tool.enabled !== false ? 'translate-x-5' : 'translate-x-1'
+              }`}
+            />
+          </button>
           <Link
             to={`/settings/contextmenu/${index}/edit`}
             className="rounded-md border border-gray-200 bg-white px-3 py-1 text-sm font-medium text-gray-700 shadow-sm transition hover:border-blue-200 hover:text-blue-700"
@@ -144,6 +167,7 @@ export const ToolList: React.FC<ToolListProps> = ({
   onToolRemove,
   onToolReorder,
   onToggleDefault,
+  onToggleEnabled,
 }) => {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -188,6 +212,7 @@ export const ToolList: React.FC<ToolListProps> = ({
               index={index}
               onToolRemove={onToolRemove}
               onToggleDefault={onToggleDefault}
+              onToggleEnabled={onToggleEnabled}
             />
           ))}
         </div>

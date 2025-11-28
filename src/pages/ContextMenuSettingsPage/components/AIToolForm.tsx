@@ -11,6 +11,8 @@ interface AIToolFormProps {
   reasoningEnabled: boolean;
   /** Current default behavior. */
   defaultFor?: SelectionSituation;
+  /** Whether default selection controls are disabled. */
+  defaultsDisabled: boolean;
   /** Handler for prompt changes. */
   onPromptChange: (prompt: string) => void;
   /** Handler for reasoning toggle. */
@@ -27,6 +29,7 @@ export const AIToolForm: React.FC<AIToolFormProps> = ({
   prompt,
   reasoningEnabled,
   defaultFor,
+  defaultsDisabled,
   onPromptChange,
   onReasoningToggle,
   onDefaultForChange,
@@ -81,6 +84,7 @@ export const AIToolForm: React.FC<AIToolFormProps> = ({
             id="defaultNone"
             name="defaultFor"
             checked={defaultFor === undefined}
+            disabled={defaultsDisabled}
             onChange={() => onDefaultForChange(undefined)}
             className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
           />
@@ -94,6 +98,7 @@ export const AIToolForm: React.FC<AIToolFormProps> = ({
             id="defaultWord"
             name="defaultFor"
             checked={defaultFor === 'word'}
+            disabled={defaultsDisabled}
             onChange={() => onDefaultForChange('word')}
             className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
           />
@@ -107,6 +112,7 @@ export const AIToolForm: React.FC<AIToolFormProps> = ({
             id="defaultSentence"
             name="defaultFor"
             checked={defaultFor === 'sentence'}
+            disabled={defaultsDisabled}
             onChange={() => onDefaultForChange('sentence')}
             className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
           />

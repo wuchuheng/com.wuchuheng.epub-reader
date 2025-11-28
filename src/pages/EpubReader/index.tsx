@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { ReaderHeader } from './components/ReaderHeader';
 import { Book } from 'epubjs';
@@ -62,6 +62,10 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
   const [menuVisible, setMenuVisible] = useState<boolean>(false);
   const [tocVisible, setTocVisible] = useState(false);
   const { settings: contextMenuSettings } = useContextMenuSettings();
+  const activeTools = useMemo(
+    () => contextMenuSettings.items.filter((item) => item.enabled !== false),
+    [contextMenuSettings.items]
+  );
 
   const onToggleToc = () => {
     if (tocVisible) {
@@ -100,10 +104,14 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
         const wordCount = selectedInfo.words.trim().split(/\s+/).length;
         const situation: SelectionSituation = wordCount === 1 ? 'word' : 'sentence';
 
+        if (activeTools.length === 0) {
+          alert('No enabled tools available. Enable one in Settings > Context Menu.');
+          setContextMenu({ tabIndex: null, ...selectedInfo });
+          return;
+        }
+
         // Find the index of the tool that is set as default for this situation
-        let targetIndex = contextMenuSettings.items.findIndex(
-          (item) => item.defaultFor === situation
-        );
+        let targetIndex = activeTools.findIndex((item) => item.defaultFor === situation);
 
         // Fallback to 0 if no specific default is found
         if (targetIndex === -1) {

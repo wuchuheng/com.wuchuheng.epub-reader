@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { OPFSConfig, BookMetadata, OPFSDirectoryStructure } from '../types/book';
-import { ContextMenuSettings } from '../types/epub';
+import { ContextMenuItem, ContextMenuSettings } from '../types/epub';
 import * as EPUBMetadataService from './EPUBMetadataService';
 import ePub, { Book } from 'epubjs';
 import { getEpubValidationError, formatFileSize } from '../utils/epubValidation';
@@ -66,11 +66,21 @@ const getDirectoryStructure = async (): Promise<OPFSDirectoryStructure> => {
   return directoryStructure!;
 };
 
+const applyMenuItemDefaults = (items: ContextMenuItem[]): ContextMenuItem[] =>
+  items.map((item) => {
+    const isEnabled = item.enabled ?? true;
+    return {
+      ...item,
+      enabled: isEnabled,
+      defaultFor: isEnabled ? item.defaultFor : undefined,
+    };
+  });
+
 const buildDefaultContextMenuSettings = (): ContextMenuSettings => ({
   api: '',
   key: '',
   defaultModel: '',
-  items: menuItemDefaultConfig,
+  items: applyMenuItemDefaults(menuItemDefaultConfig),
   providerId: 'custom',
   providerApiKeyCache: {},
 });
@@ -395,6 +405,8 @@ export async function updateContextMenuSettings(settings: Partial<ContextMenuSet
 
   // Update context menu settings
   // Merge existing with new
+  const mergedItems =
+    settings.items ?? config.settings.contextMenu.items ?? defaults.items;
   config.settings.contextMenu = {
     ...defaults,
     ...config.settings.contextMenu,
@@ -402,7 +414,7 @@ export async function updateContextMenuSettings(settings: Partial<ContextMenuSet
     // Ensure required fields are at least present if they were missing in partial
     api: settings.api ?? config.settings.contextMenu.api ?? defaults.api,
     key: settings.key ?? config.settings.contextMenu.key ?? defaults.key,
-    items: settings.items ?? config.settings.contextMenu.items ?? defaults.items,
+    items: applyMenuItemDefaults(mergedItems),
   };
 
   config.lastSync = Date.now();
@@ -418,6 +430,8 @@ export async function getContextMenuSettings(): Promise<ContextMenuSettings> {
   const contextMenuSettings = config.settings?.contextMenu;
 
   // Return default values if contextMenu settings don't exist
+  const items = applyMenuItemDefaults(contextMenuSettings?.items ?? defaults.items);
+
   return {
     ...defaults,
     ...contextMenuSettings,
@@ -426,7 +440,7 @@ export async function getContextMenuSettings(): Promise<ContextMenuSettings> {
     defaultModel: contextMenuSettings?.defaultModel ?? defaults.defaultModel,
     providerId: contextMenuSettings?.providerId ?? defaults.providerId,
     providerApiKeyCache: contextMenuSettings?.providerApiKeyCache ?? defaults.providerApiKeyCache,
-    items: contextMenuSettings?.items ?? defaults.items,
+    items,
   };
 }
 

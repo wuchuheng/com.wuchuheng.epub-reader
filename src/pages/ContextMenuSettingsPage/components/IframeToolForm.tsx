@@ -9,6 +9,8 @@ interface IframeToolFormProps {
   url: string;
   /** Current default behavior. */
   defaultFor?: SelectionSituation;
+  /** Whether default selection controls are disabled. */
+  defaultsDisabled: boolean;
   /** Handler for URL changes. */
   onUrlChange: (url: string) => void;
   /** Handler for default behavior changes. */
@@ -22,6 +24,7 @@ interface IframeToolFormProps {
 export const IframeToolForm: React.FC<IframeToolFormProps> = ({
   url,
   defaultFor,
+  defaultsDisabled,
   onUrlChange,
   onDefaultForChange,
 }) => (
@@ -62,6 +65,7 @@ export const IframeToolForm: React.FC<IframeToolFormProps> = ({
             id="defaultNone"
             name="defaultFor"
             checked={defaultFor === undefined}
+            disabled={defaultsDisabled}
             onChange={() => onDefaultForChange(undefined)}
             className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
           />
@@ -75,6 +79,7 @@ export const IframeToolForm: React.FC<IframeToolFormProps> = ({
             id="defaultWord"
             name="defaultFor"
             checked={defaultFor === 'word'}
+            disabled={defaultsDisabled}
             onChange={() => onDefaultForChange('word')}
             className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
           />
@@ -88,6 +93,7 @@ export const IframeToolForm: React.FC<IframeToolFormProps> = ({
             id="defaultSentence"
             name="defaultFor"
             checked={defaultFor === 'sentence'}
+            disabled={defaultsDisabled}
             onChange={() => onDefaultForChange('sentence')}
             className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
           />

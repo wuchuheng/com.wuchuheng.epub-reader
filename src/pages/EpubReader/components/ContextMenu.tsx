@@ -25,7 +25,15 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
     return <></>;
   }
 
-  const currentItem = menuSetting.items[props.tabIndex];
+  const activeItems = menuSetting.items.filter((item) => item.enabled !== false);
+  if (activeItems.length === 0) {
+    return <></>;
+  }
+  if (props.tabIndex < 0 || props.tabIndex >= activeItems.length) {
+    return <></>;
+  }
+
+  const currentItem = activeItems[props.tabIndex];
   const AISetting: AISettingItem | null =
     currentItem && currentItem.type === 'AI' ? (currentItem as AISettingItem) : null;
 
@@ -68,7 +76,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
         )}
 
         <div className="flex h-12 justify-between divide-x divide-black">
-          {menuSetting?.items.map((tab, index) => (
+          {activeItems.map((tab, index) => (
             <button
               onClick={() => props.onChangeIndex(index)}
               key={index}

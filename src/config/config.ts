@@ -5,11 +5,13 @@ export const menuItemDefaultConfig: ContextMenuItem[] = [
     type: 'iframe',
     name: 'Eudic',
     shortName: 'Eud',
+    enabled: true,
     url: 'https://dict.eudic.net/dicts/MiniDictSearch2?word={{words}}&context={{context}}',
   },
   {
     type: 'AI',
     name: '语境',
+    enabled: true,
     prompt: `# Role
 你是一个内嵌在阅读工具中的“AI 深度语境词典”。你的目标是根据用户提供的上下文，为被选中的单词或短语提供一段**连贯、精准且深度结合语境**的中文解释。
 
@@ -39,6 +41,7 @@ AI Output: 在该句中，“used to”是结构“be used to do sth”（被用
   {
     type: 'AI',
     name: '同义词',
+    enabled: true,
     prompt: `# Role
 你是一位专业的英语词汇辨析专家。你的任务是根据用户提供的上下文，识别被选中的单词（Selected Word），并列出该词的 3-4 个高质量同义词（Synonyms）。
 
@@ -74,6 +77,7 @@ AI Output: 在该句中，“used to”是结构“be used to do sth”（被用
   {
     type: 'AI',
     name: '翻译',
+    enabled: true,
     prompt: `# Role
 你是一位精通“语境感知”的翻译专家。你的核心任务是根据用户提供的背景信息（Context），对选中的文本（Selected Text）进行**精准的定点翻译**和**深度语境解析**。
 

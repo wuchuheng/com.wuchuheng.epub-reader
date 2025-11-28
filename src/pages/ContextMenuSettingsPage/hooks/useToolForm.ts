@@ -13,6 +13,7 @@ export const useToolForm = () => {
   const [toolPrompt, setToolPrompt] = useState('');
   const [toolUrl, setToolUrl] = useState('');
   const [reasoningEnabled, setReasoningEnabled] = useState(false);
+  const [enabled, setEnabledState] = useState(true);
   const [defaultFor, setDefaultFor] = useState<SelectionSituation | undefined>(undefined);
 
   // 2. Validation logic
@@ -41,6 +42,7 @@ export const useToolForm = () => {
         shortName,
         prompt: toolPrompt.trim(),
         reasoningEnabled,
+        enabled,
         defaultFor,
       };
       return newTool;
@@ -50,11 +52,12 @@ export const useToolForm = () => {
         name: toolName.trim(),
         shortName,
         url: toolUrl.trim(),
+        enabled,
         defaultFor,
       };
       return newTool;
     }
-  }, [toolName, toolShortName, toolPrompt, toolUrl, reasoningEnabled, toolType, isValid, defaultFor]);
+  }, [toolName, toolShortName, toolPrompt, toolUrl, reasoningEnabled, toolType, isValid, defaultFor, enabled]);
 
   // 4. Reset logic
   const resetForm = useCallback(() => {
@@ -64,6 +67,7 @@ export const useToolForm = () => {
     setToolPrompt('');
     setToolUrl('');
     setReasoningEnabled(false);
+    setEnabledState(true);
     setDefaultFor(undefined);
   }, []);
 
@@ -71,7 +75,8 @@ export const useToolForm = () => {
     setToolType(tool.type);
     setToolName(tool.name);
     setToolShortName(tool.shortName || '');
-    setDefaultFor(tool.defaultFor);
+    setEnabledState(tool.enabled ?? true);
+    setDefaultFor(tool.enabled === false ? undefined : tool.defaultFor);
 
     if (tool.type === 'AI') {
       setToolPrompt(tool.prompt);
@@ -93,6 +98,7 @@ export const useToolForm = () => {
     toolPrompt,
     toolUrl,
     reasoningEnabled,
+    enabled,
     defaultFor,
     
     // Actions
@@ -103,6 +109,12 @@ export const useToolForm = () => {
     setToolUrl,
     setReasoningEnabled,
     setDefaultFor,
+    setEnabled: (value: boolean) => {
+      setEnabledState(value);
+      if (!value) {
+        setDefaultFor(undefined);
+      }
+    },
 
     // Computed
     isValid,

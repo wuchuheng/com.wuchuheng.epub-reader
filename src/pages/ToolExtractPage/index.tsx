@@ -111,6 +111,24 @@ export const ToolExtractPage: React.FC = () => {
             </p>
           </div>
 
+          {/* Enabled Toggle */}
+          <div className="rounded-lg bg-gray-50 p-4">
+            <button
+              type="button"
+              onClick={() => form.setEnabled(!form.enabled)}
+              aria-pressed={form.enabled}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                form.enabled ? 'bg-blue-600' : 'bg-gray-300'
+              }`}
+            >
+              <span
+                className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
+                  form.enabled ? 'translate-x-5' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+
           {/* Dynamic Fields Based on Tool Type */}
           <div className="rounded-lg bg-gray-50 p-4">
             {form.toolType === 'AI' ? (
@@ -118,6 +136,7 @@ export const ToolExtractPage: React.FC = () => {
                 prompt={form.toolPrompt}
                 reasoningEnabled={form.reasoningEnabled}
                 defaultFor={form.defaultFor}
+                defaultsDisabled={!form.enabled}
                 onPromptChange={form.setToolPrompt}
                 onReasoningToggle={form.setReasoningEnabled}
                 onDefaultForChange={form.setDefaultFor}
@@ -126,6 +145,7 @@ export const ToolExtractPage: React.FC = () => {
               <IframeToolForm
                 url={form.toolUrl}
                 defaultFor={form.defaultFor}
+                defaultsDisabled={!form.enabled}
                 onUrlChange={form.setToolUrl}
                 onDefaultForChange={form.setDefaultFor}
               />
