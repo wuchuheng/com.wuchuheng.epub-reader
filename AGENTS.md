@@ -1,5 +1,11 @@
 # Repository Guidelines
 
+## AI Assistant Compliance
+- Always read `.clinerules/base_rules.md` before making or reviewing code changes; treat every rule in it as mandatory.
+- Do not propose or accept code that violates those rules (readability first, 120-char lines, function/parameter limits, numeric comments only inside functions using the 1/2/3 pattern).
+- Prefer refactors that bring code into compliance over adding exceptions; favor descriptive names over explanatory comments.
+- Call out and block requests that would break `.clinerules/base_rules.md` until the approach is corrected.
+
 ## Project Structure & Module Organization
 - `src/main.tsx` boots the React + Vite app; routing lives in `src/config/router.tsx`.
 - Pages under `src/pages/` (Home, EpubReader, Settings, ContextMenuSettingsPage, ToolEditPage, ToolExtractPage) own route-level UI and state wiring.

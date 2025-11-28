@@ -1,12 +1,14 @@
 # Immersive Reader (EPUB Reader) - Project Context
 
 ## 📋 Project Overview
+
 **Immersive Reader** is a React-based EPUB reader application focused on enhancing the reading experience through Context-based AI integration. It allows users to read EPUB books offline, manages them via the Origin Private File System (OPFS), and provides instant AI-powered explanations, translations, and answers to contextual questions.
 
 **Current Status:** Phase 3 AI Integration (90% Complete)
 **Version:** 0.0.9
 
 ## 🛠 Technology Stack
+
 - **Frontend:** React 18, TypeScript (Strict), Vite
 - **State Management:** Redux Toolkit, React Context
 - **Styling:** TailwindCSS, CSS Modules, Less
@@ -19,7 +21,9 @@
 - **Storage:** OPFS (Origin Private File System) for book storage, LocalStorage for settings.
 
 ## 🏗 Architecture & Design
+
 The project follows a clean, feature-based modular architecture.
+
 - **`src/pages/`**: Top-level page components (`EpubReader`, `HomePage`, `SettingsPage`).
 - **`src/components/`**: Reusable UI components.
   - **`EpubReader/components/`**: Specific components for the reader view (e.g., `TOCSidebar`, `ContextMenu`, `AIAgent`).
@@ -28,6 +32,7 @@ The project follows a clean, feature-based modular architecture.
 - **`src/hooks/`**: Custom React hooks for encapsulating logic (`useEpubReader`, `useBookDisplayData`).
 
 **Key Patterns:**
+
 - **Service Layer:** Logic for heavy operations (like file handling and text selection) is delegated to services to keep components clean.
 - **Three-Phase Processing:** Complex functions often follow an Input -> Processing -> Output pattern.
 - **Strict Typing:** 100% TypeScript coverage is a strict requirement.
@@ -35,25 +40,31 @@ The project follows a clean, feature-based modular architecture.
 ## 🚀 Development Workflow
 
 ### Prerequisites
+
 - Node.js 18+
 - pnpm (preferred)
 
 ### Key Commands
+
 - **Package Manager:**
   **ALWAYS use `pnpm` instead of `npm`.**
 
 - **Start Development Server:**
+
   ```bash
   pnpm dev
   ```
+
   (Runs on `http://localhost:5173`)
 
 - **Build for Production:**
+
   ```bash
   pnpm build
   ```
 
 - **Preview Production Build:**
+
   ```bash
   pnpm preview
   ```
@@ -64,9 +75,11 @@ The project follows a clean, feature-based modular architecture.
   ```
 
 ### Testing
-*Note: While the design document mentions testing strategies (Jest/Playwright), explicit test scripts are currently missing from `package.json`. Future development should prioritize adding these.*
+
+_Note: While the design document mentions testing strategies (Jest/Playwright), explicit test scripts are currently missing from `package.json`. Future development should prioritize adding these._
 
 ## 📂 Directory Structure Highlights
+
 - **`src/pages/EpubReader/`**: The core reading interface. Contains complex logic for text selection, highlighting, and context menus.
 - **`src/pages/ContextMenuSettingsPage/`**: Configuration for the AI tools and context menu.
 - **`src/services/OPFSManager.ts`**: Critical service for handling file storage operations in the browser.
@@ -74,14 +87,23 @@ The project follows a clean, feature-based modular architecture.
 - **`DESIGN.md`**: Comprehensive design document detailing architecture, features, and future roadmap.
 
 ## 💡 Coding Conventions
+
 - **Style:** Functional components with Hooks.
 - **Paradigm:** Strong preference for functional programming patterns (pure functions, immutability, composition).
 - **Naming:** PascalCase for components, camelCase for functions/variables.
 - **State:** Redux for global state (bookshelf, settings), local state for UI interactions.
-- **Comments:** Use JSDoc for public APIs and services. Comments should explain *why*, not *what*.
+- **Comments:** Use JSDoc for public APIs and services. Comments should explain _why_, not _what_.
 - **Safety:** Always check for `null`/`undefined` when dealing with DOM elements or external data.
 
 ## 📝 Notes for AI Agents
+
 - When modifying the **Reader**, be extremely careful with event listeners (selection, interactions) to avoid memory leaks or conflicting behaviors.
 - The **AI Integration** relies on capturing specific text contexts. Ensure `selection.service.ts` logic is preserved when refactoring.
 - **OPFS** operations are asynchronous and can fail. Always implement proper error handling for file operations.
+
+## AI Assistant Compliance
+
+- Always read `.clinerules/base_rules.md` before making or reviewing code changes; treat every rule in it as mandatory.
+- Do not propose or accept code that violates those rules (readability first, 120-char lines, function/parameter limits, numeric comments only inside functions using the 1/2/3 pattern).
+- Prefer refactors that bring code into compliance over adding exceptions; favor descriptive names over explanatory comments.
+- Call out and block requests that would break `.clinerules/base_rules.md` until the approach is corrected.
