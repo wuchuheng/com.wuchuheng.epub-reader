@@ -31,6 +31,7 @@ export interface ContextMenuProps {
   defaultModel?: string;
   zIndex?: number;
   onClose: () => void;
+  onCloseAll: () => void;
   onChangeIndex: (index: number) => void;
   onDrilldownSelect?: (selection: SelectInfo) => void;
 }
@@ -379,7 +380,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
   return (
     <div
       className="absolute inset-0 z-50 px-3 py-3 sm:px-6 sm:py-6"
-      onClick={props.onClose}
+      onClick={props.onCloseAll}
       style={props.zIndex ? { zIndex: props.zIndex } : undefined}
     >
       <div

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { ReaderHeader } from './components/ReaderHeader';
 import { Book } from 'epubjs';
@@ -76,6 +76,7 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
   const [menuStack, setMenuStack] = useState<ContextMenuEntry[]>([]);
   const selectionCounterRef = useRef(0);
   const menuIdRef = useRef(0);
+  const closeAllMenus = useCallback(() => setMenuStack([]), []);
 
   const onToggleToc = () => {
     if (tocVisible) {
@@ -245,6 +246,7 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
       {menuStack.map((menu, index) => (
         <ContextMenuComponent
           key={menu.id}
+          onCloseAll={closeAllMenus}
           onChangeIndex={(tabIndex) => updateTabIndex(menu.id, tabIndex)}
           tabIndex={menu.tabIndex}
           words={menu.words}
