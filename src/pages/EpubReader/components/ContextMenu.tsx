@@ -498,13 +498,21 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
         onClick={(e) => e.stopPropagation()}
       >
         <div
-          className="flex h-10 items-center bg-slate-100 px-3 text-sm font-medium text-black"
+          className="relative flex h-10 items-center bg-slate-100 px-3 text-sm font-medium text-black"
           onPointerDown={handlePointerDown}
           role="presentation"
         >
-          {isMac ? controls : null}
-          <div className="flex flex-1 items-center justify-center select-none">Context Menu</div>
-          {!isMac ? controls : null}
+          <div className="flex flex-1 items-center gap-2">
+            {isMac ? controls : null}
+          </div>
+
+          <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 select-none">
+            Context Menu
+          </div>
+
+          <div className="flex flex-1 items-center justify-end gap-2">
+            {!isMac ? controls : null}
+          </div>
         </div>
         
         <div className="relative flex-1 overflow-hidden">
