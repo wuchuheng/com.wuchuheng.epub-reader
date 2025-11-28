@@ -7,7 +7,7 @@ import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 interface UseSmoothScrollReturn {
   /** Initiates smooth scroll to bottom of container */
 
-  scrollToBottom: () => void;
+  scrollToBottom: (options?: { behavior?: ScrollBehavior }) => void;
 
   handleResumeAutoScroll: (e: React.MouseEvent | React.TouchEvent) => void;
 
@@ -43,7 +43,7 @@ export function useSmoothScrollToBottom({
 }: UseSmoothScrollProps): UseSmoothScrollReturn {
   const rafIdRef = useRef<number | null>(null);
 
-  const scrollToBottom = useCallback(() => {
+  const scrollToBottom = useCallback((options?: { behavior?: ScrollBehavior }) => {
     // 1. Input: verify container exists
     if (scrollContainerRef === null) {
       return;
@@ -55,6 +55,12 @@ export function useSmoothScrollToBottom({
     if (rafIdRef.current) {
       cancelAnimationFrame(rafIdRef.current);
       rafIdRef.current = null;
+    }
+
+    // Handle instant scroll
+    if (options?.behavior === 'auto') {
+        element.scrollTop = element.scrollHeight - element.clientHeight;
+        return;
     }
 
     const startTime = performance.now();

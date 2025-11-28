@@ -356,18 +356,26 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
 
   const handleTabClick = (index: number) => {
       onChangeIndex(index);
+      // Always return to simple view when switching tabs via footer
+      setViewLayout('stackedSimple');
       if (viewLayout === 'stackedSimple') {
           sectionRefs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
+      // Clean up any frozen heights
+      sectionRefs.current.forEach(el => { if (el) el.style.height = ''; });
   };
 
   const handleViewModeChange = (mode: ViewMode, index: number) => {
+      const el = sectionRefs.current[index];
       if (mode === 'conversation') {
+          // Freeze the height of the container before portaling out to prevent scroll jump
+          if (el) el.style.height = `${el.offsetHeight}px`;
           setViewLayout('tabbedConversation');
           onChangeIndex(index);
       } else {
+          // Unfreeze height
+          if (el) el.style.height = '';
           setViewLayout('stackedSimple');
-          // Note: We might want to scroll to the active index here, handled by useEffect
       }
   };
 
@@ -377,6 +385,24 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
   if (activeItems.length === 0 || hasInvalidIndex) {
     return <></>;
   }
+
+  const [contentHeight, setContentHeight] = useState<number>(0);
+  const chatPortalRef = useRef<HTMLDivElement>(null);
+
+  // ResizeObserver to measure exact content area height
+  useEffect(() => {
+      const container = scrollContainerRef.current;
+      if (!container) return;
+
+      const observer = new ResizeObserver((entries) => {
+          for (const entry of entries) {
+              setContentHeight(entry.contentRect.height);
+          }
+      });
+
+      observer.observe(container);
+      return () => observer.disconnect();
+  }, [viewLayout, windowSize]); // Re-attach when layout or window size changes
 
   const resolveModel = (item: AISettingItem): string =>
     props.defaultModel || item.model || 'gpt-3.5-turbo';
@@ -453,7 +479,11 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
   // Section Header: py-2 (16px) + text-xs line-height (16px) + border-b (1px) = 33px
   // Peek buffer: 40px (to allow next section to peek and improve scroll chaining)
   // Total offset = 90 + 33 + 40 = 163px.
+  const chromeHeight = 90;
   const contentMinHeight = Math.max(windowSize.height - 163, 200);
+  // Fallback if ResizeObserver hasn't fired yet
+  const calculatedHeight = windowSize.height - chromeHeight;
+  const effectiveHeight = contentHeight > 0 ? contentHeight : calculatedHeight;
 
   return (
     <div
@@ -478,26 +508,20 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
         </div>
         
         <div className="relative flex-1 overflow-hidden">
+            {/* Portal Target for Chat View - sits on top when occupied */}
+            <div 
+                ref={chatPortalRef} 
+                className={`absolute inset-0 z-20 pointer-events-none ${viewLayout === 'tabbedConversation' ? 'block' : 'hidden'}`}
+            />
+
             <div 
                 ref={scrollContainerRef} 
-                className={viewLayout === 'stackedSimple' 
-                    ? "h-full w-full overflow-y-auto scroll-smooth" 
-                    : "relative h-full w-full overflow-hidden"
-                }
+                className={`h-full w-full overflow-y-auto scroll-smooth ${viewLayout === 'tabbedConversation' ? 'invisible' : ''}`}
             >
                 {activeItems.map((item, index) => {
                     const paneKey = `${props.selectionId}-${index}`;
                     const isActive = index === tabIndex;
-                    
-                    // Determine wrapper classes based on layout
-                    let wrapperClass = '';
-                    if (viewLayout === 'stackedSimple') {
-                        wrapperClass = "border-b border-gray-200 last:border-b-0 relative";
-                    } else {
-                        wrapperClass = `absolute inset-0 ${
-                            isActive ? 'z-10 opacity-100' : 'opacity-0 pointer-events-none'
-                        }`;
-                    }
+                    const wrapperClass = "border-b border-gray-200 last:border-b-0 relative";
 
                     return (
                         <div 
@@ -505,13 +529,13 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
                           ref={(el) => (sectionRefs.current[index] = el)}
                           className={wrapperClass}
                         >
-                            {/* Section Header - Only visible in Stacked Mode */}
-                            <div className={`sticky top-0 z-20 border-b border-gray-100 bg-gray-50 px-4 py-2 text-xs font-semibold uppercase text-gray-500 ${viewLayout === 'tabbedConversation' ? 'hidden' : ''}`}>
+                            {/* Section Header */}
+                            <div className="sticky top-0 z-20 border-b border-gray-100 bg-gray-50 px-4 py-2 text-xs font-semibold uppercase text-gray-500">
                                 {item.shortName || item.name}
                             </div>
 
                             {item.type === 'AI' ? (
-                                 <div className={viewLayout === 'stackedSimple' ? "" : "h-full"}>
+                                 <div>
                                      <AIAgent
                                        api={props.api}
                                        apiKey={props.apiKey}
@@ -523,6 +547,8 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
                                        onDrilldownSelect={props.onDrilldownSelect}
                                        viewMode={viewLayout === 'tabbedConversation' && isActive ? 'conversation' : 'simple'}
                                        onViewModeChange={(mode) => handleViewModeChange(mode, index)}
+                                       containerHeight={effectiveHeight}
+                                       chatPortalTarget={chatPortalRef.current}
                                      />
                                  </div>
                             ) : (
@@ -530,7 +556,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
                                    url={item.url} 
                                    words={props.words} 
                                    context={props.context}
-                                   minHeight={viewLayout === 'stackedSimple' ? `${contentMinHeight}px` : undefined}
+                                   minHeight={`${contentMinHeight}px`}
                                 />
                             )}
                         </div>
