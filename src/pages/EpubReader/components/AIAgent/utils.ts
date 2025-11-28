@@ -13,7 +13,11 @@ export const replaceWords = ({ template, words, context }: ReplaceWordsProps): s
   let result = template.replace(/\{\{words\}\}/g, words);
 
   if (context) {
-    result = result.replace(/\{\{context\}\}/g, context);
+    // Check if {{context}} is wrapped in <context> tags (allowing for whitespace)
+    const isWrapped = /<context>\s*\{\{context\}\}\s*<\/context>/i.test(template);
+    
+    const contextValue = isWrapped ? context : `<context>\n${context}\n</context>`;
+    result = result.replace(/\{\{context\}\}/g, contextValue);
   }
 
   return result;
