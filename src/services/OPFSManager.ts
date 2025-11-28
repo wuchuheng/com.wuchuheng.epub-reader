@@ -1,6 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
 import { OPFSConfig, BookMetadata, OPFSDirectoryStructure } from '../types/book';
-import { ContextMenuItem } from '../types/epub';
 import * as EPUBMetadataService from './EPUBMetadataService';
 import ePub, { Book } from 'epubjs';
 import { getEpubValidationError, formatFileSize } from '../utils/epubValidation';
@@ -292,28 +291,39 @@ export async function getAllBooks(): Promise<BookMetadata[]> {
   return config.books;
 }
 
+import { ContextMenuSettings } from '../types/epub';
+
+// ...
+
 /**
  * Update context menu settings in config.json
  */
-export async function updateContextMenuSettings(settings: {
-  api: string;
-  key: string;
-  defaultModel?: string;
-  items: ContextMenuItem[];
-}): Promise<void> {
+export async function updateContextMenuSettings(settings: Partial<ContextMenuSettings>): Promise<void> {
   const config = await loadConfig();
 
   // Ensure settings structure exists
   if (!config.settings) {
-    config.settings = { contextMenu: { api: '', key: '', defaultModel: '', items: [] } };
+    config.settings = { 
+      contextMenu: { 
+        api: '', 
+        key: '', 
+        defaultModel: '', 
+        items: [],
+        providerId: 'custom',
+        providerApiKeyCache: {}
+      } 
+    };
   }
 
   // Update context menu settings
+  // Merge existing with new
   config.settings.contextMenu = {
-    api: settings.api || '',
-    key: settings.key || '',
-    defaultModel: settings.defaultModel || '',
-    items: settings.items || [],
+    ...config.settings.contextMenu,
+    ...settings,
+    // Ensure required fields are at least present if they were missing in partial
+    api: settings.api ?? config.settings.contextMenu.api ?? '',
+    key: settings.key ?? config.settings.contextMenu.key ?? '',
+    items: settings.items ?? config.settings.contextMenu.items ?? [],
   };
 
   config.lastSync = Date.now();
@@ -323,12 +333,7 @@ export async function updateContextMenuSettings(settings: {
 /**
  * Get context menu settings from config.json
  */
-export async function getContextMenuSettings(): Promise<{
-  api: string;
-  key: string;
-  defaultModel?: string;
-  items: ContextMenuItem[];
-}> {
+export async function getContextMenuSettings(): Promise<ContextMenuSettings> {
   const config = await loadConfig();
   const contextMenuSettings = config.settings?.contextMenu;
 
@@ -337,6 +342,8 @@ export async function getContextMenuSettings(): Promise<{
     api: contextMenuSettings?.api || '',
     key: contextMenuSettings?.key || '',
     defaultModel: contextMenuSettings?.defaultModel || '',
+    providerId: contextMenuSettings?.providerId,
+    providerApiKeyCache: contextMenuSettings?.providerApiKeyCache || {},
     items: contextMenuSettings?.items || [],
   };
 }

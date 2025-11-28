@@ -184,7 +184,6 @@ export const ModelSearchInput: React.FC<ModelSearchInputProps> = ({
   // 4. Render
   return (
     <div className="relative" ref={dropdownRef}>
-      <label className="mb-1 block text-sm text-gray-700">Model</label>
       <div className="relative">
         <input
           ref={inputRef}
@@ -194,22 +193,8 @@ export const ModelSearchInput: React.FC<ModelSearchInputProps> = ({
           onFocus={handleInputFocus}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 pr-10 text-black focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+          className="w-full rounded-md border border-gray-300 px-3 py-2 text-black focus:border-blue-500 focus:outline-none focus:ring-blue-500"
         />
-
-        {/* Dropdown arrow icon */}
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 transform">
-          <svg
-            className={`h-4 w-4 text-gray-400 transition-transform duration-200 ${
-              isDropdownOpen ? 'rotate-180' : ''
-            }`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </div>
       </div>
 
       {/* Dropdown with model options */}

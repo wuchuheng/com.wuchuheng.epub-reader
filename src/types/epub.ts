@@ -76,12 +76,21 @@ export type IframeSettingItem = {
 // Represents a context menu item, which can be either an AI setting item or an iframe setting item.
 export type ContextMenuItem = AISettingItem | IframeSettingItem;
 
+import { AiProviderId } from '@/config/aiProviders';
+
+// ... (existing imports)
+
+// ... (existing types)
+
 /**
  * Represents the settings for a context menu, including API endpoint, authentication key,
  * and a list of context menu items.
  *
  * @property api - The API endpoint used for context menu actions.
  * @property key - The authentication key required for API access.
+ * @property defaultModel - Global default model for all AI tools.
+ * @property providerId - The ID of the selected AI provider.
+ * @property providerApiKeyCache - Cache of API keys for different providers.
  * @property items - An array of ContextMenuItem objects representing individual menu items.
  */
 export type ContextMenuSettings = {
@@ -91,10 +100,16 @@ export type ContextMenuSettings = {
   key: string;
   // Global default model for all AI tools
   defaultModel?: string;
+  
+  // The ID of the selected AI provider
+  providerId?: AiProviderId;
+  // Cache of API keys for different providers
+  providerApiKeyCache?: Partial<Record<AiProviderId, string>>;
 
   // An array of ContextMenuItem objects representing individual menu items.
   items: ContextMenuItem[];
 };
+
 
 /**
  * Touch state for mobile selection handling

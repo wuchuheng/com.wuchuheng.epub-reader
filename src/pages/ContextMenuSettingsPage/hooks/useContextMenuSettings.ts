@@ -1,6 +1,7 @@
 import { useCallback, useState, useEffect, useRef } from 'react';
-import { ContextMenuSettings, ContextMenuItem, SelectionSituation } from '../../../types/epub';
+import { ContextMenuSettings, ContextMenuItem, SelectionSituation, AISettingItem } from '../../../types/epub';
 import { getContextMenuSettings, updateContextMenuSettings } from '../../../services/OPFSManager';
+import { AiProviderId, AI_PROVIDER_CATALOG } from '@/config/aiProviders';
 
 /**
  * Hook for managing context menu settings state and operations.
@@ -12,6 +13,8 @@ export const useContextMenuSettings = () => {
     api: '',
     key: '',
     items: [],
+    providerId: undefined,
+    providerApiKeyCache: {},
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -30,26 +33,42 @@ export const useContextMenuSettings = () => {
         const savedSettings = await getContextMenuSettings();
 
         // Migration logic:
-        // If defaultModel is missing, derive it from the first AI tool's model (if present),
-        // else fallback to 'gpt-3.5-turbo' when AI tools exist.
+        // 1. Default Model fallback
         let defaultModel = savedSettings.defaultModel;
         const hasAITools = savedSettings.items?.some((item) => item.type === 'AI');
         
         if (!defaultModel && hasAITools) {
-          const firstAITool = savedSettings.items?.find((item) => item.type === 'AI' && (item as any).model);
+          const firstAITool = savedSettings.items?.find((item) => item.type === 'AI' && (item as AISettingItem).model);
           if (firstAITool) {
-             defaultModel = (firstAITool as any).model;
+             defaultModel = (firstAITool as AISettingItem).model;
           } else {
              defaultModel = 'gpt-3.5-turbo';
           }
         }
 
+        // 2. Provider Migration
+        let providerId = savedSettings.providerId;
+        let providerApiKeyCache = savedSettings.providerApiKeyCache || {};
+        const api = savedSettings.api || '';
+        const key = savedSettings.key || '';
+
+        if (!providerId) {
+          // Infer 'custom' if missing, and migrate existing config
+          providerId = 'custom';
+          // If we have an existing key but no cache for custom, seed it
+          if (key && !providerApiKeyCache['custom']) {
+            providerApiKeyCache = { ...providerApiKeyCache, custom: key };
+          }
+        }
+
         // Ensure we have valid settings object
         const validSettings: ContextMenuSettings = {
-          api: savedSettings?.api || '',
-          key: savedSettings?.key || '',
+          api,
+          key,
           defaultModel: defaultModel || '',
           items: savedSettings?.items || [],
+          providerId,
+          providerApiKeyCache,
         };
 
         setSettings(validSettings);
@@ -62,6 +81,8 @@ export const useContextMenuSettings = () => {
           key: '',
           defaultModel: '',
           items: [],
+          providerId: 'custom',
+          providerApiKeyCache: {},
         });
       } finally {
         setIsLoading(false);
@@ -73,24 +94,59 @@ export const useContextMenuSettings = () => {
 
   // 2. Actions
   const updateSettings = useCallback(
-    (field: keyof ContextMenuSettings, value: string | ContextMenuItem[]) => {
+    <K extends keyof ContextMenuSettings>(field: K, value: ContextMenuSettings[K]) => {
       setSettings((prev) => ({ ...prev, [field]: value }));
     },
     []
   );
 
+  /**
+   * Update the selected AI provider.
+   * Handles switching base URL and restoring cached API key.
+   */
+  const updateProvider = useCallback((newProviderId: AiProviderId) => {
+    setSettings((prev) => {
+      const providerConfig = AI_PROVIDER_CATALOG.find((p) => p.id === newProviderId);
+      
+      // 1. Resolve Base URL
+      let newBaseUrl = prev.api;
+      if (providerConfig && providerConfig.baseUrl) {
+        newBaseUrl = providerConfig.baseUrl;
+      }
+
+      // 2. Restore Cached Key
+      const cachedKey = prev.providerApiKeyCache?.[newProviderId] || '';
+
+      return {
+        ...prev,
+        providerId: newProviderId,
+        api: newBaseUrl,
+        key: cachedKey,
+      };
+    });
+  }, []);
+
   const updateApiEndpoint = useCallback(
     (endpoint: string) => {
-      updateSettings('api', endpoint);
+      setSettings((prev) => ({ ...prev, api: endpoint }));
     },
-    [updateSettings]
+    []
   );
 
   const updateApiKey = useCallback(
     (key: string) => {
-      updateSettings('key', key);
+      setSettings((prev) => {
+        const currentProviderId = prev.providerId || 'custom';
+        const newCache = { ...prev.providerApiKeyCache, [currentProviderId]: key };
+        
+        return {
+          ...prev,
+          key,
+          providerApiKeyCache: newCache,
+        };
+      });
     },
-    [updateSettings]
+    []
   );
 
   const updateDefaultModel = useCallback(
@@ -283,6 +339,7 @@ export const useContextMenuSettings = () => {
     updateApiEndpoint,
     updateApiKey,
     updateDefaultModel,
+    updateProvider,
     addTool,
     removeTool,
     updateTool,

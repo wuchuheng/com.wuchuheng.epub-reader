@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Book, Rendition } from 'epubjs';
 import { logger } from '../../../utils/logger';
 import { SelectInfo, TocItem } from '../../../types/epub';
@@ -120,25 +120,31 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
     goToSelectChapter: (_: string) => {},
   });
 
-  const onSelectionCompleted = useCallback(
-    debounce<SelectInfo>((selectedInfo: SelectInfo) => {
-      if (selectedInfo) {
-        logger.log(`Omit event:`, selectedInfo);
-        onSelectRef.current(selectedInfo);
-      }
-    }, 200),
+  const onSelectionCompletedDebounced = useMemo(
+    () =>
+      debounce<SelectInfo>((selectedInfo: SelectInfo) => {
+        if (selectedInfo) {
+          logger.log(`Omit event:`, selectedInfo);
+          onSelectRef.current(selectedInfo);
+        }
+      }, 200),
     []
   );
 
+  const onSelectionCompleted = useCallback(
+    (selectedInfo: SelectInfo) => {
+      onSelectionCompletedDebounced(selectedInfo);
+    },
+    [onSelectionCompletedDebounced]
+  );
+
   // Main book rendering function
-  const renderBook = async () => {
+  const renderBook = useCallback(async () => {
     if (!containerRef.current) return;
 
-    // Create rendition
     const rendition = props.book.renderTo(containerRef.current, createRenditionConfig());
     renditionRef.current = rendition;
 
-    // Setup events
     setupRenditionEvents({
       rendition,
       book: props.book,
@@ -152,24 +158,17 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
       },
     });
 
-    // Display book
     const latestCfi = latestReadingLocation.get(bookId!);
     rendition.display(latestCfi || undefined);
 
-    // Wait for book to be ready
     await props.book.ready;
-
-    // Generate locations
     await props.book.locations.generate(RENDERING_CONFIG.LOCATION_CHAR_COUNT);
     setTotalPages(props.book.locations.length());
-
-    // Set table of contents
     setTableOfContents(props.book.navigation.toc);
 
-    // Create navigation functions
     const nav = createNavigationFunctions(rendition, currentLocationRef);
     setNavigation(nav);
-  };
+  }, [bookId, onSelectionCompleted, props.book]);
 
   // Setup keyboard navigation
   useKeyboardNavigation(navigation.goToNext, navigation.goToPrev, {
@@ -181,7 +180,7 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
     if (containerRef.current && props.book) {
       renderBook();
     }
-  }, [props.book]);
+  }, [props.book, renderBook]);
 
   return {
     containerRef,

@@ -24,11 +24,13 @@ export const IframeRender: React.FC<IframeRenderProps> = ({ url, words, context 
 
   // url encode the context.
   const encodedContext = encodeURIComponent(context);
+  const encodedWords = encodeURIComponent(words);
 
   const newUrl = replaceWords({
     template: url,
-    words,
+    words: encodedWords,
     context: encodedContext,
+    wrapContext: false,
   });
 
   // 2. Core processing - event handlers

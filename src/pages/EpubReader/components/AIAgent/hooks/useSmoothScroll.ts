@@ -1,5 +1,5 @@
 import { debounce } from '@wuchuheng/helper';
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 
 /**
  * Return type for useSmoothScrollToBottom hook
@@ -117,11 +117,12 @@ export function useSmoothScrollToBottom({
     console.log('Resume auto scroll. Is at bottom:', isGoToBottomRef.current);
   };
 
-  const handleWheelStopEvent = useCallback(
-    debounce<void>(() => {
-      isAutoScrollRef.current = true;
-    }, 200),
-    []
+  const handleWheelStopEvent = useMemo(
+    () =>
+      debounce<void>(() => {
+        isAutoScrollRef.current = true;
+      }, 200),
+    [isAutoScrollRef]
   );
 
   const handleWheelEvent = () => {

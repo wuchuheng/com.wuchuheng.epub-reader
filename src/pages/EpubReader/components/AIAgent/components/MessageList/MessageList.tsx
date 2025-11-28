@@ -58,7 +58,7 @@ export const MessageList: React.FC<MessageListProps> = ({ onChangeMessageList, .
 
   useEffect(() => {
     onChangeMessageList();
-  }, [messageList]);
+  }, [messageList, onChangeMessageList]);
   const [inputBarStatus, setInputBarStatus] = useState<InputBarRenderProps['status']>('idle');
 
   const hasFetchedInitiallyRef = useRef(false);

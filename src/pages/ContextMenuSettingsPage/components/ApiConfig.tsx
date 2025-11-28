@@ -1,18 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { EyeOpen, EyeClosed } from '../../../components/icons';
+import { AiProviderId, AI_PROVIDER_CATALOG } from '@/config/aiProviders';
+import { SearchableSelect } from '@/components/SearchableSelect';
+
+export interface ApiStatus {
+  type: 'error' | 'warning' | 'success';
+  message: string;
+  link?: string;
+  isTesting: boolean;
+}
 
 /**
  * Props for API configuration component.
  */
 interface ApiConfigProps {
-  /** Current API endpoint URL. */
+  /** Current Provider ID */
+  providerId?: AiProviderId;
+  /** Current API endpoint URL (Base URL). */
   apiEndpoint: string;
   /** Current API key for authentication. */
   apiKey: string;
+  /** Handler for Provider changes. */
+  onProviderChange: (providerId: AiProviderId) => void;
   /** Handler for API endpoint changes. */
   onApiEndpointChange: (endpoint: string) => void;
   /** Handler for API key changes. */
   onApiKeyChange: (key: string) => void;
+  /** Handler for API status updates */
+  onStatusChange?: (status: ApiStatus | null) => void;
 }
 
 /**
@@ -31,26 +46,41 @@ const isValidUrl = (url: string): boolean => {
 
 /**
  * Simple API configuration component with clean, layered validation.
- * Shows field errors only when they occur, and summary status at the bottom.
+ * Shows field errors only when they occur. Status is reported to parent.
  */
 export const ApiConfig: React.FC<ApiConfigProps> = ({
+  providerId,
   apiEndpoint,
   apiKey,
+  onProviderChange,
   onApiEndpointChange,
   onApiKeyChange,
+  onStatusChange,
 }) => {
-  const [isTesting, setIsTesting] = useState(false);
-  const [summaryStatus, setSummaryStatus] = useState<{
-    type: 'error' | 'warning' | 'success';
-    message: string;
-  } | null>(null);
-
   // Field error states (only show errors)
   const [endpointError, setEndpointError] = useState<string>('');
   const [keyError, setKeyError] = useState<string>('');
 
   // Password visibility state
   const [showApiKey, setShowApiKey] = useState(false);
+
+  const selectedProvider = useMemo(
+    () => AI_PROVIDER_CATALOG.find((p) => p.id === providerId),
+    [providerId]
+  );
+
+  const isCustomProvider = providerId === 'custom';
+
+  // Prepare options for SearchableSelect
+  const providerOptions = useMemo(
+    () =>
+      AI_PROVIDER_CATALOG.map((p) => ({
+        value: p.id,
+        label: p.name,
+        note: p.baseUrl,
+      })),
+    []
+  );
 
   // Validate fields and show errors conditionally
   useEffect(() => {
@@ -63,7 +93,7 @@ export const ApiConfig: React.FC<ApiConfigProps> = ({
     if (hasInvalidUrl) {
       setEndpointError('Please enter a valid URL');
     } else if (shouldShowBecauseOtherFieldFilled) {
-      setEndpointError('API endpoint is required');
+      setEndpointError('Base URL is required');
     } else {
       setEndpointError('');
     }
@@ -87,7 +117,7 @@ export const ApiConfig: React.FC<ApiConfigProps> = ({
   useEffect(() => {
     const testApiConnection = async () => {
       if (apiEndpoint && apiKey && isValidUrl(apiEndpoint)) {
-        setIsTesting(true);
+        onStatusChange?.({ type: 'success', message: 'Testing API connection...', isTesting: true });
         try {
           const response = await fetch(`${apiEndpoint}/models`, {
             method: 'GET',
@@ -100,51 +130,58 @@ export const ApiConfig: React.FC<ApiConfigProps> = ({
           if (response.ok) {
             const data = await response.json();
             const modelCount = data.data && Array.isArray(data.data) ? data.data.length : 0;
-            setSummaryStatus({
+            onStatusChange?.({
               type: 'success',
               message:
                 modelCount > 0
                   ? `API connected successfully (${modelCount} models available)`
                   : 'API connected successfully',
+              isTesting: false,
             });
           } else {
-            setSummaryStatus({
+            onStatusChange?.({
               type: 'error',
               message: `API connection failed: ${response.status} ${response.statusText}`,
+              link: selectedProvider?.docsUrl,
+              isTesting: false,
             });
           }
         } catch (error) {
-          setSummaryStatus({
+          onStatusChange?.({
             type: 'error',
             message: `Network error: ${error instanceof Error ? error.message : 'Connection failed'}`,
+            link: selectedProvider?.docsUrl,
+            isTesting: false,
           });
-        } finally {
-          setIsTesting(false);
         }
       } else {
         // Set summary status based on form state
         if (!apiEndpoint && !apiKey) {
-          setSummaryStatus({
+          onStatusChange?.({
             type: 'warning',
-            message: 'Please enter API endpoint and key to test connection',
+            message: 'Please configure provider, Base URL and API key',
+            isTesting: false,
           });
         } else if (!apiEndpoint) {
-          setSummaryStatus({
+          onStatusChange?.({
             type: 'warning',
-            message: 'Please enter API endpoint',
+            message: 'Please enter Base URL',
+            isTesting: false,
           });
         } else if (!apiKey) {
-          setSummaryStatus({
+          onStatusChange?.({
             type: 'warning',
             message: 'Please enter API key',
+            isTesting: false,
           });
         } else if (!isValidUrl(apiEndpoint)) {
-          setSummaryStatus({
+          onStatusChange?.({
             type: 'error',
-            message: 'Please fix API endpoint format',
+            message: 'Please fix Base URL format',
+            isTesting: false,
           });
         } else {
-          setSummaryStatus(null);
+          onStatusChange?.(null);
         }
       }
     };
@@ -152,65 +189,53 @@ export const ApiConfig: React.FC<ApiConfigProps> = ({
     // Debounce the API test
     const timeoutId = setTimeout(testApiConnection, 1000);
     return () => clearTimeout(timeoutId);
-  }, [apiEndpoint, apiKey]);
-
-  const getStatusColor = (type: 'error' | 'warning' | 'success') => {
-    switch (type) {
-      case 'error':
-        return 'text-red-600';
-      case 'warning':
-        return 'text-yellow-600';
-      case 'success':
-        return 'text-green-600';
-      default:
-        return 'text-gray-600';
-    }
-  };
-
-  const getStatusIcon = (type: 'error' | 'warning' | 'success') => {
-    switch (type) {
-      case 'error':
-        return '❌';
-      case 'warning':
-        return '⚠️';
-      case 'success':
-        return '✅';
-      default:
-        return '';
-    }
-  };
-
-  const getStatusBg = (type: 'error' | 'warning' | 'success') => {
-    switch (type) {
-      case 'error':
-        return 'bg-red-50 border-red-100';
-      case 'warning':
-        return 'bg-yellow-50 border-yellow-100';
-      case 'success':
-        return 'bg-green-50 border-green-100';
-      default:
-        return 'bg-gray-50 border-gray-100';
-    }
-  };
+  }, [apiEndpoint, apiKey, selectedProvider, onStatusChange]);
 
   return (
     <div className="space-y-4">
-      {/* API Endpoint Field */}
+      {/* Provider Selector */}
       <div>
-        <label className="mb-1 block text-sm font-medium text-gray-700">API Endpoint</label>
-        <input
-          type="text"
-          value={apiEndpoint}
-          onChange={(e) => onApiEndpointChange(e.target.value)}
-          placeholder="https://api.example.com/v1"
-          className={`w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 ${
-            endpointError
-              ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-              : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-          }`}
+        <SearchableSelect
+          label="API Provider"
+          value={providerId || ''}
+          onChange={(val) => onProviderChange(val as AiProviderId)}
+          options={providerOptions}
+          placeholder="Select an AI provider..."
+          className="w-full"
         />
-        {endpointError && <div className="mt-1 text-sm text-red-600">{endpointError}</div>}
+        {selectedProvider && selectedProvider.docsUrl && (
+          <div className="mt-1 text-xs text-gray-500">
+            <span>Documentation: </span>
+            <a
+              href={selectedProvider.docsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline"
+            >
+              {selectedProvider.docsUrl}
+            </a>
+          </div>
+        )}
       </div>
+
+      {/* API Endpoint Field - Only shown for Custom provider */}
+      {isCustomProvider && (
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700">Base URL</label>
+          <input
+            type="text"
+            value={apiEndpoint}
+            onChange={(e) => onApiEndpointChange(e.target.value)}
+            placeholder="https://api.example.com/v1"
+            className={`w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 ${
+              endpointError
+                ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+            }`}
+          />
+          {endpointError && <div className="mt-1 text-sm text-red-600">{endpointError}</div>}
+        </div>
+      )}
 
       {/* API Key Field */}
       <div>
@@ -237,26 +262,6 @@ export const ApiConfig: React.FC<ApiConfigProps> = ({
         </div>
         {keyError && <div className="mt-1 text-sm text-red-600">{keyError}</div>}
       </div>
-
-      {/* Summary Status Line */}
-      {summaryStatus && (
-        <div
-          className={`flex items-center gap-2 rounded-md border px-2 py-1 text-xs ${getStatusBg(
-            summaryStatus.type
-          )}`}
-        >
-          {isTesting ? (
-            <div className="flex items-center text-blue-600">
-              <div className="mr-2 h-3 w-3 animate-spin rounded-full border-b-2 border-blue-600"></div>
-              <span className="leading-tight">Testing API connection...</span>
-            </div>
-          ) : (
-            <div className={`${getStatusColor(summaryStatus.type)} leading-tight`}>
-              {getStatusIcon(summaryStatus.type)} {summaryStatus.message}
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 };

@@ -26,17 +26,28 @@ export const EpubReader: React.FC = () => {
 
   useEffect(() => {
     if (!bookId) return;
+    let isMounted = true;
     getBookByBookId(bookId)
-      .then(setBook)
+      .then((loadedBook) => {
+        if (!isMounted) return;
+        setBook(loadedBook);
+      })
       .catch((err) => {
+        if (!isMounted) return;
         console.error('Failed to load book:', err);
         setError('Failed to load book. Please try again later.');
       });
     return () => {
-      book?.destroy();
-      setBook(null);
+      isMounted = false;
     };
   }, [bookId]);
+
+  useEffect(
+    () => () => {
+      book?.destroy();
+    },
+    [book]
+  );
 
   if (!bookId || error) return <InvalidBookError error={error} />;
   if (!book) return <Loading />;

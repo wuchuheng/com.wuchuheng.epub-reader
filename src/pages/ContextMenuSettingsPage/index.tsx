@@ -1,9 +1,48 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ApiConfig } from './components/ApiConfig';
+import { ApiConfig, type ApiStatus } from './components/ApiConfig';
 import { ModelSearchInput } from './components/ModelSearchInput';
 import { ToolList } from './components/ToolList';
 import { useContextMenuSettings } from './hooks/useContextMenuSettings';
+
+const getStatusBg = (status: ApiStatus['type']) => {
+  switch (status) {
+    case 'success':
+      return 'border-green-200 bg-green-50';
+    case 'warning':
+      return 'border-yellow-200 bg-yellow-50';
+    case 'error':
+      return 'border-red-200 bg-red-50';
+    default:
+      return 'border-gray-200 bg-gray-50';
+  }
+};
+
+const getStatusColor = (status: ApiStatus['type']) => {
+  switch (status) {
+    case 'success':
+      return 'text-green-700';
+    case 'warning':
+      return 'text-yellow-700';
+    case 'error':
+      return 'text-red-700';
+    default:
+      return 'text-gray-700';
+  }
+};
+
+const getStatusIcon = (status: ApiStatus['type']) => {
+  switch (status) {
+    case 'success':
+      return '[OK]';
+    case 'warning':
+      return '[!]';
+    case 'error':
+      return '[X]';
+    default:
+      return '[ ]';
+  }
+};
 
 /**
  * Context Menu Settings page component.
@@ -14,6 +53,7 @@ export const ContextMenuSettingsPage: React.FC = () => {
   // 1. State and logic using custom hooks
   const contextMenuSettings = useContextMenuSettings();
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [apiStatus, setApiStatus] = useState<ApiStatus | null>(null);
 
   const handleSaveSettings = async () => {
     // Validation: Check if default model is set when AI tools exist
@@ -62,18 +102,18 @@ export const ContextMenuSettingsPage: React.FC = () => {
 
           {/* API Configuration */}
           <ApiConfig
+            providerId={contextMenuSettings.settings.providerId}
             apiEndpoint={contextMenuSettings.settings.api || ''}
             apiKey={contextMenuSettings.settings.key || ''}
+            onProviderChange={contextMenuSettings.updateProvider}
             onApiEndpointChange={contextMenuSettings.updateApiEndpoint}
             onApiKeyChange={contextMenuSettings.updateApiKey}
+            onStatusChange={setApiStatus}
           />
 
           {/* Global Default Model Configuration */}
-          <div className="mb-6 rounded-lg bg-gray-50 p-4">
-            <h4 className="mb-2 text-md font-medium text-gray-900">Global Default Model</h4>
-            <div className="mb-2 text-sm text-gray-500">
-              Select the default AI model to be used by all AI tools.
-            </div>
+          <div className="mb-6">
+            <label className="mb-1 block text-sm font-medium text-gray-700">Model</label>
             <ModelSearchInput
               value={contextMenuSettings.settings.defaultModel || ''}
               onChange={contextMenuSettings.updateDefaultModel}
@@ -82,6 +122,40 @@ export const ContextMenuSettingsPage: React.FC = () => {
               placeholder="Search or enter model name (e.g. gpt-3.5-turbo)"
             />
           </div>
+
+          {/* API Status Notification */}
+          {apiStatus && (
+            <div
+              className={`mb-6 flex flex-col gap-1 rounded-md border px-2 py-1 text-xs ${getStatusBg(
+                apiStatus.type
+              )}`}
+            >
+              {apiStatus.isTesting ? (
+                <div className="flex items-center text-blue-600">
+                  <div className="mr-2 h-3 w-3 animate-spin rounded-full border-b-2 border-blue-600"></div>
+                  <span className="leading-tight">Testing API connection...</span>
+                </div>
+              ) : (
+                <div className={`${getStatusColor(apiStatus.type)} leading-tight`}>
+                  <span>
+                    {getStatusIcon(apiStatus.type)} {apiStatus.message}
+                  </span>
+                  {apiStatus.link && (
+                    <div className="ml-5 mt-0.5">
+                      <a
+                        href={apiStatus.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline hover:text-blue-800"
+                      >
+                        Get API Key / Help
+                      </a>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Custom AI Tools Section */}
           <div className="mb-6">
