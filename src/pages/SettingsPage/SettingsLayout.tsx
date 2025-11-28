@@ -15,6 +15,11 @@ const navItems: SettingsNavCallback[] = [
     description: 'General application settings',
   },
   {
+    label: 'Storage',
+    path: '/settings/storage',
+    description: 'Local cache overview and reset',
+  },
+  {
     label: 'Context Menu',
     path: '/settings/contextmenu',
     description: 'Configure AI providers and custom tools',

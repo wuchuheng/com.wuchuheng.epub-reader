@@ -4,6 +4,7 @@ import { EpubReader } from '../pages/EpubReader';
 import SettingsLayout from '../pages/SettingsPage/SettingsLayout';
 import GeneralPage from '../pages/SettingsPage';
 import AboutPage from '../pages/SettingsPage/AboutPage';
+import StoragePage from '../pages/SettingsPage/StoragePage';
 import ContextMenuSettingsPage from '../pages/ContextMenuSettingsPage';
 import ToolExtractPage from '../pages/ToolExtractPage';
 import ToolEditPage from '../pages/ToolEditPage';
@@ -28,6 +29,10 @@ const router = createBrowserRouter([
       {
         path: 'general',
         element: <GeneralPage />,
+      },
+      {
+        path: 'storage',
+        element: <StoragePage />,
       },
       {
         path: 'contextmenu',

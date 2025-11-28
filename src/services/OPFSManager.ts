@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { OPFSConfig, BookMetadata, OPFSDirectoryStructure } from '../types/book';
+import { ContextMenuSettings } from '../types/epub';
 import * as EPUBMetadataService from './EPUBMetadataService';
 import ePub, { Book } from 'epubjs';
 import { getEpubValidationError, formatFileSize } from '../utils/epubValidation';
@@ -10,6 +11,19 @@ import {
 } from '../utils/fileOperations';
 import { DEFAULT_CONFIG } from '../constants/epub';
 import { menuItemDefaultConfig } from '@/config/config';
+
+let directoryStructure: OPFSDirectoryStructure | null = null;
+
+export type OPFSStorageEntry = {
+  path: string;
+  size: number;
+  kind: 'file' | 'directory';
+};
+
+export type OPFSStorageStats = {
+  totalBytes: number;
+  entries: OPFSStorageEntry[];
+};
 
 /**
  * Check if OPFS is supported in the current browser
@@ -52,6 +66,24 @@ const getDirectoryStructure = async (): Promise<OPFSDirectoryStructure> => {
   return directoryStructure!;
 };
 
+const buildDefaultContextMenuSettings = (): ContextMenuSettings => ({
+  api: '',
+  key: '',
+  defaultModel: '',
+  items: menuItemDefaultConfig,
+  providerId: 'custom',
+  providerApiKeyCache: {},
+});
+
+const buildDefaultConfig = (books: BookMetadata[] = []): OPFSConfig => ({
+  version: DEFAULT_CONFIG.CONFIG_VERSION,
+  books,
+  settings: {
+    contextMenu: buildDefaultContextMenuSettings(),
+  },
+  lastSync: Date.now(),
+});
+
 /**
  * Ensure config.json exists with default structure
  */
@@ -62,21 +94,7 @@ async function ensureConfigExists(): Promise<void> {
     await directoryStructure.root.getFileHandle('config.json');
   } catch {
     // File doesn't exist, create it
-    const config: OPFSConfig = {
-      version: DEFAULT_CONFIG.CONFIG_VERSION,
-      books: [],
-      settings: {
-        contextMenu: {
-          api: '',
-          key: '',
-          defaultModel: '',
-          items: menuItemDefaultConfig,
-        },
-      },
-      lastSync: Date.now(),
-    };
-
-    await saveConfig(config);
+    await saveConfig(buildDefaultConfig());
   }
 }
 
@@ -291,39 +309,100 @@ export async function getAllBooks(): Promise<BookMetadata[]> {
   return config.books;
 }
 
-import { ContextMenuSettings } from '../types/epub';
+const collectEntries = async (
+  directory: FileSystemDirectoryHandle,
+  prefix: string = ''
+): Promise<OPFSStorageEntry[]> => {
+  const entries: OPFSStorageEntry[] = [];
 
-// ...
+  for await (const [name, handle] of directory.entries()) {
+    const path = prefix ? `${prefix}/${name}` : name;
+
+    if (handle.kind === 'file') {
+      try {
+        const fileHandle = handle as FileSystemFileHandle;
+        const file = await fileHandle.getFile();
+        entries.push({ path, size: file.size, kind: 'file' });
+      } catch (error) {
+        console.warn(`Failed to read file size for ${path}`, error);
+      }
+    } else {
+      entries.push({ path, size: 0, kind: 'directory' });
+      try {
+        const childEntries = await collectEntries(handle as FileSystemDirectoryHandle, path);
+        entries.push(...childEntries);
+      } catch (error) {
+        console.warn(`Failed to read directory ${path}`, error);
+      }
+    }
+  }
+
+  return entries;
+};
+
+/**
+ * Return a list of OPFS files with their sizes and a total.
+ */
+export async function getStorageStats(): Promise<OPFSStorageStats> {
+  const directoryStructure = await getDirectoryStructure();
+  const entries = await collectEntries(directoryStructure.root);
+  const totalBytes = entries
+    .filter((entry) => entry.kind === 'file')
+    .reduce((sum, entry) => sum + entry.size, 0);
+
+  return { totalBytes, entries };
+}
+
+/**
+ * Remove all stored data: books directory and config file, then recreate defaults.
+ */
+export async function resetAllData(): Promise<void> {
+  if (!isSupported()) {
+    throw new Error('OPFS is not supported in this browser');
+  }
+
+  const structure = await getDirectoryStructure();
+
+  try {
+    await structure.root.removeEntry('books', { recursive: true });
+  } catch (error) {
+    console.warn('Failed to remove books directory during reset:', error);
+  }
+
+  try {
+    await structure.root.removeEntry('config.json');
+  } catch (error) {
+    console.warn('Failed to remove config during reset:', error);
+  }
+
+  directoryStructure = null;
+  await initialize();
+}
 
 /**
  * Update context menu settings in config.json
  */
 export async function updateContextMenuSettings(settings: Partial<ContextMenuSettings>): Promise<void> {
   const config = await loadConfig();
+  const defaults = buildDefaultContextMenuSettings();
 
   // Ensure settings structure exists
   if (!config.settings) {
     config.settings = { 
-      contextMenu: { 
-        api: '', 
-        key: '', 
-        defaultModel: '', 
-        items: [],
-        providerId: 'custom',
-        providerApiKeyCache: {}
-      } 
+      contextMenu: defaults,
     };
   }
 
   // Update context menu settings
   // Merge existing with new
   config.settings.contextMenu = {
+    ...defaults,
     ...config.settings.contextMenu,
     ...settings,
     // Ensure required fields are at least present if they were missing in partial
-    api: settings.api ?? config.settings.contextMenu.api ?? '',
-    key: settings.key ?? config.settings.contextMenu.key ?? '',
-    items: settings.items ?? config.settings.contextMenu.items ?? [],
+    api: settings.api ?? config.settings.contextMenu.api ?? defaults.api,
+    key: settings.key ?? config.settings.contextMenu.key ?? defaults.key,
+    items: settings.items ?? config.settings.contextMenu.items ?? defaults.items,
   };
 
   config.lastSync = Date.now();
@@ -335,20 +414,21 @@ export async function updateContextMenuSettings(settings: Partial<ContextMenuSet
  */
 export async function getContextMenuSettings(): Promise<ContextMenuSettings> {
   const config = await loadConfig();
+  const defaults = buildDefaultContextMenuSettings();
   const contextMenuSettings = config.settings?.contextMenu;
 
   // Return default values if contextMenu settings don't exist
   return {
-    api: contextMenuSettings?.api || '',
-    key: contextMenuSettings?.key || '',
-    defaultModel: contextMenuSettings?.defaultModel || '',
-    providerId: contextMenuSettings?.providerId,
-    providerApiKeyCache: contextMenuSettings?.providerApiKeyCache || {},
-    items: contextMenuSettings?.items || [],
+    ...defaults,
+    ...contextMenuSettings,
+    api: contextMenuSettings?.api ?? defaults.api,
+    key: contextMenuSettings?.key ?? defaults.key,
+    defaultModel: contextMenuSettings?.defaultModel ?? defaults.defaultModel,
+    providerId: contextMenuSettings?.providerId ?? defaults.providerId,
+    providerApiKeyCache: contextMenuSettings?.providerApiKeyCache ?? defaults.providerApiKeyCache,
+    items: contextMenuSettings?.items ?? defaults.items,
   };
 }
-
-let directoryStructure: OPFSDirectoryStructure | null = null;
 
 /**
  * Load configuration from config.json with error recovery
@@ -370,19 +450,7 @@ export async function loadConfig(): Promise<OPFSConfig> {
       return JSON.parse(content);
     } catch {
       // If JSON is corrupted, recreate with default config
-      const defaultConfig: OPFSConfig = {
-        version: DEFAULT_CONFIG.CONFIG_VERSION,
-        books: [],
-        settings: {
-          contextMenu: {
-            api: '',
-            key: '',
-            defaultModel: '',
-            items: [],
-          },
-        },
-        lastSync: Date.now(),
-      };
+      const defaultConfig = buildDefaultConfig();
 
       await saveConfig(defaultConfig);
       return defaultConfig;
@@ -390,19 +458,7 @@ export async function loadConfig(): Promise<OPFSConfig> {
   } catch (error) {
     // If file doesn't exist, create it
     if (error instanceof Error && error.message.includes('not found')) {
-      const defaultConfig: OPFSConfig = {
-        version: DEFAULT_CONFIG.CONFIG_VERSION,
-        books: [],
-        settings: {
-          contextMenu: {
-            api: '',
-            key: '',
-            defaultModel: '',
-            items: [],
-          },
-        },
-        lastSync: Date.now(),
-      };
+      const defaultConfig = buildDefaultConfig();
       await saveConfig(defaultConfig);
       return defaultConfig;
     }
