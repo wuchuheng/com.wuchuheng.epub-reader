@@ -58,7 +58,7 @@ export const IframeRender: React.FC<IframeRenderProps> = ({ url, words, context 
   }
 
   return (
-    <div className="relative flex-1 overflow-hidden">
+    <div className="relative h-full w-full overflow-hidden">
       {isLoading && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-50">
           <Loading />

@@ -12,6 +12,7 @@ type UseFetchAIMessageProps = {
   reasoningEnabled?: boolean;
   messageList: MessageItem[];
   onUpdateAIResponse: (res: AIMessageRenderProps) => void;
+  abortControllerRef: React.MutableRefObject<AbortController | null>;
 };
 
 /**
@@ -25,6 +26,35 @@ export const useFetchAIMessage = ({
   onUpdateAIResponse,
   ...props
 }: UseFetchAIMessageProps) => {
+  const setFailureMessage = (message: string) => {
+    setMessageList((prev) => {
+      if (!prev.length || prev[prev.length - 1].role !== 'assistant') {
+        return [
+          ...prev,
+          {
+            role: 'assistant',
+            data: {
+              content: message,
+              model: props.model,
+              reasoningContentCompleted: true,
+            },
+          },
+        ];
+      }
+      const clone = [...prev];
+      const latest = clone[clone.length - 1];
+      clone[clone.length - 1] = {
+        role: 'assistant',
+        data: {
+          ...latest.data,
+          content: message,
+          reasoningContentCompleted: true,
+        },
+      };
+      return clone;
+    });
+  };
+
   const fetchAIMessage = async (newMessageList: MessageItem[]) => {
     // 2. Send message to AI
     // 2.1 Push the AI message to message list.
@@ -35,6 +65,10 @@ export const useFetchAIMessage = ({
     };
 
     setMessageList([...newMessageList, { role: 'assistant', data: aiMessage }]);
+
+    props.abortControllerRef.current?.abort();
+    const abortController = new AbortController();
+    props.abortControllerRef.current = abortController;
 
     const client = new OpenAI({
       apiKey: props.apiKey,
@@ -56,6 +90,7 @@ export const useFetchAIMessage = ({
       stream_options: {
         include_usage: true,
       },
+      signal: abortController.signal,
     };
 
     requestConfig = addThinkingArgument(
@@ -64,40 +99,50 @@ export const useFetchAIMessage = ({
       !!props.reasoningEnabled
     ) as ChatCompletionCreateParamsStreaming;
 
-    const completion = await client.chat.completions.create(requestConfig);
+    try {
+      const completion = await client.chat.completions.create(requestConfig);
 
-    for await (const part of completion) {
-      // 1.1 Check for usage information
-      if (part?.choices?.[0]?.delta) {
-        // 1.2 Process delta content
-        const res = part.choices[0].delta as AIResponse;
-
-        aiMessage.content += res.content || '';
-
-        // Only process reasoning content if the feature is enabled
-        if (props.reasoningEnabled) {
-          const reasoningContent = res.reasoning_content || res.reasoningContent || '';
-          if (reasoningContent) {
-            if (aiMessage.reasoningContent) {
-              aiMessage.reasoningContent += reasoningContent;
-            } else {
-              aiMessage.reasoningContent = reasoningContent;
-            }
-          }
+      for await (const part of completion) {
+        if (abortController.signal.aborted) {
+          break;
         }
 
-        onUpdateAIResponse(aiMessage);
-      }
+        if (part?.choices?.[0]?.delta) {
+          const res = part.choices[0].delta as AIResponse;
 
-      if (part?.usage) {
-        aiMessage.usage = {
-          promptTokens: part.usage!.prompt_tokens,
-          completionTokens: part.usage!.completion_tokens,
-          totalTokens: part.usage!.total_tokens,
-        };
+          aiMessage.content += res.content || '';
 
-        onUpdateAIResponse(aiMessage);
+          if (props.reasoningEnabled) {
+            const reasoningContent = res.reasoning_content || res.reasoningContent || '';
+            if (reasoningContent) {
+              if (aiMessage.reasoningContent) {
+                aiMessage.reasoningContent += reasoningContent;
+              } else {
+                aiMessage.reasoningContent = reasoningContent;
+              }
+            }
+          }
+
+          onUpdateAIResponse(aiMessage);
+        }
+
+        if (part?.usage) {
+          aiMessage.usage = {
+            promptTokens: part.usage!.prompt_tokens,
+            completionTokens: part.usage!.completion_tokens,
+            totalTokens: part.usage!.total_tokens,
+          };
+
+          onUpdateAIResponse(aiMessage);
+        }
       }
+    } catch (error) {
+      if (!abortController.signal.aborted) {
+        const message = error instanceof Error ? error.message : 'Request failed';
+        setFailureMessage(message);
+      }
+    } finally {
+      props.abortControllerRef.current = null;
     }
   };
 

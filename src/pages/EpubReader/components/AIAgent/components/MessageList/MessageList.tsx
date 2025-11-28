@@ -23,6 +23,7 @@ export const MessageList: React.FC<MessageListProps> = ({ onChangeMessageList, .
       content,
     },
   ]);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const onUpdateAIResponse = useCallback((res: AIMessageRenderProps) => {
     // 2. Handle logic.
@@ -46,6 +47,7 @@ export const MessageList: React.FC<MessageListProps> = ({ onChangeMessageList, .
     messageList,
     onUpdateAIResponse,
     reasoningEnabled: props.reasoningEnabled,
+    abortControllerRef,
   });
 
   const onSend = useCallback(
@@ -67,6 +69,13 @@ export const MessageList: React.FC<MessageListProps> = ({ onChangeMessageList, .
     hasFetchedInitiallyRef.current = true;
     fetchAIMessage(messageList);
   }, [fetchAIMessage, messageList]);
+
+  useEffect(
+    () => () => {
+      abortControllerRef.current?.abort();
+    },
+    []
+  );
 
   return (
     <>

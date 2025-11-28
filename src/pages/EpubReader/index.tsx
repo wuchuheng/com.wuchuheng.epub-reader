@@ -66,6 +66,7 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
     () => contextMenuSettings.items.filter((item) => item.enabled !== false),
     [contextMenuSettings.items]
   );
+  const [selectionId, setSelectionId] = useState(0);
 
   const onToggleToc = () => {
     if (tocVisible) {
@@ -118,12 +119,21 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
           targetIndex = 0;
         }
 
+        setSelectionId((prev) => prev + 1);
         setContextMenu({ tabIndex: targetIndex, ...selectedInfo });
       }
       setMenuVisible(false);
       setTocVisible(false);
     },
   });
+
+  useEffect(() => {
+    if (contextMenu.tabIndex === null) return;
+    if (activeTools.length === 0) return;
+    if (contextMenu.tabIndex < 0 || contextMenu.tabIndex >= activeTools.length) {
+      setContextMenu((prev) => ({ ...prev, tabIndex: 0 }));
+    }
+  }, [activeTools.length, contextMenu.tabIndex]);
 
   const handleChangeMenuIndex = (index: number) =>
     setContextMenu((prev) => ({ ...prev, tabIndex: index }));
@@ -158,6 +168,11 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
         tabIndex={contextMenu.tabIndex}
         words={contextMenu.words}
         context={contextMenu.context}
+        selectionId={selectionId}
+        items={activeTools}
+        api={contextMenuSettings.api}
+        apiKey={contextMenuSettings.key}
+        defaultModel={contextMenuSettings.defaultModel}
         onClose={function (): void {
           setContextMenu((prev) => ({ ...prev, tabIndex: null }));
         }}
