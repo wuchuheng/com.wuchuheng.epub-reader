@@ -6,10 +6,12 @@ import { AIMessageRender, AIMessageRenderProps } from '../AIMessageRender';
 import { useFetchAIMessage } from './useFetchAIMessage';
 import { InputBarRender } from './components/InputBarRender';
 import { LatestAssistantMessage } from './components/LatestAssistantMessage';
+import { SelectInfo } from '@/types/epub';
 
 type MessageListProps = {
   onChangeMessageList: (mode: ViewMode) => void;
   inputBarVisit: () => void;
+  onDrilldownSelect?: (selection: SelectInfo) => void;
 } & AIAgentProps;
 
 export type ViewMode = 'simple' | 'conversation';
@@ -17,6 +19,7 @@ export type ViewMode = 'simple' | 'conversation';
 export const MessageList: React.FC<MessageListProps> = ({
   onChangeMessageList,
   inputBarVisit,
+  onDrilldownSelect,
   ...props
 }) => {
   const content = replaceWords({
@@ -32,6 +35,7 @@ export const MessageList: React.FC<MessageListProps> = ({
   ]);
   const abortControllerRef = useRef<AbortController | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('simple');
+  const conversationContainerRef = useRef<HTMLDivElement>(null);
 
   const onUpdateAIResponse = useCallback((res: AIMessageRenderProps) => {
     setMessageList((prev) => {
@@ -95,7 +99,10 @@ export const MessageList: React.FC<MessageListProps> = ({
     <div className="flex h-full flex-col">
       <div className="flex-1">
         {viewMode === 'conversation' ? (
-          <div className="flex flex-col gap-2 divide-y divide-gray-300 p-4">
+          <div
+            className="flex flex-col gap-2 divide-y divide-gray-300 p-4"
+            ref={conversationContainerRef}
+          >
             {messageList.map((msg, index) => {
               if (msg.role === 'user') {
                 return (
@@ -106,11 +113,22 @@ export const MessageList: React.FC<MessageListProps> = ({
                   />
                 );
               }
-              return <AIMessageRender key={index} {...msg.data} />;
+              return (
+                <AIMessageRender
+                  key={index}
+                  {...msg.data}
+                  onDrilldownSelect={onDrilldownSelect}
+                  contextContainer={conversationContainerRef.current}
+                />
+              );
             })}
           </div>
         ) : (
-          <LatestAssistantMessage messageList={messageList} fallbackModel={props.model} />
+          <LatestAssistantMessage
+            messageList={messageList}
+            fallbackModel={props.model}
+            onDrilldownSelect={onDrilldownSelect}
+          />
         )}
       </div>
 

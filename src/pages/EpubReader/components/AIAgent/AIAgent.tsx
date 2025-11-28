@@ -2,12 +2,17 @@ import React, { useEffect, useRef, useState } from 'react';
 import { AIAgentProps } from './types/AIAgent';
 import { useSmoothScrollToBottom } from './hooks/useSmoothScroll';
 import { MessageList, ViewMode } from './components/MessageList/MessageList';
+import { SelectInfo } from '@/types/epub';
 
 /**
  * AI Agent component that provides a chat interface for AI interactions.
  * Supports streaming responses and conversation history.
  */
-export const AIAgent: React.FC<AIAgentProps> = (props) => {
+export type AIAgentComponentProps = AIAgentProps & {
+  onDrilldownSelect?: (selection: SelectInfo) => void;
+};
+
+export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
   const scrollContainerRef: React.RefObject<HTMLDivElement> = useRef<HTMLDivElement>(null);
   const isAutoScrollRef = useRef(true);
   const isGoToBottomRef = useRef<boolean>(true);
@@ -73,6 +78,7 @@ export const AIAgent: React.FC<AIAgentProps> = (props) => {
             scrollToBottom();
           }
         }}
+        onDrilldownSelect={props.onDrilldownSelect}
         {...props}
       />
       {viewMode === 'conversation' && (

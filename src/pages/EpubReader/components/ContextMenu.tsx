@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import { AISettingItem, ContextMenuSettings } from '../../../types/epub';
+import { AISettingItem, ContextMenuSettings, SelectInfo } from '../../../types/epub';
 import { AIAgent } from './AIAgent/AIAgent';
 import { IframeRender } from './IframeRender/IframeRender';
 
@@ -29,8 +29,10 @@ export interface ContextMenuProps {
   api: string;
   apiKey: string;
   defaultModel?: string;
+  zIndex?: number;
   onClose: () => void;
   onChangeIndex: (index: number) => void;
+  onDrilldownSelect?: (selection: SelectInfo) => void;
 }
 
 const defaultSizePx = 40 * 16;
@@ -378,6 +380,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
     <div
       className="absolute inset-0 z-50 px-3 py-3 sm:px-6 sm:py-6"
       onClick={props.onClose}
+      style={props.zIndex ? { zIndex: props.zIndex } : undefined}
     >
       <div
         className="absolute flex flex-col overflow-hidden divide-y divide-black rounded border border-black
@@ -418,6 +421,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
                     model={resolvedModel}
                     prompt={aiItem.prompt}
                     reasoningEnabled={aiItem.reasoningEnabled}
+                    onDrilldownSelect={props.onDrilldownSelect}
                   />
                 </div>
               );

@@ -1,4 +1,4 @@
-import { AISettingItem, ContextMenuSettings } from '@/types/epub';
+import { AISettingItem, ContextMenuSettings, SelectInfo } from '@/types/epub';
 import { ContextMenuProps } from '../../ContextMenu';
 import { AIMessageRenderProps } from '../components/AIMessageRender';
 
@@ -10,6 +10,7 @@ export type AIAgentProps = Pick<AISettingItem, 'prompt' | 'reasoningEnabled'> &
   Pick<ContextMenuSettings, 'api'> & {
     apiKey: string; // Renamed from 'key' to avoid React's reserved prop
     model: string;
+    onDrilldownSelect?: (selection: SelectInfo) => void;
   };
 
 export type AIResponse = {
