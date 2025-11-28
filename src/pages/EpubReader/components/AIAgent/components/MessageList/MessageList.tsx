@@ -4,14 +4,21 @@ import { AIAgentProps, MessageItem } from '../../types/AIAgent';
 import { UserMessageRender } from '../UserMessage';
 import { AIMessageRender, AIMessageRenderProps } from '../AIMessageRender';
 import { useFetchAIMessage } from './useFetchAIMessage';
-import { InputBarRender, InputBarRenderProps } from './components/InputBarRender';
+import { InputBarRender } from './components/InputBarRender';
+import { LatestAssistantMessage } from './components/LatestAssistantMessage';
 
 type MessageListProps = {
-  onChangeMessageList: () => void;
+  onChangeMessageList: (mode: ViewMode) => void;
   inputBarVisit: () => void;
 } & AIAgentProps;
 
-export const MessageList: React.FC<MessageListProps> = ({ onChangeMessageList, ...props }) => {
+export type ViewMode = 'simple' | 'conversation';
+
+export const MessageList: React.FC<MessageListProps> = ({
+  onChangeMessageList,
+  inputBarVisit,
+  ...props
+}) => {
   const content = replaceWords({
     template: props.prompt,
     words: props.words,
@@ -24,10 +31,9 @@ export const MessageList: React.FC<MessageListProps> = ({ onChangeMessageList, .
     },
   ]);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('simple');
 
   const onUpdateAIResponse = useCallback((res: AIMessageRenderProps) => {
-    // 2. Handle logic.
-    // 2.1 Update the latest message, that must be AI type message.
     setMessageList((prev) => {
       const latest = prev[prev.length - 1];
       if (latest.role !== 'assistant') {
@@ -59,10 +65,8 @@ export const MessageList: React.FC<MessageListProps> = ({ onChangeMessageList, .
   );
 
   useEffect(() => {
-    onChangeMessageList();
-  }, [messageList, onChangeMessageList]);
-  const [inputBarStatus, setInputBarStatus] = useState<InputBarRenderProps['status']>('idle');
-
+    onChangeMessageList(viewMode);
+  }, [messageList, viewMode, onChangeMessageList]);
   const hasFetchedInitiallyRef = useRef(false);
   useEffect(() => {
     if (hasFetchedInitiallyRef.current) return;
@@ -77,31 +81,45 @@ export const MessageList: React.FC<MessageListProps> = ({ onChangeMessageList, .
     []
   );
 
+  const handleModeChange = useCallback(
+    (mode: ViewMode) => {
+      setViewMode(mode);
+      if (mode === 'conversation') {
+        inputBarVisit();
+      }
+    },
+    [inputBarVisit]
+  );
+
   return (
-    <>
-      <div className="flex flex-1 flex-col gap-2 divide-y divide-gray-300 p-4">
-        {messageList.map((msg, index) => {
-          if (msg.role === 'user') {
-            return (
-              <UserMessageRender
-                key={index}
-                content={msg.content}
-                hightWords={msg.highlightWords}
-              />
-            );
-          }
-          return <AIMessageRender key={index} {...msg.data} />;
-        })}
+    <div className="flex h-full flex-col">
+      <div className="flex-1">
+        {viewMode === 'conversation' ? (
+          <div className="flex flex-col gap-2 divide-y divide-gray-300 p-4">
+            {messageList.map((msg, index) => {
+              if (msg.role === 'user') {
+                return (
+                  <UserMessageRender
+                    key={index}
+                    content={msg.content}
+                    hightWords={msg.highlightWords}
+                  />
+                );
+              }
+              return <AIMessageRender key={index} {...msg.data} />;
+            })}
+          </div>
+        ) : (
+          <LatestAssistantMessage messageList={messageList} fallbackModel={props.model} />
+        )}
       </div>
 
       <InputBarRender
-        status={inputBarStatus}
-        onStop={() => {
-          setInputBarStatus('idle');
-        }}
-        onVisible={props.inputBarVisit}
+        onVisible={inputBarVisit}
         onSend={onSend}
+        mode={viewMode}
+        onModeChange={handleModeChange}
       />
-    </>
+    </div>
   );
 };

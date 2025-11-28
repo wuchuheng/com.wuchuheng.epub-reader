@@ -16,12 +16,14 @@ export type AIMessageRenderProps = {
   };
 
   model: string;
+  hideRoleLabel?: boolean;
 };
 export const AIMessageRender: React.FC<AIMessageRenderProps> = ({
   content,
   reasoningContent,
   usage,
   model,
+  hideRoleLabel = false,
 }) => {
   // 1.1 State for copy feedback
   const [copied, setCopied] = useState(false);
@@ -48,7 +50,7 @@ export const AIMessageRender: React.FC<AIMessageRenderProps> = ({
 
   return (
     <>
-      <MessageItemContainer roleName="Agent">
+      <MessageItemContainer roleName="Agent" hideRoleLabel={hideRoleLabel}>
         <ThinkProgressing reasoningContent={reasoningContent} content={content} />
         <MarkdownRender content={content} />
         {usage && (

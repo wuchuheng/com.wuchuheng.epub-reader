@@ -1,7 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AIAgentProps } from './types/AIAgent';
 import { useSmoothScrollToBottom } from './hooks/useSmoothScroll';
-import { MessageList } from './components/MessageList/MessageList';
+import { MessageList, ViewMode } from './components/MessageList/MessageList';
 
 /**
  * AI Agent component that provides a chat interface for AI interactions.
@@ -11,6 +11,7 @@ export const AIAgent: React.FC<AIAgentProps> = (props) => {
   const scrollContainerRef: React.RefObject<HTMLDivElement> = useRef<HTMLDivElement>(null);
   const isAutoScrollRef = useRef(true);
   const isGoToBottomRef = useRef<boolean>(true);
+  const [viewMode, setViewMode] = useState<ViewMode>('simple');
   const {
     scrollToBottom,
     handleOnPauseAutoScroll,
@@ -23,19 +24,26 @@ export const AIAgent: React.FC<AIAgentProps> = (props) => {
     scrollContainerRef,
   });
 
-  // Make the scrollbar go to the bottom as the component set tup.
+  // Reset scroll position when the component sets up.
   useEffect(() => {
     if (!scrollContainerRef.current) return;
 
-    const scrollTop =
-      scrollContainerRef.current.scrollHeight - scrollContainerRef.current.clientHeight;
-    scrollContainerRef.current.scrollTop = scrollTop;
-    console.log('Initial scrollTop:', scrollTop);
+    scrollContainerRef.current.scrollTop = 0;
   }, [scrollContainerRef]);
 
   // Listen to  the message list change to trigger the scroll when in auto scroll mode.
-  const handleMessageListChange = () => {
-    // 2. Scroll the conversation to bottom with smooth easing
+  const handleMessageListChange = (mode: ViewMode) => {
+    setViewMode(mode);
+
+    if (!scrollContainerRef.current) {
+      return;
+    }
+
+    if (mode === 'simple') {
+      scrollContainerRef.current.scrollTop = 0;
+      return;
+    }
+
     if (isAutoScrollRef.current && isGoToBottomRef.current) {
       scrollToBottom();
     }
@@ -67,7 +75,9 @@ export const AIAgent: React.FC<AIAgentProps> = (props) => {
         }}
         {...props}
       />
-      <div className="w-full text-center text-sm text-gray-400">-- You've reached the end! --</div>
+      {viewMode === 'conversation' && (
+        <div className="w-full text-center text-sm text-gray-400">-- You've reached the end! --</div>
+      )}
     </div>
   );
 };
