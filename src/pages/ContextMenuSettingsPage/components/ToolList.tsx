@@ -62,21 +62,22 @@ const SortableToolItem: React.FC<SortableToolItemProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={`rounded-md border border-gray-200 px-4 py-3 transition-all duration-200 ${
-        isDragging ? 'opacity-50 shadow-lg' : 'hover:bg-gray-50'
+      className={`relative overflow-hidden rounded-lg border border-gray-200 bg-white/90 px-4 py-3 shadow-sm transition-all duration-200 ${
+        isDragging ? 'ring-2 ring-blue-200 shadow-lg' : 'hover:-translate-y-0.5 hover:shadow-md'
       }`}
     >
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex w-24 gap-2">
-            <h4 className="text-base font-medium text-gray-900">{tool.name}</h4>
-            <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
+      <span className="absolute left-0 top-0 h-full w-1 bg-blue-200" aria-hidden />
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
+        <div className="flex min-w-0 flex-1 flex-col gap-2 md:flex-row md:items-center md:gap-3">
+          <div className="flex min-w-0 items-center gap-2">
+            <h4 className="truncate text-base font-semibold text-gray-900">{tool.name}</h4>
+            <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-medium text-blue-800">
               {tool.type === 'AI' ? 'AI' : 'Iframe'}
             </span>
           </div>
 
           {/* Default Toggles */}
-          <div className="ml-4 flex items-center gap-4 border-l border-gray-200 pl-4">
+          <div className="flex flex-wrap items-center gap-4 text-xs text-gray-600">
             <label className="flex cursor-pointer select-none items-center gap-1.5">
               <input
                 type="checkbox"
@@ -88,7 +89,7 @@ const SortableToolItem: React.FC<SortableToolItemProps> = ({
                 onClick={(e) => e.stopPropagation()}
                 className="h-4 w-4 cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
-              <span className="text-xs font-medium text-gray-600">Word</span>
+              <span className="font-medium">Word</span>
             </label>
 
             <label className="flex cursor-pointer select-none items-center gap-1.5">
@@ -102,28 +103,28 @@ const SortableToolItem: React.FC<SortableToolItemProps> = ({
                 onClick={(e) => e.stopPropagation()}
                 className="h-4 w-4 cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
-              <span className="text-xs font-medium text-gray-600">Sentence</span>
+              <span className="font-medium">Sentence</span>
             </label>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 self-end sm:self-auto">
+        <div className="flex items-center gap-2 self-start md:self-center">
           <Link
             to={`/settings/contextmenu/${index}/edit`}
-            className="rounded-md bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
+            className="rounded-md border border-gray-200 bg-white px-3 py-1 text-sm font-medium text-gray-700 shadow-sm transition hover:border-blue-200 hover:text-blue-700"
           >
             Edit
           </Link>
           <button
             onClick={() => onToolRemove(index)}
-            className="rounded-md bg-red-50 px-3 py-1 text-sm font-medium text-red-600 transition-colors hover:bg-red-100"
+            className="rounded-md bg-red-50 px-3 py-1 text-sm font-medium text-red-600 transition hover:bg-red-100"
           >
             Remove
           </button>
           <div
             {...attributes}
             {...listeners}
-            className="cursor-move touch-none p-1 text-gray-400 hover:text-gray-600"
+            className="cursor-move touch-none rounded-md p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
             aria-label="Drag to reorder"
           >
             <DragHandle />
@@ -165,8 +166,9 @@ export const ToolList: React.FC<ToolListProps> = ({
   // 1. Input handling
   if (tools.length === 0) {
     return (
-      <div className="py-8 text-center text-gray-500">
-        No custom tools configured yet. Add your first tool below!
+      <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-gray-200 bg-white/70 px-6 py-8 text-center text-gray-600">
+        <div className="mb-2 text-lg font-semibold text-gray-800">No tools yet</div>
+        <p className="text-sm text-gray-500">Add your first tool to show it in the reader menu.</p>
       </div>
     );
   }

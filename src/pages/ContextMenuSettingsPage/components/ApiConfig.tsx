@@ -28,6 +28,8 @@ interface ApiConfigProps {
   onApiKeyChange: (key: string) => void;
   /** Handler for API status updates */
   onStatusChange?: (status: ApiStatus | null) => void;
+  /** Increment to re-run validation/tests on demand */
+  testNonce?: number;
 }
 
 /**
@@ -56,6 +58,7 @@ export const ApiConfig: React.FC<ApiConfigProps> = ({
   onApiEndpointChange,
   onApiKeyChange,
   onStatusChange,
+  testNonce = 0,
 }) => {
   // Field error states (only show errors)
   const [endpointError, setEndpointError] = useState<string>('');
@@ -189,7 +192,7 @@ export const ApiConfig: React.FC<ApiConfigProps> = ({
     // Debounce the API test
     const timeoutId = setTimeout(testApiConnection, 1000);
     return () => clearTimeout(timeoutId);
-  }, [apiEndpoint, apiKey, selectedProvider, onStatusChange]);
+  }, [apiEndpoint, apiKey, selectedProvider, onStatusChange, testNonce]);
 
   return (
     <div className="space-y-4">
@@ -203,17 +206,21 @@ export const ApiConfig: React.FC<ApiConfigProps> = ({
           placeholder="Select an AI provider..."
           className="w-full"
         />
-        {selectedProvider && selectedProvider.docsUrl && (
-          <div className="mt-1 text-xs text-gray-500">
-            <span>Documentation: </span>
-            <a
-              href={selectedProvider.docsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:underline"
-            >
-              {selectedProvider.docsUrl}
-            </a>
+        {selectedProvider && (
+          <div className="mt-2 text-xs text-gray-600">
+            <div className="font-medium text-gray-700">
+              {selectedProvider.baseUrl ? `Base URL: ${selectedProvider.baseUrl}` : 'Custom OpenAI-compatible service'}
+            </div>
+            {selectedProvider.docsUrl && (
+              <a
+                href={selectedProvider.docsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+              >
+                View provider docs
+              </a>
+            )}
           </div>
         )}
       </div>

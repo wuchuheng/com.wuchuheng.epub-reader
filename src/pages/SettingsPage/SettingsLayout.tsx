@@ -45,7 +45,7 @@ export const SettingsLayout: React.FC = () => {
         <div className="flex flex-col overflow-hidden rounded-lg bg-white shadow md:flex-row">
           {/* Left Navigation Rail */}
           <nav
-            className="w-full border-b border-gray-200 bg-white md:w-64 md:min-h-[calc(100vh-12rem)] md:border-b-0 md:border-r"
+            className="w-full border-b border-gray-200 bg-white md:w-56 md:min-h-[calc(100vh-12rem)] md:border-b-0 md:border-r"
             aria-label="Settings sections"
           >
             <div className="flex flex-col p-2 space-y-1">
