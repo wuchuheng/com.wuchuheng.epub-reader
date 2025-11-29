@@ -404,8 +404,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
       return () => observer.disconnect();
   }, [viewLayout, windowSize]); // Re-attach when layout or window size changes
 
-  const resolveModel = (item: AISettingItem): string =>
-    props.defaultModel || item.model || 'gpt-3.5-turbo';
+  const resolveModel = (item: AISettingItem): string => props.defaultModel || item.model || '';
   const maximized = windowState === 'maximized';
   const windowStyle: React.CSSProperties = {
     width: `${windowSize.width}px`,

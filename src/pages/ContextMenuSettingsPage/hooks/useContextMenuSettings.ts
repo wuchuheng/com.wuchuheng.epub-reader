@@ -12,9 +12,11 @@ export const useContextMenuSettings = () => {
   const [settings, setSettings] = useState<ContextMenuSettings>({
     api: '',
     key: '',
+    defaultModel: '',
     items: [],
     providerId: undefined,
     providerApiKeyCache: {},
+    providerDefaultModelCache: {},
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -32,25 +34,12 @@ export const useContextMenuSettings = () => {
         setError(null);
         const savedSettings = await getContextMenuSettings();
 
-        // Migration logic:
-        // 1. Default Model fallback
-        let defaultModel = savedSettings.defaultModel;
-        const hasAITools = savedSettings.items?.some((item) => item.type === 'AI');
-        
-        if (!defaultModel && hasAITools) {
-          const firstAITool = savedSettings.items?.find((item) => item.type === 'AI' && (item as AISettingItem).model);
-          if (firstAITool) {
-             defaultModel = (firstAITool as AISettingItem).model;
-          } else {
-             defaultModel = 'gpt-3.5-turbo';
-          }
-        }
-
-        // 2. Provider Migration
-        let providerId = savedSettings.providerId;
-        let providerApiKeyCache = savedSettings.providerApiKeyCache || {};
         const api = savedSettings.api || '';
         const key = savedSettings.key || '';
+
+        let providerId = savedSettings.providerId;
+        let providerApiKeyCache = savedSettings.providerApiKeyCache || {};
+        let providerDefaultModelCache = savedSettings.providerDefaultModelCache || {};
 
         if (!providerId) {
           // Infer 'custom' if missing, and migrate existing config
@@ -61,14 +50,40 @@ export const useContextMenuSettings = () => {
           }
         }
 
+        // Ensure active provider has a cached key
+        if (key && !providerApiKeyCache[providerId]) {
+          providerApiKeyCache = { ...providerApiKeyCache, [providerId]: key };
+        }
+        const activeKey = providerApiKeyCache[providerId] || '';
+
+        // Seed default model cache from legacy fields
+        const cachedDefaultModel = providerDefaultModelCache[providerId] || '';
+        let defaultModel = cachedDefaultModel;
+        if (!defaultModel) {
+          const legacyDefaultModel = savedSettings.defaultModel;
+          const firstAITool = savedSettings.items?.find(
+            (item) => item.type === 'AI' && (item as AISettingItem).model
+          ) as AISettingItem | undefined;
+          const migratedModel = legacyDefaultModel || firstAITool?.model || '';
+
+          if (migratedModel) {
+            defaultModel = migratedModel;
+            providerDefaultModelCache = {
+              ...providerDefaultModelCache,
+              [providerId]: migratedModel,
+            };
+          }
+        }
+
         // Ensure we have valid settings object
         const validSettings: ContextMenuSettings = {
           api,
-          key,
-          defaultModel: defaultModel || '',
+          key: activeKey,
+          defaultModel,
           items: savedSettings?.items || [],
           providerId,
           providerApiKeyCache,
+          providerDefaultModelCache,
         };
 
         setSettings(validSettings);
@@ -83,6 +98,7 @@ export const useContextMenuSettings = () => {
           items: [],
           providerId: 'custom',
           providerApiKeyCache: {},
+          providerDefaultModelCache: {},
         });
       } finally {
         setIsLoading(false);
@@ -116,12 +132,14 @@ export const useContextMenuSettings = () => {
 
       // 2. Restore Cached Key
       const cachedKey = prev.providerApiKeyCache?.[newProviderId] || '';
+      const cachedModel = prev.providerDefaultModelCache?.[newProviderId] || '';
 
       return {
         ...prev,
         providerId: newProviderId,
         api: newBaseUrl,
         key: cachedKey,
+        defaultModel: cachedModel,
       };
     });
   }, []);
@@ -151,9 +169,21 @@ export const useContextMenuSettings = () => {
 
   const updateDefaultModel = useCallback(
     (model: string) => {
-      updateSettings('defaultModel', model);
+      setSettings((prev) => {
+        const currentProviderId = prev.providerId || 'custom';
+        const updatedCache = {
+          ...prev.providerDefaultModelCache,
+          [currentProviderId]: model,
+        };
+
+        return {
+          ...prev,
+          defaultModel: model,
+          providerDefaultModelCache: updatedCache,
+        };
+      });
     },
-    [updateSettings]
+    []
   );
 
   /**

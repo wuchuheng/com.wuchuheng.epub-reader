@@ -188,7 +188,7 @@ export const ContextMenuSettingsPage: React.FC = () => {
                   onChange={contextMenuSettings.updateDefaultModel}
                   apiEndpoint={contextMenuSettings.settings.api || ''}
                   apiKey={contextMenuSettings.settings.key || ''}
-                  placeholder="Search or enter model name (e.g. gpt-3.5-turbo)"
+                  placeholder="Search or enter model name (e.g. gpt-4o-mini)"
                 />
               </div>
 

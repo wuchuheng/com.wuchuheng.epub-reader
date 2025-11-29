@@ -83,6 +83,7 @@ const buildDefaultContextMenuSettings = (): ContextMenuSettings => ({
   items: applyMenuItemDefaults(menuItemDefaultConfig),
   providerId: 'custom',
   providerApiKeyCache: {},
+  providerDefaultModelCache: {},
 });
 
 const buildDefaultConfig = (books: BookMetadata[] = []): OPFSConfig => ({
@@ -414,7 +415,16 @@ export async function updateContextMenuSettings(settings: Partial<ContextMenuSet
     // Ensure required fields are at least present if they were missing in partial
     api: settings.api ?? config.settings.contextMenu.api ?? defaults.api,
     key: settings.key ?? config.settings.contextMenu.key ?? defaults.key,
+    defaultModel: settings.defaultModel ?? config.settings.contextMenu.defaultModel ?? defaults.defaultModel,
     items: applyMenuItemDefaults(mergedItems),
+    providerApiKeyCache:
+      settings.providerApiKeyCache ??
+      config.settings.contextMenu.providerApiKeyCache ??
+      defaults.providerApiKeyCache,
+    providerDefaultModelCache:
+      settings.providerDefaultModelCache ??
+      config.settings.contextMenu.providerDefaultModelCache ??
+      defaults.providerDefaultModelCache,
   };
 
   config.lastSync = Date.now();
@@ -440,6 +450,8 @@ export async function getContextMenuSettings(): Promise<ContextMenuSettings> {
     defaultModel: contextMenuSettings?.defaultModel ?? defaults.defaultModel,
     providerId: contextMenuSettings?.providerId ?? defaults.providerId,
     providerApiKeyCache: contextMenuSettings?.providerApiKeyCache ?? defaults.providerApiKeyCache,
+    providerDefaultModelCache:
+      contextMenuSettings?.providerDefaultModelCache ?? defaults.providerDefaultModelCache,
     items,
   };
 }

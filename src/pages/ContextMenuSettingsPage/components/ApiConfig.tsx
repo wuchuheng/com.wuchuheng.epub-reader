@@ -205,6 +205,7 @@ export const ApiConfig: React.FC<ApiConfigProps> = ({
           options={providerOptions}
           placeholder="Select an AI provider..."
           className="w-full"
+          isFilterable={false}
         />
         {selectedProvider && (
           <div className="mt-2 text-xs text-gray-600">

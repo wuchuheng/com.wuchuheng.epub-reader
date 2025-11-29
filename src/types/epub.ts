@@ -100,13 +100,15 @@ export type ContextMenuSettings = {
   api: string;
   // The authentication key required for API access.
   key: string;
-  // Global default model for all AI tools
+  // Default model for the currently selected provider
   defaultModel?: string;
   
   // The ID of the selected AI provider
   providerId?: AiProviderId;
   // Cache of API keys for different providers
   providerApiKeyCache?: Partial<Record<AiProviderId, string>>;
+  // Cache of default models keyed by provider
+  providerDefaultModelCache?: Partial<Record<AiProviderId, string>>;
 
   // An array of ContextMenuItem objects representing individual menu items.
   items: ContextMenuItem[];

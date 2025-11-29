@@ -15,6 +15,7 @@ interface SearchableSelectProps {
   disabled?: boolean;
   className?: string;
   renderOption?: (option: SearchableSelectOption) => React.ReactNode;
+  isFilterable?: boolean;
 }
 
 export const SearchableSelect: React.FC<SearchableSelectProps> = ({
@@ -26,12 +27,18 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   disabled = false,
   className = '',
   renderOption,
+  isFilterable = true,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredOptions, setFilteredOptions] = useState<SearchableSelectOption[]>(options);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [dropdownDirection, setDropdownDirection] = useState<'up' | 'down'>('down');
+
+  useEffect(() => {
+    setFilteredOptions(options);
+  }, [options]);
 
   // Initialize search term based on current value's label or value
   useEffect(() => {
@@ -53,8 +60,8 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
         opt.value.toLowerCase().includes(term) ||
         (opt.note && opt.note.toLowerCase().includes(term))
     );
-    setFilteredOptions(filtered);
-  }, [searchTerm, options, isOpen]);
+    setFilteredOptions(isFilterable ? filtered : options);
+  }, [searchTerm, options, isOpen, isFilterable]);
 
   // Handle outside clicks
   useEffect(() => {
@@ -70,7 +77,19 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [value, options]);
 
+  useEffect(() => {
+    if (!isOpen || !containerRef.current) {
+      return;
+    }
+    const rect = containerRef.current.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+    const prefersUpward = spaceBelow < 200 && spaceAbove > spaceBelow;
+    setDropdownDirection(prefersUpward ? 'up' : 'down');
+  }, [isOpen, options.length]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!isFilterable) return;
     setSearchTerm(e.target.value);
     setIsOpen(true);
   };
@@ -89,6 +108,18 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
     setIsOpen(false);
   };
 
+  const handleInputClick = () => {
+    if (disabled) return;
+    if (!isFilterable) {
+      setIsOpen(true);
+    }
+  };
+
+  const dropdownPosition =
+    dropdownDirection === 'up'
+      ? 'bottom-full mb-1'
+      : 'top-full mt-1';
+
   return (
     <div className={`relative ${className}`} ref={containerRef}>
       {label && <label className="mb-1 block text-sm font-medium text-gray-700">{label}</label>}
@@ -100,8 +131,10 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
             disabled ? 'cursor-not-allowed bg-gray-100 text-gray-500' : 'text-gray-900'
           }`}
           value={searchTerm}
+          readOnly={!isFilterable}
           onChange={handleInputChange}
           onFocus={handleInputFocus}
+          onClick={handleInputClick}
           placeholder={placeholder}
           disabled={disabled}
         />
@@ -120,7 +153,9 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
       </div>
 
       {isOpen && !disabled && (
-        <div className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+        <div
+          className={`absolute z-50 ${dropdownPosition} max-h-60 w-full overflow-auto rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none`}
+        >
           {filteredOptions.length === 0 ? (
             <div className="px-4 py-2 text-sm text-gray-500">No options found</div>
           ) : (
