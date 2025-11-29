@@ -13,18 +13,18 @@ export const ReaderHelpOverlay: React.FC<ReaderHelpOverlayProps> = ({ onClose })
     }}
   >
     {/* Left Zone - Previous Page */}
-    <div className="flex h-full w-[30%] items-center justify-center border-r border-white/30 hover:bg-white/10">
-      <span className="select-none text-lg font-bold drop-shadow-md">Previous</span>
+    <div className="flex h-full w-[20%] items-center justify-center border-r border-white/30 hover:bg-white/10">
+      <span className="select-none text-lg font-bold drop-shadow-md">Previous Page</span>
     </div>
 
     {/* Center Zone - Menu */}
-    <div className="flex h-full w-[40%] items-center justify-center border-r border-white/30 hover:bg-white/10">
+    <div className="flex h-full w-[60%] items-center justify-center border-r border-white/30 hover:bg-white/10">
       <span className="select-none text-lg font-bold drop-shadow-md">Menu</span>
     </div>
 
     {/* Right Zone - Next Page */}
-    <div className="flex h-full w-[30%] items-center justify-center hover:bg-white/10">
-      <span className="select-none text-lg font-bold drop-shadow-md">Next</span>
+    <div className="flex h-full w-[20%] items-center justify-center hover:bg-white/10">
+      <span className="select-none text-lg font-bold drop-shadow-md">Next Page</span>
     </div>
   </div>
 );

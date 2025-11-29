@@ -46,6 +46,7 @@ type UseReaderProps = {
   book: Book;
   onClick?: (event: MouseEvent) => void;
   onSelect: (selectedInfo: SelectInfo) => void;
+  onSelectionActivity?: () => void;
 };
 
 export const latestReadingLocation = createStorageManager('latestReadingLocation_');
@@ -101,11 +102,13 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
   const currentLocationRef = useRef<RenditionLocation | null>(null);
   const onSelectRef = useRef(props.onSelect);
   const onClickRef = useRef(props.onClick);
+  const onSelectionActivityRef = useRef(props.onSelectionActivity);
 
   useEffect(() => {
     onSelectRef.current = props.onSelect;
     onClickRef.current = props.onClick;
-  }, [props.onSelect, props.onClick]);
+    onSelectionActivityRef.current = props.onSelectionActivity;
+  }, [props.onSelect, props.onClick, props.onSelectionActivity]);
 
   // State
   const [totalPages, setTotalPages] = useState<number>(0);
@@ -133,6 +136,7 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
 
   const onSelectionCompleted = useCallback(
     (selectedInfo: SelectInfo) => {
+      onSelectionActivityRef.current?.();
       onSelectionCompletedDebounced(selectedInfo);
     },
     [onSelectionCompletedDebounced]

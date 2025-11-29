@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { ReaderHeader } from './components/ReaderHeader';
 import { ReaderHelpOverlay } from './components/ReaderHelpOverlay';
@@ -66,6 +66,12 @@ type ContextMenuEntry = ContextMenu & {
   selectionId: number;
 };
 
+const clampRatio = (value: number) => {
+  if (value < 0) return 0;
+  if (value > 1) return 1;
+  return value;
+};
+
 const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
   const [menuVisible, setMenuVisible] = useState<boolean>(false);
   const [tocVisible, setTocVisible] = useState(false);
@@ -79,6 +85,10 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
   const selectionCounterRef = useRef(0);
   const menuIdRef = useRef(0);
   const lastSelectionTimeRef = useRef(0);
+
+  const markSelectionActivity = useCallback(() => {
+    lastSelectionTimeRef.current = Date.now();
+  }, []);
 
   const onToggleToc = () => {
     if (tocVisible) {
@@ -174,9 +184,7 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
   };
 
   const updateTabIndex = (id: number, tabIndex: number) => {
-    setMenuStack((prev) =>
-      prev.map((entry) => (entry.id === id ? { ...entry, tabIndex } : entry))
-    );
+    setMenuStack((prev) => prev.map((entry) => (entry.id === id ? { ...entry, tabIndex } : entry)));
   };
 
   const {
@@ -197,7 +205,46 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
       setMenuVisible(false);
       setTocVisible(false);
     },
+    onSelectionActivity: markSelectionActivity,
   });
+
+  const getViewportRatio = useCallback((event: MouseEvent) => {
+    const view = event.view || window;
+    const frameElement = view.frameElement as HTMLElement | null;
+    const frameRect = frameElement?.getBoundingClientRect();
+    const fallbackWidth =
+      view.visualViewport?.width ||
+      view.innerWidth ||
+      window.innerWidth ||
+      0;
+
+    let widthSource = 'fallback';
+    let sourceWidth = fallbackWidth;
+    let relativeX = event.clientX;
+
+    if (frameRect && frameRect.width > 0) {
+      widthSource = 'frameRect';
+      sourceWidth = frameRect.width;
+      relativeX = event.clientX - frameRect.left;
+    }
+
+    const ratio = sourceWidth ? clampRatio(relativeX / sourceWidth) : 0.5;
+
+    console.log('Zone debug', {
+      clientX: event.clientX,
+      screenX: event.screenX,
+      pageX: event.pageX,
+      ratio,
+      widthSource,
+      sourceWidth,
+      frameLeft: frameRect?.left ?? null,
+      frameWidth: frameRect?.width ?? null,
+      relativeX,
+      fallbackWidth,
+    });
+
+    return ratio;
+  }, []);
 
   // Smart Zone Click Handler
   useEffect(() => {
@@ -220,27 +267,22 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
       }
 
       // 3. Smart Zones
-      // Use the window width from the event's source window (handles iframe correctly)
-      const viewWidth = event.view ? event.view.innerWidth : window.innerWidth;
-      const x = event.clientX;
-      
-      const leftBoundary = viewWidth * 0.3;
-      const rightBoundary = viewWidth * 0.7;
+      const ratio = getViewportRatio(event);
 
-      console.log(`Click debug: x=${x}, viewWidth=${viewWidth}, ratio=${x/viewWidth}`);
+      console.log(`Zone Interaction: ratio=${ratio.toFixed(3)}`);
 
-      if (x < leftBoundary) {
-        console.log('Action: Prev');
+      if (ratio < 0.2) {
+        console.log('Trigger: Prev Page');
         onPrev();
-      } else if (x > rightBoundary) {
-        console.log('Action: Next');
+      } else if (ratio > 0.8) {
+        console.log('Trigger: Next Page');
         onNext();
       } else {
-        console.log('Action: Menu');
+        console.log('Trigger: Toggle Menu');
         setMenuVisible((prev) => !prev);
       }
     };
-  }, [onPrev, onNext, tocVisible, menuStack.length]);
+  }, [getViewportRatio, onPrev, onNext, tocVisible, menuStack.length]);
 
   useEffect(() => {
     if (activeTools.length === 0) {
