@@ -51,7 +51,12 @@ export const EpubReader: React.FC = () => {
   );
 
   if (!bookId || error) return <InvalidBookError error={error} />;
-  if (!book) return <Loading />;
+  if (!book)
+    return (
+      <div className="flex h-screen w-screen flex-1 items-center justify-center bg-gray-50">
+        <Loading />
+      </div>
+    );
 
   return <EpubReaderRender book={book!} />;
 };
@@ -212,11 +217,7 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
     const view = event.view || window;
     const frameElement = view.frameElement as HTMLElement | null;
     const frameRect = frameElement?.getBoundingClientRect();
-    const fallbackWidth =
-      view.visualViewport?.width ||
-      view.innerWidth ||
-      window.innerWidth ||
-      0;
+    const fallbackWidth = view.visualViewport?.width || view.innerWidth || window.innerWidth || 0;
 
     let widthSource = 'fallback';
     let sourceWidth = fallbackWidth;
