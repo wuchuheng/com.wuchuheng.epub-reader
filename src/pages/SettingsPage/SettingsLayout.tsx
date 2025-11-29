@@ -25,11 +25,6 @@ const navItems: SettingsNavCallback[] = [
     description: 'Configure AI providers and custom tools',
   },
   {
-    label: 'Changelog',
-    path: '/settings/changelog',
-    description: 'Recent releases and change history',
-  },
-  {
     label: 'About',
     path: '/settings/about',
     description: 'App information and version',
@@ -41,7 +36,10 @@ export const SettingsLayout: React.FC = () => {
 
   // Determine breadcrumbs based on current path
   const getBreadcrumbs = () => {
-    const base = [{ label: 'Home', path: '/' }, { label: 'Settings', path: '/settings' }];
+    const base = [
+      { label: 'Home', path: '/' },
+      { label: 'Settings', path: '/settings' },
+    ];
     const current = navItems.find((item) => item.path === location.pathname);
     if (current) {
       base.push({ label: current.label, path: current.path });
@@ -55,10 +53,10 @@ export const SettingsLayout: React.FC = () => {
         <div className="flex flex-col overflow-hidden rounded-lg bg-white shadow md:flex-row">
           {/* Left Navigation Rail */}
           <nav
-            className="w-full border-b border-gray-200 bg-white md:w-56 md:min-h-[calc(100vh-12rem)] md:border-b-0 md:border-r"
+            className="w-full border-b border-gray-200 bg-white md:min-h-[calc(100vh-12rem)] md:w-56 md:border-b-0 md:border-r"
             aria-label="Settings sections"
           >
-            <div className="flex flex-col p-2 space-y-1">
+            <div className="flex flex-col space-y-1 p-2">
               {navItems.map((item) => (
                 <NavLink
                   key={item.path}
@@ -66,7 +64,7 @@ export const SettingsLayout: React.FC = () => {
                   className={({ isActive }) =>
                     `block rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                       isActive
-                        ? 'bg-blue-50 text-blue-700 border border-blue-100'
+                        ? 'border border-blue-100 bg-blue-50 text-blue-700'
                         : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                     }`
                   }
