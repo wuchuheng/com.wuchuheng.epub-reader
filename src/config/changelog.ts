@@ -3,7 +3,8 @@ import { type ChangelogVersion } from '../types/changelog';
 const changelogV1_0_0: ChangelogVersion = {
   version: '1.0.0',
   releasedAt: '2025-11-29',
-  summary: 'Major context menu drilldown, reader navigation zones, and settings redesign for the 1.0.0 release.',
+  summary:
+    'Major context menu drilldown, reader navigation zones, and settings redesign for the 1.0.0 release.',
   changes: {
     feat: [
       {
@@ -11,19 +12,23 @@ const changelogV1_0_0: ChangelogVersion = {
           'Context menu drilldown with stacked windows, drag-to-move chrome, and simple view switching for nested AI queries.',
       },
       {
-        title: 'Reader interaction zones with help overlay and protected selections for smoother navigation.',
+        title:
+          'Reader interaction zones with help overlay and protected selections for smoother navigation.',
       },
       {
-        title: 'Context menu settings redesign with tool enable switches, defaults, and drag-and-drop layout.',
+        title:
+          'Context menu settings redesign with tool enable switches, defaults, and drag-and-drop layout.',
       },
       {
         title: 'Storage overview with cache reset plus improved About and settings shell.',
       },
       {
-        title: 'AI provider dropdown with caching, default tools, and a global default model selector.',
+        title:
+          'AI provider dropdown with caching, default tools, and a global default model selector.',
       },
       {
-        title: 'Simplified uploads, icon upload button, and mobile volume key navigation on the bookshelf.',
+        title:
+          'Simplified uploads, icon upload button, and mobile volume key navigation on the bookshelf.',
       },
     ],
     fix: [

@@ -1,6 +1,10 @@
 import React from 'react';
 import { CHANGELOG_CONFIG, LATEST_CHANGELOG } from '../../config/changelog';
-import { type ChangelogCategory, type ChangelogEntry, type ChangelogVersion } from '../../types/changelog';
+import {
+  type ChangelogCategory,
+  type ChangelogEntry,
+  type ChangelogVersion,
+} from '../../types/changelog';
 
 const categoryLabels: Record<ChangelogCategory, string> = {
   feat: 'Features',
@@ -12,7 +16,15 @@ const categoryLabels: Record<ChangelogCategory, string> = {
   style: 'Style',
 };
 
-const categoryOrder: ChangelogCategory[] = ['feat', 'fix', 'refactor', 'docs', 'chore', 'perf', 'style'];
+const categoryOrder: ChangelogCategory[] = [
+  'feat',
+  'fix',
+  'refactor',
+  'docs',
+  'chore',
+  'perf',
+  'style',
+];
 
 type CategoryCardProps = {
   category: ChangelogCategory;
@@ -25,7 +37,9 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, entries }) => (
       <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-700">
         {categoryLabels[category]}
       </span>
-      <span className="text-xs text-gray-500">{entries.length} item{entries.length === 1 ? '' : 's'}</span>
+      <span className="text-xs text-gray-500">
+        {entries.length} item{entries.length === 1 ? '' : 's'}
+      </span>
     </div>
     <ul className="space-y-2 text-sm text-gray-700">
       {entries.map((entry) => (
@@ -53,7 +67,8 @@ const VersionMeta: React.FC<{ version: ChangelogVersion }> = ({ version }) => (
 export const ChangelogPage: React.FC = () => {
   const previousVersions = CHANGELOG_CONFIG.slice(1);
   const nonEmptyCategories = categoryOrder.filter(
-    (category) => LATEST_CHANGELOG.changes[category] && LATEST_CHANGELOG.changes[category].length > 0,
+    (category) =>
+      LATEST_CHANGELOG.changes[category] && LATEST_CHANGELOG.changes[category].length > 0
   );
 
   return (
@@ -75,7 +90,11 @@ export const ChangelogPage: React.FC = () => {
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           {nonEmptyCategories.map((category) => (
-            <CategoryCard key={category} category={category} entries={LATEST_CHANGELOG.changes[category]} />
+            <CategoryCard
+              key={category}
+              category={category}
+              entries={LATEST_CHANGELOG.changes[category]}
+            />
           ))}
         </div>
       </div>
@@ -84,7 +103,9 @@ export const ChangelogPage: React.FC = () => {
         <div className="flex items-center justify-between">
           <h4 className="text-base font-semibold text-gray-900">Previous versions</h4>
           <span className="text-xs text-gray-500">
-            {previousVersions.length === 0 ? 'No earlier versions recorded yet.' : `${previousVersions.length} listed`}
+            {previousVersions.length === 0
+              ? 'No earlier versions recorded yet.'
+              : `${previousVersions.length} listed`}
           </span>
         </div>
         {previousVersions.length === 0 ? (
@@ -100,7 +121,9 @@ export const ChangelogPage: React.FC = () => {
                     <VersionMeta version={version} />
                     <p className="text-sm font-medium text-gray-900">{version.summary}</p>
                   </div>
-                  <span className="text-xs text-gray-500">{version.changes.feat.length} featured updates</span>
+                  <span className="text-xs text-gray-500">
+                    {version.changes.feat.length} featured updates
+                  </span>
                 </div>
               </div>
             ))}
