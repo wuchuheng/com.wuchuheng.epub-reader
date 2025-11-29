@@ -9,7 +9,7 @@ export type SetupRenditionEventsProps = {
   rendition: Rendition;
   book: Book;
   bookId: string;
-  onClick: (() => void) | undefined;
+  onClick: ((event: MouseEvent) => void) | undefined;
   onSelectionCompleted: (selectInfo: SelectInfo) => void;
   setter: {
     setCurrentPage: (page: number) => void;
@@ -46,8 +46,8 @@ export const setupRenditionEvents = (props: SetupRenditionEventsProps) => {
       props.setter.setCurrentChapterHref(current.href);
     }
 
-    props.rendition.on('click', () => {
-      if (props.onClick) props.onClick();
+    props.rendition.on('click', (event: MouseEvent) => {
+      if (props.onClick) props.onClick(event);
     });
 
     if (isMobileDevice()) {

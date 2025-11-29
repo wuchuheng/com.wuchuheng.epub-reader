@@ -8,10 +8,14 @@ type OnExtractSelection = (selectedInfo: SelectInfo) => void;
  * @param onExtractSelection Callback function to handle the extracted selection.
  * @returns
  */
-export const handleSelectionEnd = (doc: Document, onExtractSelection: OnExtractSelection) => {
+export const handleSelectionEnd = (
+  doc: Document,
+  onExtractSelection: OnExtractSelection,
+  clickPos?: { x: number; y: number }
+) => {
   // 2. Handle logic.
   // 2.1 Adjust selection to word boundaries
-  const result = extractSelectionToWords(doc);
+  const result = extractSelectionToWords(doc, clickPos);
 
   if (!result) {
     return;
@@ -23,14 +27,34 @@ export const handleSelectionEnd = (doc: Document, onExtractSelection: OnExtractS
 /**
  * Extracts the selected text and its context from the document.
  * @param doc The document to extract selection from.
+ * @param clickPos Optional click coordinates to validate proximity.
  * @returns The extracted selection information or undefined if no valid selection exists.
  */
-function extractSelectionToWords(doc: Document): SelectInfo | undefined {
+function extractSelectionToWords(
+  doc: Document,
+  clickPos?: { x: number; y: number }
+): SelectInfo | undefined {
   // 1. Input handling
   const selection = doc.getSelection();
   if (!selection || selection.rangeCount === 0) return;
 
   const range = selection.getRangeAt(0);
+
+  // 1.1 Check for empty space click (Collapsed selection not touching a word)
+  if (selection.isCollapsed && clickPos) {
+    const rect = range.getBoundingClientRect();
+
+    // Calculate Euclidean distance to the closest point on the rect (simplified as point/line)
+    // Rect for collapsed range has 0 width, so left=right.
+    const distX = Math.max(rect.left - clickPos.x, 0, clickPos.x - rect.right);
+    const distY = Math.max(rect.top - clickPos.y, 0, clickPos.y - rect.bottom);
+    const distance = Math.sqrt(distX * distX + distY * distY);
+
+    // If the click is too far from the nearest text caret position, ignore it (allow Interaction Zones)
+    if (distance > 10) {
+      return undefined;
+    }
+  }
 
   // 2. Core processing
   // 2.1 Adjust start to word boundaries

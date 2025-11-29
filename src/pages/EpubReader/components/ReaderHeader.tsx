@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 interface ReaderHeaderProps {
   visible: boolean;
   onOpenToc: () => void;
+  onHelpClick: () => void;
 }
 
 /**
@@ -55,6 +56,13 @@ export const ReaderHeader: React.FC<ReaderHeaderProps> = (props) => {
           </div>
 
           <div className="flex items-center space-x-4">
+            <button
+              onClick={props.onHelpClick}
+              className="p-2 text-gray-600 hover:text-gray-900"
+              title="Help"
+            >
+              <Icons.QuestionMark />
+            </button>
             <button
               onClick={handleFullscreen}
               className="p-2 text-gray-600 hover:text-gray-900"

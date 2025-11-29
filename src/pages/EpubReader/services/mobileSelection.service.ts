@@ -57,7 +57,7 @@ export const setupMobileTextSelection = (props: SetupRenditionEventsProps, conte
     }
   };
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = (e: TouchEvent) => {
     const duration = Date.now() - touchState.startTime;
 
     // 1. Input validation and cleanup
@@ -68,9 +68,17 @@ export const setupMobileTextSelection = (props: SetupRenditionEventsProps, conte
 
     // 2. Core processing
     if (touchState.isLongPress) {
-      completeSelection(document, props.onSelectionCompleted);
+      completeSelection(
+        document,
+        props.onSelectionCompleted,
+        touchState.startPos // Use startPos for long press
+      );
     } else if (duration < TOUCH_TIMING.REGULAR_TAP_THRESHOLD) {
-      completeSelection(document, props.onSelectionCompleted);
+      completeSelection(
+        document,
+        props.onSelectionCompleted,
+        { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY } // Use release pos for tap
+      );
     }
 
     // 3. State reset
@@ -158,7 +166,8 @@ const extendSelection = (touch: Touch, document: Document, window: Window) => {
  */
 const completeSelection = (
   document: Document,
-  onSelectionCompleted: (selectInfo: SelectInfo) => void
+  onSelectionCompleted: (selectInfo: SelectInfo) => void,
+  lastTouchPos?: { x: number; y: number }
 ) => {
   // 1. Input validation
   if (!document || typeof onSelectionCompleted !== 'function') {
@@ -169,7 +178,7 @@ const completeSelection = (
   // 2. Delayed processing
   setTimeout(() => {
     // 3. Callback execution
-    handleSelectionEnd(document, onSelectionCompleted);
+    handleSelectionEnd(document, onSelectionCompleted, lastTouchPos);
   }, TOUCH_TIMING.SELECTION_DELAY);
 };
 

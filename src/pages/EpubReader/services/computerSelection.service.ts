@@ -11,9 +11,9 @@ export const handleComputerSelection = (props: SetupRenditionEventsProps, iframe
     handleSelectionEnd(doc, props.onSelectionCompleted);
   });
 
-  props.rendition.on('mouseup', (_event: MouseEvent) => {
+  props.rendition.on('mouseup', (event: MouseEvent) => {
     logger.log(`Mouse up event detected`);
     const doc = iframeView.document;
-    handleSelectionEnd(doc, props.onSelectionCompleted);
+    handleSelectionEnd(doc, props.onSelectionCompleted, { x: event.clientX, y: event.clientY });
   });
 };

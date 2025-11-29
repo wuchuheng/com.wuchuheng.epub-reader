@@ -44,7 +44,7 @@ type UseReaderReturn = {
 
 type UseReaderProps = {
   book: Book;
-  onClick?: () => void;
+  onClick?: (event: MouseEvent) => void;
   onSelect: (selectedInfo: SelectInfo) => void;
 };
 
@@ -150,7 +150,7 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
       book: props.book,
       bookId: bookId!,
       onSelectionCompleted,
-      onClick: () => onClickRef.current?.(),
+      onClick: (event: MouseEvent) => onClickRef.current?.(event),
       setter: {
         setCurrentPage,
         setCurrentChapterHref,

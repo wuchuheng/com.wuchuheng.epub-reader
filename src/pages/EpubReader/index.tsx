@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { ReaderHeader } from './components/ReaderHeader';
+import { ReaderHelpOverlay } from './components/ReaderHelpOverlay';
 import { Book } from 'epubjs';
 import { Loading } from './components/Loading';
 import { getBookByBookId } from '../../services/EPUBMetadataService';
@@ -68,6 +69,7 @@ type ContextMenuEntry = ContextMenu & {
 const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
   const [menuVisible, setMenuVisible] = useState<boolean>(false);
   const [tocVisible, setTocVisible] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const { settings: contextMenuSettings } = useContextMenuSettings();
   const activeTools = useMemo(
     () => contextMenuSettings.items.filter((item) => item.enabled !== false),
@@ -76,6 +78,7 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
   const [menuStack, setMenuStack] = useState<ContextMenuEntry[]>([]);
   const selectionCounterRef = useRef(0);
   const menuIdRef = useRef(0);
+  const lastSelectionTimeRef = useRef(0);
 
   const onToggleToc = () => {
     if (tocVisible) {
@@ -86,10 +89,7 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
     }
   };
 
-  const onClickReaderView = () => {
-    setMenuVisible(false);
-    setTocVisible(false);
-  };
+  const clickHandlerRef = useRef<(e: MouseEvent) => void>(() => {});
 
   const resolveDefaultTabIndex = (words: string): number | null => {
     if (activeTools.length === 0) {
@@ -190,13 +190,57 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
     currentChapterHref,
   } = useReader({
     book: props.book,
-    onClick: onClickReaderView,
+    onClick: (e) => clickHandlerRef.current(e),
     onSelect: (selectedInfo: SelectInfo) => {
+      lastSelectionTimeRef.current = Date.now();
       pushBaseMenu(selectedInfo);
       setMenuVisible(false);
       setTocVisible(false);
     },
   });
+
+  // Smart Zone Click Handler
+  useEffect(() => {
+    clickHandlerRef.current = (event: MouseEvent) => {
+      // 0. Ignore if selection just happened (prevents conflict with Context Menu)
+      if (Date.now() - lastSelectionTimeRef.current < 500) {
+        return;
+      }
+
+      // 1. Close TOC if open
+      if (tocVisible) {
+        setTocVisible(false);
+        return;
+      }
+
+      // 2. Close Context Menu if open
+      if (menuStack.length > 0) {
+        setMenuStack([]);
+        return;
+      }
+
+      // 3. Smart Zones
+      // Use the window width from the event's source window (handles iframe correctly)
+      const viewWidth = event.view ? event.view.innerWidth : window.innerWidth;
+      const x = event.clientX;
+      
+      const leftBoundary = viewWidth * 0.3;
+      const rightBoundary = viewWidth * 0.7;
+
+      console.log(`Click debug: x=${x}, viewWidth=${viewWidth}, ratio=${x/viewWidth}`);
+
+      if (x < leftBoundary) {
+        console.log('Action: Prev');
+        onPrev();
+      } else if (x > rightBoundary) {
+        console.log('Action: Next');
+        onNext();
+      } else {
+        console.log('Action: Menu');
+        setMenuVisible((prev) => !prev);
+      }
+    };
+  }, [onPrev, onNext, tocVisible, menuStack.length]);
 
   useEffect(() => {
     if (activeTools.length === 0) {
@@ -241,7 +285,12 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
 
   return (
     <div className="relative flex h-screen flex-col bg-white">
-      <ReaderHeader visible={menuVisible} onOpenToc={onToggleToc} />
+      <ReaderHeader
+        visible={menuVisible}
+        onOpenToc={onToggleToc}
+        onHelpClick={() => setShowHelp(true)}
+      />
+      {showHelp && <ReaderHelpOverlay onClose={() => setShowHelp(false)} />}
       {menuStack.map((menu, index) => (
         <ContextMenuComponent
           key={menu.id}
