@@ -7,22 +7,6 @@ import { SectionCard } from './components/SectionCard';
 import { useContextMenuSettings } from './hooks/useContextMenuSettings';
 import { PlusSmall } from '../../components/icons';
 
-const getStatusIcon = (status: ApiStatus | null) => {
-  if (!status) return '[ ]';
-  if (status.isTesting) return '…';
-
-  switch (status.type) {
-    case 'success':
-      return '[OK]';
-    case 'warning':
-      return '[!]';
-    case 'error':
-      return '[X]';
-    default:
-      return '[ ]';
-  }
-};
-
 /**
  * Context Menu Settings page component.
  * Configuration for AI providers and context menu settings.
