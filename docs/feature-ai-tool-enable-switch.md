@@ -1,5 +1,7 @@
 # Context Menu Tool Enable Switch Spec
 
+> Note: Word/sentence default selection has been replaced by single-word and multi-word support flags.
+
 ## Goals
 - Let users disable individual AI or iframe tools without deleting them.
 - Ensure disabled tools never appear or auto-open in the reader context menu.

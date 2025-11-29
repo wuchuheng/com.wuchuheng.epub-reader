@@ -1,5 +1,4 @@
 import React from 'react';
-import { SelectionSituation } from '../../../types/epub';
 
 /**
  * Props for iframe tool form component.
@@ -7,14 +6,16 @@ import { SelectionSituation } from '../../../types/epub';
 interface IframeToolFormProps {
   /** Current URL value. */
   url: string;
-  /** Current default behavior. */
-  defaultFor?: SelectionSituation;
-  /** Whether default selection controls are disabled. */
-  defaultsDisabled: boolean;
+  /** Whether single-word selections are supported. */
+  supportsSingleWord: boolean;
+  /** Whether multi-word selections are supported. */
+  supportsMultiWord: boolean;
+  /** Whether support controls are disabled. */
+  supportsDisabled: boolean;
   /** Handler for URL changes. */
   onUrlChange: (url: string) => void;
-  /** Handler for default behavior changes. */
-  onDefaultForChange: (situation: SelectionSituation | undefined) => void;
+  /** Handler for support toggles. */
+  onSupportChange: (target: 'single' | 'multi', enabled: boolean) => void;
 }
 
 /**
@@ -23,10 +24,11 @@ interface IframeToolFormProps {
  */
 export const IframeToolForm: React.FC<IframeToolFormProps> = ({
   url,
-  defaultFor,
-  defaultsDisabled,
+  supportsSingleWord,
+  supportsMultiWord,
+  supportsDisabled,
   onUrlChange,
-  onDefaultForChange,
+  onSupportChange,
 }) => (
   <>
     {/* URL */}
@@ -55,55 +57,33 @@ export const IframeToolForm: React.FC<IframeToolFormProps> = ({
       </div>
     </div>
 
-    {/* Default Behavior Setting */}
-    <div className="pt-2 border-t border-gray-100 mt-4">
-      <label className="mb-2 block text-sm font-medium text-gray-700">Default Tool Behavior</label>
-      <div className="flex flex-col space-y-2 sm:flex-row sm:space-x-4 sm:space-y-0">
-        <div className="flex items-center">
+    {/* Selection support */}
+    <div className="mt-4 border-t border-gray-100 pt-2">
+      <label className="mb-2 block text-sm font-medium text-gray-700">Selection support</label>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+        <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-700">
           <input
-            type="radio"
-            id="defaultNone"
-            name="defaultFor"
-            checked={defaultFor === undefined}
-            disabled={defaultsDisabled}
-            onChange={() => onDefaultForChange(undefined)}
-            className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+            type="checkbox"
+            checked={supportsSingleWord}
+            disabled={supportsDisabled}
+            onChange={(e) => onSupportChange('single', e.target.checked)}
+            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
-          <label htmlFor="defaultNone" className="ml-2 block text-sm text-gray-700">
-            None
-          </label>
-        </div>
-        <div className="flex items-center">
+          <span>Single-word queries</span>
+        </label>
+        <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-700">
           <input
-            type="radio"
-            id="defaultWord"
-            name="defaultFor"
-            checked={defaultFor === 'word'}
-            disabled={defaultsDisabled}
-            onChange={() => onDefaultForChange('word')}
-            className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+            type="checkbox"
+            checked={supportsMultiWord}
+            disabled={supportsDisabled}
+            onChange={(e) => onSupportChange('multi', e.target.checked)}
+            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
-          <label htmlFor="defaultWord" className="ml-2 block text-sm text-gray-700">
-            Default for Single Word
-          </label>
-        </div>
-        <div className="flex items-center">
-          <input
-            type="radio"
-            id="defaultSentence"
-            name="defaultFor"
-            checked={defaultFor === 'sentence'}
-            disabled={defaultsDisabled}
-            onChange={() => onDefaultForChange('sentence')}
-            className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-          />
-          <label htmlFor="defaultSentence" className="ml-2 block text-sm text-gray-700">
-            Default for Multi-Word
-          </label>
-        </div>
+          <span>Multi-word queries</span>
+        </label>
       </div>
       <p className="mt-1 text-xs text-gray-500">
-        If selected, this tool will automatically open when you select text matching the condition.
+        Pick at least one option so this tool appears for single or multi-word selections.
       </p>
     </div>
   </>

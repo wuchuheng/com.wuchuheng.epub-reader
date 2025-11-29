@@ -5,6 +5,7 @@ import { ModelSearchInput } from './components/ModelSearchInput';
 import { ToolList } from './components/ToolList';
 import { SectionCard } from './components/SectionCard';
 import { useContextMenuSettings } from './hooks/useContextMenuSettings';
+import { PlusSmall } from '../../components/icons';
 
 const getStatusIcon = (status: ApiStatus | null) => {
   if (!status) return '[ ]';
@@ -91,7 +92,7 @@ export const ContextMenuSettingsPage: React.FC = () => {
         {apiStatus?.isTesting ? (
           <span className="h-2 w-2 animate-pulse rounded-full bg-blue-500" />
         ) : (
-          <span className="text-[10px]">{getStatusIcon(apiStatus)}</span>
+          <></>
         )}
         <span>{label}</span>
       </div>
@@ -102,7 +103,8 @@ export const ContextMenuSettingsPage: React.FC = () => {
     if (!apiStatus) return null;
 
     const colors = (() => {
-      if (apiStatus.isTesting) return { bg: 'bg-blue-50 border-blue-200 text-blue-700', dot: 'bg-blue-500' };
+      if (apiStatus.isTesting)
+        return { bg: 'bg-blue-50 border-blue-200 text-blue-700', dot: 'bg-blue-500' };
       if (apiStatus.type === 'success')
         return { bg: 'bg-green-50 border-green-200 text-green-700', dot: 'bg-green-500' };
       if (apiStatus.type === 'warning')
@@ -131,6 +133,22 @@ export const ContextMenuSettingsPage: React.FC = () => {
       </div>
     );
   };
+
+  const addToolButtonClass = [
+    'ml-auto flex h-8 w-8 items-center justify-center rounded-full border border-blue-200 bg-blue-50',
+    'text-blue-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-100 hover:text-blue-800',
+    'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1',
+  ].join(' ');
+
+  const testConnectionButtonClass = [
+    'rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition',
+    'hover:border-blue-300 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-60',
+  ].join(' ');
+
+  const saveButtonClass = [
+    'rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700',
+    'disabled:cursor-not-allowed disabled:opacity-60',
+  ].join(' ');
 
   // 3. Render
   return (
@@ -205,13 +223,14 @@ export const ContextMenuSettingsPage: React.FC = () => {
             >
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-sm text-gray-600">
-                  Arrange and scope your tools. Word/Sentence toggles set the default scope.
+                  Arrange tools and choose which ones handle single-word vs. multi-word selections.
                 </p>
                 <Link
                   to="/settings/contextmenu/add-tool"
-                  className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700"
+                  aria-label="Add tool"
+                  className={addToolButtonClass}
                 >
-                  + Add Tool
+                  <PlusSmall />
                 </Link>
               </div>
 
@@ -219,8 +238,8 @@ export const ContextMenuSettingsPage: React.FC = () => {
                 tools={contextMenuSettings.settings.items || []}
                 onToolRemove={contextMenuSettings.removeTool}
                 onToolReorder={contextMenuSettings.reorderTools}
-                onToggleDefault={contextMenuSettings.toggleDefaultTool}
                 onToggleEnabled={contextMenuSettings.toggleToolEnabled}
+                onToggleSupport={contextMenuSettings.toggleToolSupport}
               />
             </SectionCard>
           </div>
@@ -233,14 +252,14 @@ export const ContextMenuSettingsPage: React.FC = () => {
                   type="button"
                   onClick={handleTestConnection}
                   disabled={contextMenuSettings.isSaving}
-                  className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition hover:border-blue-300 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  className={testConnectionButtonClass}
                 >
                   {apiStatus?.isTesting ? 'Testing…' : 'Test connection'}
                 </button>
                 <button
                   onClick={handleSaveSettings}
                   disabled={contextMenuSettings.isSaving}
-                  className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  className={saveButtonClass}
                 >
                   {contextMenuSettings.isSaving ? 'Saving...' : 'Save Settings'}
                 </button>
@@ -250,8 +269,12 @@ export const ContextMenuSettingsPage: React.FC = () => {
                 {saveStatus === 'success' && (
                   <span className="text-green-600">Settings saved successfully!</span>
                 )}
-                {saveStatus === 'error' && <span className="text-red-600">Failed to save settings</span>}
-                {contextMenuSettings.isSaving && <span className="text-gray-600">Saving changes…</span>}
+                {saveStatus === 'error' && (
+                  <span className="text-red-600">Failed to save settings</span>
+                )}
+                {contextMenuSettings.isSaving && (
+                  <span className="text-gray-600">Saving changes…</span>
+                )}
               </div>
             </div>
           </div>

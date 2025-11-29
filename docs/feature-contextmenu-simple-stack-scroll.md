@@ -1,5 +1,7 @@
 # Context Menu Simple Stack Scroll Spec
 
+> Note: Word/sentence default selection has been replaced by single-word and multi-word support flags.
+
 ## Goal
 - In simple mode, show every enabled tab (iframe + AI) inside one shared scroll container so users can read all results by
   scrolling, with the active tab indicator updating as they move.

@@ -68,11 +68,21 @@ const getDirectoryStructure = async (): Promise<OPFSDirectoryStructure> => {
 
 const applyMenuItemDefaults = (items: ContextMenuItem[]): ContextMenuItem[] =>
   items.map((item) => {
+    const { defaultFor: _legacyDefault, ...rest } = item as ContextMenuItem & {
+      defaultFor?: unknown;
+    };
     const isEnabled = item.enabled ?? true;
+    const supportsSingleWord = item.supportsSingleWord !== false;
+    const supportsMultiWord = item.supportsMultiWord !== false;
+    const normalizedSupports =
+      !supportsSingleWord && !supportsMultiWord
+        ? { supportsSingleWord: true, supportsMultiWord: false }
+        : { supportsSingleWord, supportsMultiWord };
+
     return {
-      ...item,
+      ...rest,
       enabled: isEnabled,
-      defaultFor: isEnabled ? item.defaultFor : undefined,
+      ...normalizedSupports,
     };
   });
 

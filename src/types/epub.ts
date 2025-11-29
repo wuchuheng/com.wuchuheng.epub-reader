@@ -14,18 +14,10 @@ export type ContextMenu = {
 export type SelectInfo = Pick<ContextMenu, 'words' | 'context'>;
 
 /**
- * Defines the selection situation for default tool behavior.
- * 'word' - The selection is a single word.
- * 'sentence' - The selection is multiple words (phrase or sentence).
- */
-export type SelectionSituation = 'word' | 'sentence';
-
-/**
  * Represents a common context menu item.
  *
  * @property name - The display name of the menu item.
  * @property shortName - (Optional) A short name for the menu item.
- * @property defaultFor - (Optional) Specifies if this tool is the default for a specific selection situation.
  */
 export type ContextMenuItemCommon = {
   // The display name of the context menu item.
@@ -34,11 +26,10 @@ export type ContextMenuItemCommon = {
   shortName?: string;
   // Indicates whether the tool is active in the context menu.
   enabled?: boolean;
-  /**
-   * Specifies if this tool is the default for a specific selection situation.
-   * null/undefined means it's never a default (unless it's the first item).
-   */
-  defaultFor?: SelectionSituation;
+  // Whether the tool can handle single-word selections.
+  supportsSingleWord?: boolean;
+  // Whether the tool can handle multi-word selections.
+  supportsMultiWord?: boolean;
 };
 
 /**

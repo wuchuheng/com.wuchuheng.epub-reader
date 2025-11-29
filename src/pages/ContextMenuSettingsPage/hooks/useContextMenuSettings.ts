@@ -1,7 +1,23 @@
 import { useCallback, useState, useEffect, useRef } from 'react';
-import { ContextMenuSettings, ContextMenuItem, SelectionSituation, AISettingItem } from '../../../types/epub';
+import { ContextMenuSettings, ContextMenuItem, AISettingItem } from '../../../types/epub';
 import { getContextMenuSettings, updateContextMenuSettings } from '../../../services/OPFSManager';
 import { AiProviderId, AI_PROVIDER_CATALOG } from '@/config/aiProviders';
+
+const sanitizeSupports = (tool: ContextMenuItem): ContextMenuItem => {
+  const supportsSingleWord = tool.supportsSingleWord !== false;
+  const supportsMultiWord = tool.supportsMultiWord !== false;
+  if (!supportsSingleWord && !supportsMultiWord) {
+    return { ...tool, supportsSingleWord: true, supportsMultiWord: false };
+  }
+  return { ...tool, supportsSingleWord, supportsMultiWord };
+};
+
+const sanitizeTool = (tool: ContextMenuItem): ContextMenuItem => {
+  const { defaultFor: _legacyDefault, ...rest } = tool as ContextMenuItem & {
+    defaultFor?: unknown;
+  };
+  return sanitizeSupports(rest);
+};
 
 /**
  * Hook for managing context menu settings state and operations.
@@ -75,12 +91,14 @@ export const useContextMenuSettings = () => {
           }
         }
 
+        const sanitizedItems = (savedSettings?.items || []).map((item) => sanitizeTool(item));
+
         // Ensure we have valid settings object
         const validSettings: ContextMenuSettings = {
           api,
           key: activeKey,
           defaultModel,
-          items: savedSettings?.items || [],
+          items: sanitizedItems,
           providerId,
           providerApiKeyCache,
           providerDefaultModelCache,
@@ -186,46 +204,17 @@ export const useContextMenuSettings = () => {
     []
   );
 
-  /**
-   * Ensures mutual exclusivity for default tools.
-   * If the new/updated tool has a defaultFor set, this removes that defaultFor from all other tools.
-   */
-  const enforceDefaultExclusivity = (
-    items: ContextMenuItem[],
-    newItem: ContextMenuItem,
-    excludeIndex: number = -1
-  ): ContextMenuItem[] => {
-    if (!newItem.defaultFor) return items;
-
-    return items.map((item, index) => {
-      // Skip the item currently being added/updated (it will be replaced later in the flow)
-      if (index === excludeIndex) return item;
-
-      // If another item has the same defaultFor, clear it
-      if (item.defaultFor === newItem.defaultFor) {
-        return { ...item, defaultFor: undefined };
-      }
-      return item;
-    });
-  };
-
-  const sanitizeTool = (tool: ContextMenuItem): ContextMenuItem =>
-    tool.enabled === false ? { ...tool, defaultFor: undefined } : tool;
-
   const addTool = useCallback(
     async (tool: ContextMenuItem) => {
       try {
         setIsSaving(true);
         setError(null);
         
-        // Enforce exclusivity before adding
         const sanitizedTool = sanitizeTool(tool);
-        let currentItems = settingsRef.current.items;
-        if (sanitizedTool.defaultFor) {
-          currentItems = enforceDefaultExclusivity(currentItems, sanitizedTool);
-        }
-
-        const newSettings = { ...settingsRef.current, items: [...currentItems, sanitizedTool] };
+        const newSettings = {
+          ...settingsRef.current,
+          items: [...settingsRef.current.items, sanitizedTool],
+        };
         await updateContextMenuSettings(newSettings);
         setSettings(newSettings);
         return true;
@@ -252,8 +241,8 @@ export const useContextMenuSettings = () => {
       ...prev,
       items: prev.items.map((item, i) => {
         if (i !== index) return item;
-        const merged = { ...item, ...updatedTool } as ContextMenuItem;
-        return merged.enabled === false ? { ...merged, defaultFor: undefined } : merged;
+        const merged = sanitizeTool({ ...item, ...updatedTool } as ContextMenuItem);
+        return merged;
       }),
     }));
   }, []);
@@ -281,15 +270,8 @@ export const useContextMenuSettings = () => {
           return false;
         }
 
-        let items = [...settingsRef.current.items];
-        
-        // Enforce exclusivity
-        const sanitizedTool = sanitizeTool(updatedTool);
-        if (sanitizedTool.defaultFor) {
-          items = enforceDefaultExclusivity(items, sanitizedTool, index);
-        }
-        
-        items[index] = sanitizedTool;
+        const items = [...settingsRef.current.items];
+        items[index] = sanitizeTool(updatedTool);
         const newSettings = { ...settingsRef.current, items };
 
         await updateContextMenuSettings(newSettings);
@@ -299,50 +281,6 @@ export const useContextMenuSettings = () => {
         setError('Failed to update tool');
         console.error('Error updating tool:', err);
         return false;
-      } finally {
-        setIsSaving(false);
-      }
-    },
-    []
-  );
-
-  const toggleDefaultTool = useCallback(
-    async (index: number, situation: SelectionSituation) => {
-      try {
-        setIsSaving(true);
-        setError(null);
-        
-        const items = [...settingsRef.current.items];
-        if (index < 0 || index >= items.length) return;
-
-        const tool = items[index];
-        if (tool.enabled === false) return;
-        const isAlreadyDefault = tool.defaultFor === situation;
-
-        // Prepare the updated tool
-        const updatedTool = {
-          ...tool,
-          defaultFor: isAlreadyDefault ? undefined : situation,
-        };
-
-        // If we are setting it (not unsetting), enforce exclusivity
-        if (!isAlreadyDefault) {
-           // Clear this situation from all other tools
-           for (let i = 0; i < items.length; i++) {
-             if (i !== index && items[i].defaultFor === situation) {
-               items[i] = { ...items[i], defaultFor: undefined };
-             }
-           }
-        }
-        
-        items[index] = updatedTool;
-        const newSettings = { ...settingsRef.current, items };
-        
-        await updateContextMenuSettings(newSettings);
-        setSettings(newSettings);
-      } catch (err) {
-        setError('Failed to toggle default tool');
-        console.error(err);
       } finally {
         setIsSaving(false);
       }
@@ -360,11 +298,10 @@ export const useContextMenuSettings = () => {
         if (index < 0 || index >= items.length) return;
 
         const tool = items[index];
-        const updatedTool = {
+        const updatedTool = sanitizeTool({
           ...tool,
           enabled,
-          defaultFor: enabled ? tool.defaultFor : undefined,
-        };
+        });
 
         items[index] = updatedTool;
         const newSettings = { ...settingsRef.current, items };
@@ -381,12 +318,59 @@ export const useContextMenuSettings = () => {
     []
   );
 
+  const toggleToolSupport = useCallback(
+    async (index: number, supportType: 'single' | 'multi') => {
+      try {
+        setIsSaving(true);
+        setError(null);
+
+        const items = [...settingsRef.current.items];
+        if (index < 0 || index >= items.length) return;
+
+        const tool = items[index];
+        if (tool.enabled === false) return;
+
+        const nextValue =
+          supportType === 'single'
+            ? !(tool.supportsSingleWord !== false)
+            : !(tool.supportsMultiWord !== false);
+
+        let updatedTool: ContextMenuItem = {
+          ...tool,
+          supportsSingleWord:
+            supportType === 'single' ? nextValue : tool.supportsSingleWord !== false,
+          supportsMultiWord:
+            supportType === 'multi' ? nextValue : tool.supportsMultiWord !== false,
+        };
+
+        updatedTool = sanitizeTool(updatedTool);
+
+        items[index] = updatedTool;
+        const newSettings = { ...settingsRef.current, items };
+
+        await updateContextMenuSettings(newSettings);
+        setSettings(newSettings);
+      } catch (err) {
+        setError('Failed to update tool support');
+        console.error(err);
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    []
+  );
+
   // 3. Save settings to OPFS
   const saveSettings = useCallback(async () => {
     try {
       setIsSaving(true);
       setError(null);
-      await updateContextMenuSettings(settings);
+      const sanitizedSettings: ContextMenuSettings = {
+        ...settings,
+        items: settings.items.map((item) => sanitizeTool(item)),
+      };
+      await updateContextMenuSettings(sanitizedSettings);
+      setSettings(sanitizedSettings);
       return true;
     } catch (err) {
       setError('Failed to save settings');
@@ -417,8 +401,8 @@ export const useContextMenuSettings = () => {
     reorderTools,
     saveTool,
     saveSettings,
-    toggleDefaultTool,
     toggleToolEnabled,
+    toggleToolSupport,
   };
 };
 

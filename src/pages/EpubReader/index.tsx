@@ -10,7 +10,7 @@ import { ReaderFooter } from './components/ReaderFooter';
 import { TOCSidebar } from './components/TOCSidebar';
 import { InvalidBookError } from './components/ErrorRender';
 import { useReader } from './hooks/useEpubReader';
-import { ContextMenu, SelectInfo, SelectionSituation } from '../../types/epub';
+import { ContextMenu, ContextMenuItem, SelectInfo } from '../../types/epub';
 import ContextMenuComponent from './components/ContextMenu';
 import { NextPageButton, PrevPageButton } from './components/directory/NextPageButton';
 import { useContextMenuSettings } from '../ContextMenuSettingsPage/hooks/useContextMenuSettings';
@@ -106,17 +106,21 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
 
   const clickHandlerRef = useRef<(e: MouseEvent) => void>(() => {});
 
-  const resolveDefaultTabIndex = (words: string): number | null => {
-    if (activeTools.length === 0) {
-      return null;
-    }
+  const getSupportedTools = useCallback(
+    (words: string): ContextMenuItem[] => {
+      const trimmedWords = words.trim();
+      const wordCount = trimmedWords.split(/\s+/).filter(Boolean).length;
+      const isSingleWord = wordCount === 1;
 
-    const wordCount = words.trim().split(/\s+/).length;
-    const situation: SelectionSituation = wordCount === 1 ? 'word' : 'sentence';
-
-    const defaultIndex = activeTools.findIndex((item) => item.defaultFor === situation);
-    return defaultIndex === -1 ? 0 : defaultIndex;
-  };
+      return activeTools.filter((tool) => {
+        if (isSingleWord) {
+          return tool.supportsSingleWord !== false;
+        }
+        return tool.supportsMultiWord !== false;
+      });
+    },
+    [activeTools]
+  );
 
   const createMenuEntry = (
     info: SelectInfo,
@@ -127,8 +131,8 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
       return null;
     }
 
-    const tabIndex = resolveDefaultTabIndex(trimmedWords);
-    if (tabIndex === null) {
+    const supportedTools = getSupportedTools(trimmedWords);
+    if (supportedTools.length === 0) {
       return null;
     }
 
@@ -139,17 +143,25 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
       id: menuIdRef.current,
       parentId,
       selectionId: selectionCounterRef.current,
-      tabIndex,
+      tabIndex: 0,
       ...info,
     };
   };
 
   const pushBaseMenu = (info: SelectInfo) => {
-    const entry = createMenuEntry(info, null);
-    if (!entry) {
+    const supportedTools = getSupportedTools(info.words);
+    if (supportedTools.length === 0) {
       if (activeTools.length === 0) {
         alert('No enabled tools available. Enable one in Settings > Context Menu.');
+      } else {
+        alert('No tools support this selection length. Enable single or multi-word support in Settings.');
       }
+      setMenuStack([]);
+      return;
+    }
+
+    const entry = createMenuEntry(info, null);
+    if (!entry) {
       setMenuStack([]);
       return;
     }
@@ -158,14 +170,19 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
   };
 
   const pushDrilldownMenu = (parentId: number, info: SelectInfo) => {
-    const entry = createMenuEntry(info, parentId);
-    if (!entry) {
+    const supportedTools = getSupportedTools(info.words);
+    if (supportedTools.length === 0) {
       if (activeTools.length === 0) {
         alert('No enabled tools available. Enable one in Settings > Context Menu.');
         setMenuStack([]);
+      } else {
+        alert('No tools support this selection length. Enable single or multi-word support in Settings.');
       }
       return;
     }
+
+    const entry = createMenuEntry(info, parentId);
+    if (!entry) return;
 
     setMenuStack((prev) => [...prev, entry]);
   };
@@ -334,24 +351,27 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
         onHelpClick={() => setShowHelp(true)}
       />
       {showHelp && <ReaderHelpOverlay onClose={() => setShowHelp(false)} />}
-      {menuStack.map((menu, index) => (
-        <ContextMenuComponent
-          key={menu.id}
-          onChangeIndex={(tabIndex) => updateTabIndex(menu.id, tabIndex)}
-          tabIndex={menu.tabIndex}
-          words={menu.words}
-          context={menu.context}
-          selectionId={menu.selectionId}
-          items={activeTools}
-          api={contextMenuSettings.api}
-          apiKey={contextMenuSettings.key}
-          defaultModel={contextMenuSettings.defaultModel}
-          isTopMost={index === menuStack.length - 1}
-          onClose={() => removeMenuAndChildren(menu.id)}
-          onDrilldownSelect={(info) => pushDrilldownMenu(menu.id, info)}
-          zIndex={50 + index}
-        />
-      ))}
+      {menuStack.map((menu, index) => {
+        const supportedItems = getSupportedTools(menu.words);
+        return (
+          <ContextMenuComponent
+            key={menu.id}
+            onChangeIndex={(tabIndex) => updateTabIndex(menu.id, tabIndex)}
+            tabIndex={menu.tabIndex}
+            words={menu.words}
+            context={menu.context}
+            selectionId={menu.selectionId}
+            items={supportedItems}
+            api={contextMenuSettings.api}
+            apiKey={contextMenuSettings.key}
+            defaultModel={contextMenuSettings.defaultModel}
+            isTopMost={index === menuStack.length - 1}
+            onClose={() => removeMenuAndChildren(menu.id)}
+            onDrilldownSelect={(info) => pushDrilldownMenu(menu.id, info)}
+            zIndex={50 + index}
+          />
+        );
+      })}
       <TOCSidebar
         isOpen={tocVisible}
         currentChapter={currentChapterHref}

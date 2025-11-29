@@ -1,5 +1,7 @@
 # Context Menu AI Drilldown Spec
 
+> Note: Word/sentence default selection has been replaced by single-word and multi-word support flags.
+
 ## Goal
 - Allow users to click any word inside an AI tool’s output and open a new context-menu window to query that word with
   full context.

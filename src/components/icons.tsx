@@ -105,6 +105,28 @@ export const Trash = () => (
   </svg>
 );
 
+export const Edit: React.FC<IconProps> = (props) => (
+  <svg
+    className={`h-4 w-4 ${props.className}`}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M11 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-5"
+    />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4z"
+    />
+  </svg>
+);
+
 export const Check = () => (
   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -258,6 +280,17 @@ export const Plus: React.FC<IconProps> = (props) => (
       strokeWidth={2}
       d="M12 4v16m8-8H4"
     />
+  </svg>
+);
+
+export const PlusSmall: React.FC<IconProps> = (props) => (
+  <svg
+    className={`h-4 w-4 ${props.className}`}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
   </svg>
 );
 

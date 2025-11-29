@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { ContextMenuItem, AISettingItem, IframeSettingItem, SelectionSituation } from '../../../types/epub';
+import { ContextMenuItem, AISettingItem, IframeSettingItem } from '../../../types/epub';
 
 /**
  * Hook for managing tool creation form state and logic.
@@ -14,22 +14,35 @@ export const useToolForm = () => {
   const [toolUrl, setToolUrl] = useState('');
   const [reasoningEnabled, setReasoningEnabled] = useState(false);
   const [enabled, setEnabledState] = useState(true);
-  const [defaultFor, setDefaultFor] = useState<SelectionSituation | undefined>(undefined);
+  const [supportsSingleWord, setSupportsSingleWord] = useState(true);
+  const [supportsMultiWord, setSupportsMultiWord] = useState(true);
+
+  const normalizeSupports = useCallback((nextSingle: boolean, nextMulti: boolean) => {
+    if (!nextSingle && !nextMulti) {
+      setSupportsSingleWord(true);
+      setSupportsMultiWord(false);
+      return;
+    }
+    setSupportsSingleWord(nextSingle);
+    setSupportsMultiWord(nextMulti);
+  }, []);
 
   // 2. Validation logic
   const isValid = useCallback(() => {
     if (!toolName.trim()) return false;
+    if (!supportsSingleWord && !supportsMultiWord) return false;
     
     if (toolType === 'AI') {
       return toolPrompt.trim() !== '';
     } else {
       return toolUrl.trim() !== '';
     }
-  }, [toolName, toolPrompt, toolUrl, toolType]);
+  }, [toolName, toolPrompt, toolUrl, toolType, supportsSingleWord, supportsMultiWord]);
 
   // 3. Tool creation logic
   const createTool = useCallback((): ContextMenuItem | null => {
     if (!isValid()) return null;
+    if (!supportsSingleWord && !supportsMultiWord) return null;
 
     // Use user-provided short name or auto-generate if empty
     const shortName = toolShortName.trim() || 
@@ -43,7 +56,8 @@ export const useToolForm = () => {
         prompt: toolPrompt.trim(),
         reasoningEnabled,
         enabled,
-        defaultFor,
+        supportsSingleWord,
+        supportsMultiWord,
       };
       return newTool;
     } else {
@@ -53,11 +67,23 @@ export const useToolForm = () => {
         shortName,
         url: toolUrl.trim(),
         enabled,
-        defaultFor,
+        supportsSingleWord,
+        supportsMultiWord,
       };
       return newTool;
     }
-  }, [toolName, toolShortName, toolPrompt, toolUrl, reasoningEnabled, toolType, isValid, defaultFor, enabled]);
+  }, [
+    toolName,
+    toolShortName,
+    toolPrompt,
+    toolUrl,
+    reasoningEnabled,
+    toolType,
+    isValid,
+    supportsSingleWord,
+    supportsMultiWord,
+    enabled,
+  ]);
 
   // 4. Reset logic
   const resetForm = useCallback(() => {
@@ -68,7 +94,8 @@ export const useToolForm = () => {
     setToolUrl('');
     setReasoningEnabled(false);
     setEnabledState(true);
-    setDefaultFor(undefined);
+    setSupportsSingleWord(true);
+    setSupportsMultiWord(true);
   }, []);
 
   const loadTool = useCallback((tool: ContextMenuItem) => {
@@ -76,7 +103,9 @@ export const useToolForm = () => {
     setToolName(tool.name);
     setToolShortName(tool.shortName || '');
     setEnabledState(tool.enabled ?? true);
-    setDefaultFor(tool.enabled === false ? undefined : tool.defaultFor);
+    const nextSingle = tool.supportsSingleWord !== false;
+    const nextMulti = tool.supportsMultiWord !== false;
+    normalizeSupports(nextSingle, nextMulti);
 
     if (tool.type === 'AI') {
       setToolPrompt(tool.prompt);
@@ -87,7 +116,7 @@ export const useToolForm = () => {
       setToolPrompt('');
       setReasoningEnabled(false);
     }
-  }, []);
+  }, [normalizeSupports]);
 
   // 5. Export interface
   return {
@@ -99,7 +128,8 @@ export const useToolForm = () => {
     toolUrl,
     reasoningEnabled,
     enabled,
-    defaultFor,
+    supportsSingleWord,
+    supportsMultiWord,
     
     // Actions
     setToolType,
@@ -108,12 +138,10 @@ export const useToolForm = () => {
     setToolPrompt,
     setToolUrl,
     setReasoningEnabled,
-    setDefaultFor,
+    setSupportsSingleWord: (value: boolean) => normalizeSupports(value, supportsMultiWord),
+    setSupportsMultiWord: (value: boolean) => normalizeSupports(supportsSingleWord, value),
     setEnabled: (value: boolean) => {
       setEnabledState(value);
-      if (!value) {
-        setDefaultFor(undefined);
-      }
     },
 
     // Computed

@@ -100,7 +100,8 @@ export const ToolEditPage: React.FC = () => {
                 value={form.toolName}
                 onChange={(e) => form.setToolName(e.target.value)}
                 placeholder="e.g., Simple Explanation"
-                className="w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+                className="w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-blue-500
+                focus:outline-none focus:ring-blue-500"
               />
             </div>
 
@@ -114,7 +115,8 @@ export const ToolEditPage: React.FC = () => {
                 onChange={(e) => form.setToolShortName(e.target.value)}
                 placeholder="e.g., Simple Exp"
                 maxLength={15}
-                className="w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+                className="w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-blue-500
+                focus:outline-none focus:ring-blue-500"
               />
               <p className="mt-2 text-xs text-gray-500">
                 Leave empty to auto-generate from tool name
@@ -126,13 +128,13 @@ export const ToolEditPage: React.FC = () => {
                 type="button"
                 onClick={() => form.setEnabled(!form.enabled)}
                 aria-pressed={form.enabled}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors ${
                   form.enabled ? 'bg-blue-600' : 'bg-gray-300'
                 }`}
               >
                 <span
-                  className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
-                    form.enabled ? 'translate-x-5' : 'translate-x-1'
+                  className={`inline-block h-3 w-3 transform rounded-full bg-white transition ${
+                    form.enabled ? 'translate-x-4' : 'translate-x-1'
                   }`}
                 />
               </button>
@@ -143,19 +145,29 @@ export const ToolEditPage: React.FC = () => {
                 <AIToolForm
                   prompt={form.toolPrompt}
                   reasoningEnabled={form.reasoningEnabled}
-                  defaultFor={form.defaultFor}
-                  defaultsDisabled={!form.enabled}
+                  supportsSingleWord={form.supportsSingleWord}
+                  supportsMultiWord={form.supportsMultiWord}
+                  supportsDisabled={!form.enabled}
                   onPromptChange={form.setToolPrompt}
                   onReasoningToggle={form.setReasoningEnabled}
-                  onDefaultForChange={form.setDefaultFor}
+                  onSupportChange={(target, enabled) =>
+                    target === 'single'
+                      ? form.setSupportsSingleWord(enabled)
+                      : form.setSupportsMultiWord(enabled)
+                  }
                 />
               ) : (
                 <IframeToolForm
                   url={form.toolUrl}
-                  defaultFor={form.defaultFor}
-                  defaultsDisabled={!form.enabled}
+                  supportsSingleWord={form.supportsSingleWord}
+                  supportsMultiWord={form.supportsMultiWord}
+                  supportsDisabled={!form.enabled}
                   onUrlChange={form.setToolUrl}
-                  onDefaultForChange={form.setDefaultFor}
+                  onSupportChange={(target, enabled) =>
+                    target === 'single'
+                      ? form.setSupportsSingleWord(enabled)
+                      : form.setSupportsMultiWord(enabled)
+                  }
                 />
               )}
             </div>
@@ -164,7 +176,8 @@ export const ToolEditPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleCancel}
-                className="flex-1 rounded-md border border-gray-300 px-4 py-3 text-base font-medium text-gray-700 transition-colors hover:bg-gray-100"
+                className="flex-1 rounded-md border border-gray-300 px-4 py-3 text-base font-medium text-gray-700
+                transition-colors hover:bg-gray-100"
               >
                 Cancel
               </button>
@@ -172,7 +185,8 @@ export const ToolEditPage: React.FC = () => {
                 type="button"
                 onClick={handleSubmit}
                 disabled={!form.isValid() || contextMenuSettings.isSaving}
-                className="flex-1 rounded-md bg-blue-500 px-4 py-3 text-base font-medium text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex-1 rounded-md bg-blue-500 px-4 py-3 text-base font-medium text-white transition-colors
+                hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {contextMenuSettings.isSaving ? 'Saving...' : 'Save Changes'}
               </button>

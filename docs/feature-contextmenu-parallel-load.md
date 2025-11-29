@@ -1,5 +1,7 @@
 # Context Menu: Parallel Tool Load Spec
 
+> Note: Word/sentence default selection has been replaced by single-word and multi-word support flags.
+
 ## Goal
 - Load every enabled AI and iframe tool at the same time when the context menu opens after a text selection.
 - Keep the tab strip for navigation while allowing each tool to run concurrently so switching tabs is instant.
