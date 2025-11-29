@@ -80,15 +80,13 @@ export const ChangelogPage: React.FC = () => {
         </p>
       </div>
 
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="space-y-2">
-            <VersionMeta version={LATEST_CHANGELOG} />
-            <p className="text-base font-semibold text-gray-900">{LATEST_CHANGELOG.summary}</p>
-          </div>
+      <div className="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="space-y-2">
+          <VersionMeta version={LATEST_CHANGELOG} />
+          <p className="text-base font-semibold text-gray-900">{LATEST_CHANGELOG.summary}</p>
         </div>
 
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
+        <div className="space-y-3">
           {nonEmptyCategories.map((category) => (
             <CategoryCard
               key={category}

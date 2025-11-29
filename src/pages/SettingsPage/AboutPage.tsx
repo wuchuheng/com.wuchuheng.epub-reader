@@ -27,7 +27,7 @@ export const AboutPage: React.FC = () => {
         <p className="mt-1 text-sm text-gray-500">Information about the application.</p>
       </div>
 
-      <div className="rounded-lg border border-gray-200 p-6">
+      <div className="space-y-6 rounded-lg border border-gray-200 p-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="space-y-3">
             <div>
@@ -56,19 +56,24 @@ export const AboutPage: React.FC = () => {
           <p className="text-sm text-gray-500">Built with React, TypeScript, and Tailwind CSS.</p>
         </div>
 
-        <div className="mt-6 space-y-3">
-          <h5 className="text-sm font-semibold text-gray-900">What changed in v{LATEST_CHANGELOG.version}</h5>
-          <div className="grid gap-3 md:grid-cols-2">
+        <div className="mt-6 space-y-4">
+          <div className="space-y-1">
+            <h5 className="text-base font-semibold text-gray-900">Changelog</h5>
+            <p className="text-sm text-gray-600">
+              v{LATEST_CHANGELOG.version} · Released {LATEST_CHANGELOG.releasedAt}
+            </p>
+          </div>
+          <div className="space-y-3">
             {nonEmptyCategories.map((category) => (
-              <div key={category} className="rounded-md border border-gray-100 p-3">
-                <div className="flex items-center justify-between">
+              <div key={category} className="space-y-2 rounded-md border border-gray-100 p-3">
+                <div className="flex items-center gap-2">
                   <span className="text-xs font-semibold text-gray-700">{categoryLabels[category]}</span>
                   <span className="text-xs text-gray-500">
                     {LATEST_CHANGELOG.changes[category].length} item
                     {LATEST_CHANGELOG.changes[category].length === 1 ? '' : 's'}
                   </span>
                 </div>
-                <ul className="mt-2 space-y-2 text-sm text-gray-700">
+                <ul className="space-y-2 text-sm text-gray-700">
                   {LATEST_CHANGELOG.changes[category].map((entry) => (
                     <li key={entry.title} className="flex gap-2">
                       <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" />
