@@ -25,6 +25,11 @@ const navItems: SettingsNavCallback[] = [
     description: 'Configure AI providers and custom tools',
   },
   {
+    label: 'Changelog',
+    path: '/settings/changelog',
+    description: 'Recent releases and change history',
+  },
+  {
     label: 'About',
     path: '/settings/about',
     description: 'App information and version',
