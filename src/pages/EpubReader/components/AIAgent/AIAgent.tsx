@@ -26,6 +26,7 @@ export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
   const isAutoScrollRef = useRef(true);
   const isGoToBottomRef = useRef<boolean>(true);
   const viewMode = props.viewMode ?? 'simple';
+  const { onViewModeChange } = props;
   
   // --- State & Logic moved from MessageList ---
   const content = replaceWords({
@@ -130,9 +131,12 @@ export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
       }
   }, [scrollToBottom]);
 
-  const handleViewModeChange = useCallback((mode: ViewMode) => {
-      props.onViewModeChange?.(mode);
-  }, [props.onViewModeChange]);
+  const handleViewModeChange = useCallback(
+    (mode: ViewMode) => {
+      onViewModeChange?.(mode);
+    },
+    [onViewModeChange]
+  );
 
   if (viewMode === 'simple') {
       return (

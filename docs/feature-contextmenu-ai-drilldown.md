@@ -41,8 +41,8 @@
 - Render one `ContextMenu` per entry with incremented z-index so newer windows sit above older ones; reuse existing
   window chrome (drag/maximize/close) per instance.
 - On close: remove the targeted entry; if it has descendants, remove them too. Keep remaining windows untouched.
-- When the base context menu closes (e.g., backdrop or header close), clear the entire stack to reset the runtime.
-- Clicking the backdrop/any non-window area clears the full stack in one action instead of closing windows one by one.
+- When the base context menu closes (e.g., header close), clear the entire stack to reset the runtime.
+- Backdrop clicks close only the topmost window; repeat to step down through the stack.
 
 ## Implementation Outline
 - Add a drilldown callback to `AIAgent` → `MessageList` → `AIMessageRender`/`MarkdownRender` that fires `SelectInfo`

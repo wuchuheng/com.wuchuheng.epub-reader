@@ -31,8 +31,8 @@ export interface ContextMenuProps {
   apiKey: string;
   defaultModel?: string;
   zIndex?: number;
+  isTopMost: boolean;
   onClose: () => void;
-  onCloseAll: () => void;
   onChangeIndex: (index: number) => void;
   onDrilldownSelect?: (selection: SelectInfo) => void;
 }
@@ -143,7 +143,7 @@ const HeaderButton: React.FC<{
 );
 
 const ContextMenu: React.FC<ContextMenuProps> = (props) => {
-  const { tabIndex, onChangeIndex } = props;
+  const { tabIndex, onChangeIndex, isTopMost, onClose, selectionId } = props;
   const [hasInvalidIndex, setHasInvalidIndex] = useState(false);
   const [windowState, setWindowState] = useState<WindowState>('normal');
   const [viewportSize, setViewportSize] = useState<ViewportSize>(getViewportSize());
@@ -180,6 +180,8 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
   const isScrollingRef = useRef(false);
+  const [contentHeight, setContentHeight] = useState<number>(0);
+  const chatPortalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     viewportRef.current = viewportSize;
@@ -273,7 +275,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
            }, 0);
        }
     }
-  }, [viewLayout, props.selectionId]);
+  }, [viewLayout, selectionId, tabIndex]);
 
   const handlePointerMove = useCallback((event: PointerEvent) => {
     const dragState = dragStateRef.current;
@@ -379,15 +381,13 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
       }
   };
 
-  if (tabIndex === null) {
-    return <></>;
-  }
-  if (activeItems.length === 0 || hasInvalidIndex) {
-    return <></>;
-  }
+  const handleBackdropClick = useCallback(() => {
+    if (!isTopMost) {
+      return;
+    }
 
-  const [contentHeight, setContentHeight] = useState<number>(0);
-  const chatPortalRef = useRef<HTMLDivElement>(null);
+    onClose();
+  }, [isTopMost, onClose]);
 
   // ResizeObserver to measure exact content area height
   useEffect(() => {
@@ -404,6 +404,13 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
       return () => observer.disconnect();
   }, [viewLayout, windowSize]); // Re-attach when layout or window size changes
 
+  if (tabIndex === null) {
+    return <></>;
+  }
+  if (activeItems.length === 0 || hasInvalidIndex) {
+    return <></>;
+  }
+
   const resolveModel = (item: AISettingItem): string => props.defaultModel || item.model || '';
   const maximized = windowState === 'maximized';
   const windowStyle: React.CSSProperties = {
@@ -413,7 +420,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
     top: `${position.top}px`,
   };
   const closeButton = (
-    <HeaderButton ariaLabel="Close window" onClick={props.onClose}>
+    <HeaderButton ariaLabel="Close window" onClick={onClose}>
       <svg
         viewBox="0 0 20 20"
         fill="none"
@@ -487,7 +494,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
   return (
     <div
       className="absolute inset-0 z-50 px-3 py-3 sm:px-6 sm:py-6"
-      onClick={props.onCloseAll}
+      onClick={handleBackdropClick}
       style={props.zIndex ? { zIndex: props.zIndex } : undefined}
     >
       <div
