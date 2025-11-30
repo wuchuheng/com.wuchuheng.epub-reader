@@ -4,7 +4,14 @@ All notable changes to this project will be documented in this file. The format 
 project adheres to Semantic Versioning.
 
 ## [Unreleased]
-- No changes since `v1.0.0`.
+### Added
+- **Context Menu**: Add sticky header with refresh and external-link buttons for iframe tools.
+- **Context Menu**: Add thumbtack control to pin context menu in maximized state (persisted in settings).
+- **Context Menu**: Implement double-click header toggle between normal/maximized modes.
+
+### Changed
+- **Settings**: Integrated changelog display directly into the About page.
+- **Settings**: Replaced dedicated ChangelogPage with enhanced AboutPage.
 
 ## [1.0.0] - 2025-11-29
 ### Added
