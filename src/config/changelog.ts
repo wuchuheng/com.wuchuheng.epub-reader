@@ -1,5 +1,39 @@
 import { type ChangelogVersion } from '../types/changelog';
 
+const changelogV1_0_1: ChangelogVersion = {
+  version: '1.0.1',
+  releasedAt: '2025-11-30',
+  summary:
+    'Iframe tool enhancements with refresh/external controls, pinned window states, and integrated changelog settings.',
+  changes: {
+    feat: [
+      {
+        title: 'Sticky header with refresh and external-link buttons for iframe tools.',
+      },
+      {
+        title:
+          'Thumbtack control to pin context menu in maximized state (persisted in settings).',
+      },
+      {
+        title: 'Double-click header toggle between normal/maximized modes.',
+      },
+    ],
+    fix: [],
+    refactor: [
+      {
+        title: 'Integrated changelog display directly into the About page.',
+      },
+      {
+        title: 'Replaced dedicated ChangelogPage with enhanced AboutPage.',
+      },
+    ],
+    docs: [],
+    chore: [],
+    perf: [],
+    style: [],
+  },
+};
+
 const changelogV1_0_0: ChangelogVersion = {
   version: '1.0.0',
   releasedAt: '2025-11-29',
@@ -61,5 +95,5 @@ const changelogV1_0_0: ChangelogVersion = {
   },
 };
 
-export const CHANGELOG_CONFIG: ChangelogVersion[] = [changelogV1_0_0];
+export const CHANGELOG_CONFIG: ChangelogVersion[] = [changelogV1_0_1, changelogV1_0_0];
 export const LATEST_CHANGELOG = CHANGELOG_CONFIG[0];

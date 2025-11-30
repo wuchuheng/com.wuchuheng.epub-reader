@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file. The format 
 project adheres to Semantic Versioning.
 
 ## [Unreleased]
+
+## [1.0.1] - 2025-11-30
 ### Added
 - **Context Menu**: Add sticky header with refresh and external-link buttons for iframe tools.
 - **Context Menu**: Add thumbtack control to pin context menu in maximized state (persisted in settings).
