@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { LATEST_CHANGELOG } from '../../config/changelog';
 import { type ChangelogCategory } from '../../types/changelog';
 

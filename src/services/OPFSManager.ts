@@ -90,6 +90,7 @@ const buildDefaultContextMenuSettings = (): ContextMenuSettings => ({
   api: '',
   key: '',
   defaultModel: '',
+  pinnedMaximized: false,
   items: applyMenuItemDefaults(menuItemDefaultConfig),
   providerId: 'custom',
   providerApiKeyCache: {},
@@ -426,6 +427,10 @@ export async function updateContextMenuSettings(settings: Partial<ContextMenuSet
     api: settings.api ?? config.settings.contextMenu.api ?? defaults.api,
     key: settings.key ?? config.settings.contextMenu.key ?? defaults.key,
     defaultModel: settings.defaultModel ?? config.settings.contextMenu.defaultModel ?? defaults.defaultModel,
+    pinnedMaximized:
+      settings.pinnedMaximized ??
+      config.settings.contextMenu.pinnedMaximized ??
+      defaults.pinnedMaximized,
     items: applyMenuItemDefaults(mergedItems),
     providerApiKeyCache:
       settings.providerApiKeyCache ??
@@ -462,6 +467,7 @@ export async function getContextMenuSettings(): Promise<ContextMenuSettings> {
     providerApiKeyCache: contextMenuSettings?.providerApiKeyCache ?? defaults.providerApiKeyCache,
     providerDefaultModelCache:
       contextMenuSettings?.providerDefaultModelCache ?? defaults.providerDefaultModelCache,
+    pinnedMaximized: contextMenuSettings?.pinnedMaximized ?? defaults.pinnedMaximized,
     items,
   };
 }

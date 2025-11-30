@@ -89,11 +89,14 @@ import { AiProviderId } from '@/config/aiProviders';
 export type ContextMenuSettings = {
   // The API endpoint used for context menu actions.
   api: string;
-  // The authentication key required for API access.
+ // The authentication key required for API access.
   key: string;
   // Default model for the currently selected provider
   defaultModel?: string;
   
+  // Whether the context menu should open maximized by default.
+  pinnedMaximized?: boolean;
+
   // The ID of the selected AI provider
   providerId?: AiProviderId;
   // Cache of API keys for different providers

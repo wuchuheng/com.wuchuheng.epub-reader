@@ -3,6 +3,11 @@ import { AISettingItem, ContextMenuSettings, SelectInfo } from '../../../types/e
 import { AIAgent } from './AIAgent/AIAgent';
 import { IframeRender } from './IframeRender/IframeRender';
 import { ViewMode } from './AIAgent/components/MessageList/MessageList';
+import { BsPin } from 'react-icons/bs';
+import {
+  HiMiniArrowsPointingIn,
+  HiMiniArrowsPointingOut,
+} from 'react-icons/hi2';
 
 type WindowState = 'normal' | 'maximized';
 
@@ -35,6 +40,9 @@ export interface ContextMenuProps {
   onClose: () => void;
   onChangeIndex: (index: number) => void;
   onDrilldownSelect?: (selection: SelectInfo) => void;
+  pinnedMaximized: boolean;
+  onPinnedChange: (isPinned: boolean) => void | Promise<void>;
+  isWindowSizeLocked?: boolean;
 }
 
 const defaultSizePx = 40 * 16;
@@ -127,7 +135,8 @@ const HeaderButton: React.FC<{
   onClick: () => void;
   ariaLabel: string;
   children: React.ReactNode;
-}> = ({ onClick, ariaLabel, children }) => (
+  className?: string;
+}> = ({ onClick, ariaLabel, children, className }) => (
   <button
     type="button"
     aria-label={ariaLabel}
@@ -135,7 +144,8 @@ const HeaderButton: React.FC<{
     onPointerDown={(event) => event.stopPropagation()}
     className={
       'flex h-7 w-7 items-center justify-center rounded hover:bg-black/10 ' +
-      'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-black'
+      'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-black' +
+      (className ? ` ${className}` : '')
     }
   >
     {children}
@@ -143,13 +153,27 @@ const HeaderButton: React.FC<{
 );
 
 const ContextMenu: React.FC<ContextMenuProps> = (props) => {
-  const { tabIndex, onChangeIndex, isTopMost, onClose, selectionId } = props;
+  const {
+    tabIndex,
+    onChangeIndex,
+    isTopMost,
+    onClose,
+    selectionId,
+    isWindowSizeLocked,
+    pinnedMaximized,
+    onPinnedChange,
+  } = props;
+  const windowSizeLocked = isWindowSizeLocked ?? false;
   const [hasInvalidIndex, setHasInvalidIndex] = useState(false);
-  const [windowState, setWindowState] = useState<WindowState>('normal');
   const [viewportSize, setViewportSize] = useState<ViewportSize>(getViewportSize());
+  const [isPinnedMaximized, setIsPinnedMaximized] = useState<boolean>(pinnedMaximized);
   const initialLayout = useMemo(
-    () => getCenteredLayout(viewportSize),
-    [viewportSize]
+    () =>
+      isPinnedMaximized ? getMaximizedLayout(viewportSize) : getCenteredLayout(viewportSize),
+    [viewportSize, isPinnedMaximized]
+  );
+  const [windowState, setWindowState] = useState<WindowState>(
+    isPinnedMaximized ? 'maximized' : 'normal'
   );
   const [windowSize, setWindowSize] = useState<WindowSize>(initialLayout.size);
   const [position, setPosition] = useState<WindowPosition>(initialLayout.position);
@@ -174,7 +198,6 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
     () => typeof navigator !== 'undefined' && macPattern.test(navigator.userAgent),
     []
   );
-
   // Refactor: Added viewLayout state
   const [viewLayout, setViewLayout] = useState<'stackedSimple' | 'tabbedConversation'>('stackedSimple');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -194,6 +217,10 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
   useEffect(() => {
     windowSizeRef.current = windowSize;
   }, [windowSize]);
+
+  useEffect(() => {
+    setIsPinnedMaximized(pinnedMaximized);
+  }, [pinnedMaximized]);
 
   useEffect(() => {
     if (tabIndex === null) return;
@@ -229,6 +256,17 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
       return clampedSize;
     });
   }, [viewportSize, windowState]);
+
+  useEffect(() => {
+    if (!isPinnedMaximized) {
+      return;
+    }
+
+    const maximizedLayout = getMaximizedLayout(viewportRef.current);
+    setWindowState('maximized');
+    setWindowSize(maximizedLayout.size);
+    setPosition(maximizedLayout.position);
+  }, [isPinnedMaximized]);
 
   // Scroll Spy Logic
   useEffect(() => {
@@ -346,6 +384,10 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
   }, []);
 
   const handleRestore = useCallback(() => {
+    if (isPinnedMaximized) {
+      return;
+    }
+
     const viewport = viewportRef.current;
     const restoreLayout = restoreLayoutRef.current || getCenteredLayout(viewport);
     const size = clampSizeToViewport(restoreLayout.size, viewport);
@@ -354,7 +396,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
     setWindowState('normal');
     setWindowSize(size);
     setPosition(restorePosition);
-  }, []);
+  }, [isPinnedMaximized]);
 
   const handleTabClick = (index: number) => {
       onChangeIndex(index);
@@ -378,7 +420,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
           // Unfreeze height
           if (el) el.style.height = '';
           setViewLayout('stackedSimple');
-      }
+    }
   };
 
   const handleBackdropClick = useCallback(() => {
@@ -413,6 +455,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
 
   const resolveModel = (item: AISettingItem): string => props.defaultModel || item.model || '';
   const maximized = windowState === 'maximized';
+  const showThumbtack = maximized && !windowSizeLocked;
   const windowStyle: React.CSSProperties = {
     width: `${windowSize.width}px`,
     height: `${windowSize.height}px`,
@@ -436,48 +479,73 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
       </svg>
     </HeaderButton>
   );
+  const handlePinToggle = useCallback(() => {
+    setIsPinnedMaximized((prev) => {
+      const next = !prev;
+      onPinnedChange(next);
+      return next;
+    });
+  }, [onPinnedChange]);
+
+  const thumbtackButton = showThumbtack ? (
+    <HeaderButton
+      ariaLabel={isPinnedMaximized ? 'Unpin window' : 'Pin window'}
+      onClick={handlePinToggle}
+      className={isPinnedMaximized ? 'bg-gray-500 text-white hover:bg-gray-500' : ''}
+    >
+      <BsPin
+        className={`h-4 w-4 ${isPinnedMaximized ? 'text-white' : 'text-black'}`}
+        aria-hidden
+      />
+    </HeaderButton>
+  ) : null;
   const maximizeToggleButton = (
     <HeaderButton
       ariaLabel={maximized ? 'Restore window size' : 'Maximize window'}
       onClick={maximized ? handleRestore : handleMaximize}
     >
-      <svg
-        viewBox="0 0 20 20"
-        fill="none"
-        className="h-4 w-4 text-black"
-        aria-hidden
-      >
-        {maximized ? (
-          <path
-            d="M6 7h8v8H6z"
-            stroke="currentColor"
-            strokeWidth="1.4"
-            strokeLinejoin="round"
-          />
-        ) : (
-          <rect
-            x="5"
-            y="5"
-            width="10"
-            height="10"
-            stroke="currentColor"
-            strokeWidth="1.4"
-            rx="1"
-          />
-        )}
-      </svg>
+      {maximized ? (
+        <HiMiniArrowsPointingIn className="h-4 w-4 text-black" aria-hidden />
+      ) : (
+        <HiMiniArrowsPointingOut className="h-4 w-4 text-black" aria-hidden />
+      )}
     </HeaderButton>
   );
-  const controls = isMac ? (
+  const macLeftControls = (
     <div className="flex items-center gap-2">
       {closeButton}
-      {maximizeToggleButton}
+      {!isPinnedMaximized ? maximizeToggleButton : null}
+      {thumbtackButton}
     </div>
-  ) : (
+  );
+  const winRightControls = (
     <div className="flex items-center gap-2">
-      {maximizeToggleButton}
+      {thumbtackButton}
+      {!isPinnedMaximized ? maximizeToggleButton : null}
       {closeButton}
     </div>
+  );
+  const leadingControls = isMac ? macLeftControls : null;
+  const trailingControls = isMac ? null : winRightControls;
+
+  const handleHeaderDoubleClick = useCallback(
+    (event: React.MouseEvent) => {
+      if (windowSizeLocked) {
+        return;
+      }
+
+      const target = event.target as HTMLElement | null;
+      if (target?.closest('button')) {
+        return;
+      }
+
+      if (windowState === 'maximized') {
+        handleRestore();
+      } else {
+        handleMaximize();
+      }
+    },
+    [handleMaximize, handleRestore, isPinnedMaximized, windowSizeLocked, windowState]
   );
 
   // Calculate content min-height for iframe sections in stacked mode
@@ -506,10 +574,11 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
         <div
           className="relative flex h-10 items-center bg-slate-100 px-3 text-sm font-medium text-black"
           onPointerDown={handlePointerDown}
+          onDoubleClick={handleHeaderDoubleClick}
           role="presentation"
         >
           <div className="flex flex-1 items-center gap-2">
-            {isMac ? controls : null}
+            {leadingControls}
           </div>
 
           <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 select-none">
@@ -517,66 +586,79 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
           </div>
 
           <div className="flex flex-1 items-center justify-end gap-2">
-            {!isMac ? controls : null}
+            {trailingControls}
           </div>
         </div>
         
         <div className="relative flex-1 overflow-hidden">
-            {/* Portal Target for Chat View - sits on top when occupied */}
-            <div 
-                ref={chatPortalRef} 
-                className={`absolute inset-0 z-20 pointer-events-none ${viewLayout === 'tabbedConversation' ? 'block' : 'hidden'}`}
-            />
+          {/* Portal Target for Chat View - sits on top when occupied */}
+          <div
+            ref={chatPortalRef}
+            className={`absolute inset-0 z-20 pointer-events-none ${
+              viewLayout === 'tabbedConversation' ? 'block' : 'hidden'
+            }`}
+          />
 
-            <div 
-                ref={scrollContainerRef} 
-                className={`h-full w-full overflow-y-auto scroll-smooth ${viewLayout === 'tabbedConversation' ? 'invisible' : ''}`}
-            >
-                {activeItems.map((item, index) => {
-                    const paneKey = `${props.selectionId}-${index}`;
-                    const isActive = index === tabIndex;
-                    const wrapperClass = "border-b border-gray-200 last:border-b-0 relative";
+          <div
+            ref={scrollContainerRef}
+            className={`h-full w-full overflow-y-auto scroll-smooth ${
+              viewLayout === 'tabbedConversation' ? 'invisible' : ''
+            }`}
+          >
+            {activeItems.map((item, index) => {
+              const paneKey = `${props.selectionId}-${index}`;
+              const isActive = index === tabIndex;
+              const wrapperClass = 'relative border-b border-gray-200 last:border-b-0';
 
-                    return (
-                        <div 
-                          key={paneKey} 
-                          ref={(el) => (sectionRefs.current[index] = el)}
-                          className={wrapperClass}
-                        >
-                            {/* Section Header */}
-                            <div className="sticky top-0 z-20 border-b border-gray-100 bg-gray-50 px-4 py-2 text-xs font-semibold uppercase text-gray-500">
-                                {item.shortName || item.name}
-                            </div>
+              return (
+                <div
+                  key={paneKey}
+                  ref={(el) => (sectionRefs.current[index] = el)}
+                  className={wrapperClass}
+                >
+                  {/* Section Header */}
+                  <div
+                    className={
+                      'sticky top-0 z-20 border-b border-gray-100 bg-gray-50 px-4 py-2 text-xs ' +
+                      'font-semibold uppercase text-gray-500'
+                    }
+                  >
+                    {item.shortName || item.name}
+                  </div>
 
-                            {item.type === 'AI' ? (
-                                 <div>
-                                     <AIAgent
-                                       api={props.api}
-                                       apiKey={props.apiKey}
-                                       words={props.words}
-                                       context={props.context}
-                                       model={resolveModel(item as AISettingItem)}
-                                       prompt={(item as AISettingItem).prompt}
-                                       reasoningEnabled={(item as AISettingItem).reasoningEnabled}
-                                       onDrilldownSelect={props.onDrilldownSelect}
-                                       viewMode={viewLayout === 'tabbedConversation' && isActive ? 'conversation' : 'simple'}
-                                       onViewModeChange={(mode) => handleViewModeChange(mode, index)}
-                                       containerHeight={effectiveHeight}
-                                       chatPortalTarget={chatPortalRef.current}
-                                     />
-                                 </div>
-                            ) : (
-                                <IframeRender 
-                                   url={item.url} 
-                                   words={props.words} 
-                                   context={props.context}
-                                   minHeight={`${contentMinHeight}px`}
-                                />
-                            )}
-                        </div>
-                    )
-                })}
-            </div>
+                  {item.type === 'AI' ? (
+                    <div>
+                      <AIAgent
+                        api={props.api}
+                        apiKey={props.apiKey}
+                        words={props.words}
+                        context={props.context}
+                        model={resolveModel(item as AISettingItem)}
+                        prompt={(item as AISettingItem).prompt}
+                        reasoningEnabled={(item as AISettingItem).reasoningEnabled}
+                        onDrilldownSelect={props.onDrilldownSelect}
+                        viewMode={
+                          viewLayout === 'tabbedConversation' && isActive
+                            ? 'conversation'
+                            : 'simple'
+                        }
+                        onViewModeChange={(mode) => handleViewModeChange(mode, index)}
+                        containerHeight={effectiveHeight}
+                        chatPortalTarget={chatPortalRef.current}
+                      />
+                    </div>
+                  ) : (
+                    <IframeRender
+                      url={item.url}
+                      words={props.words}
+                      context={props.context}
+                      minHeight={`${contentMinHeight}px`}
+                    />
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         <div className="flex h-12 justify-between divide-x divide-black">

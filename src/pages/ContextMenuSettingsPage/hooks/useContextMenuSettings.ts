@@ -29,6 +29,7 @@ export const useContextMenuSettings = () => {
     api: '',
     key: '',
     defaultModel: '',
+    pinnedMaximized: false,
     items: [],
     providerId: undefined,
     providerApiKeyCache: {},
@@ -92,12 +93,14 @@ export const useContextMenuSettings = () => {
         }
 
         const sanitizedItems = (savedSettings?.items || []).map((item) => sanitizeTool(item));
+        const pinnedMaximized = savedSettings.pinnedMaximized ?? false;
 
         // Ensure we have valid settings object
         const validSettings: ContextMenuSettings = {
           api,
           key: activeKey,
           defaultModel,
+          pinnedMaximized,
           items: sanitizedItems,
           providerId,
           providerApiKeyCache,
@@ -113,6 +116,7 @@ export const useContextMenuSettings = () => {
           api: '',
           key: '',
           defaultModel: '',
+          pinnedMaximized: false,
           items: [],
           providerId: 'custom',
           providerApiKeyCache: {},
@@ -203,6 +207,26 @@ export const useContextMenuSettings = () => {
     },
     []
   );
+
+  const updatePinnedMaximized = useCallback(async (isPinned: boolean) => {
+    try {
+      setIsSaving(true);
+      setError(null);
+
+      const newSettings: ContextMenuSettings = {
+        ...settingsRef.current,
+        pinnedMaximized: isPinned,
+      };
+
+      await updateContextMenuSettings(newSettings);
+      setSettings(newSettings);
+    } catch (err) {
+      setError('Failed to update pin preference');
+      console.error('Error updating pinnedMaximized:', err);
+    } finally {
+      setIsSaving(false);
+    }
+  }, []);
 
   const addTool = useCallback(
     async (tool: ContextMenuItem) => {
@@ -403,6 +427,7 @@ export const useContextMenuSettings = () => {
     saveSettings,
     toggleToolEnabled,
     toggleToolSupport,
+    updatePinnedMaximized,
   };
 };
 

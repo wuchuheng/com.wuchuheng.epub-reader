@@ -81,7 +81,7 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
   const [menuVisible, setMenuVisible] = useState<boolean>(false);
   const [tocVisible, setTocVisible] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  const { settings: contextMenuSettings } = useContextMenuSettings();
+  const { settings: contextMenuSettings, updatePinnedMaximized } = useContextMenuSettings();
   const activeTools = useMemo(
     () => contextMenuSettings.items.filter((item) => item.enabled !== false),
     [contextMenuSettings.items]
@@ -368,6 +368,8 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
             isTopMost={index === menuStack.length - 1}
             onClose={() => removeMenuAndChildren(menu.id)}
             onDrilldownSelect={(info) => pushDrilldownMenu(menu.id, info)}
+            pinnedMaximized={contextMenuSettings.pinnedMaximized ?? false}
+            onPinnedChange={updatePinnedMaximized}
             zIndex={50 + index}
           />
         );
