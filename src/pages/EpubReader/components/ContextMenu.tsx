@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { AISettingItem, ContextMenuSettings, SelectInfo } from '../../../types/epub';
 import { AIAgent } from './AIAgent/AIAgent';
-import { IframeRender } from './IframeRender/IframeRender';
+import { IframeRender, resolveIframeUrl } from './IframeRender/IframeRender';
 import { ViewMode } from './AIAgent/components/MessageList/MessageList';
 import { BsPin } from 'react-icons/bs';
-import {
-  HiMiniArrowsPointingIn,
-  HiMiniArrowsPointingOut,
-} from 'react-icons/hi2';
+import { HiMiniArrowsPointingIn, HiMiniArrowsPointingOut } from 'react-icons/hi2';
+import { FaExternalLinkAlt } from 'react-icons/fa';
+import { LuRefreshCcw } from 'react-icons/lu';
+import { MdClose } from 'react-icons/md';
 
 type WindowState = 'normal' | 'maximized';
 
@@ -56,16 +56,12 @@ const getViewportSize = (): ViewportSize => {
   return { width: window.innerWidth, height: window.innerHeight };
 };
 
-const getOverlayPadding = (viewportWidth: number): number =>
-  viewportWidth >= 640 ? 24 : 12;
+const getOverlayPadding = (viewportWidth: number): number => (viewportWidth >= 640 ? 24 : 12);
 
 const clamp = (value: number, min: number, max: number): number =>
   Math.min(Math.max(value, min), max);
 
-const clampSizeToViewport = (
-  size: WindowSize,
-  viewport: ViewportSize
-): WindowSize => {
+const clampSizeToViewport = (size: WindowSize, viewport: ViewportSize): WindowSize => {
   const padding = getOverlayPadding(viewport.width);
   const maxWidth = Math.max(viewport.width - padding * 2, 0);
   const maxHeight = Math.max(viewport.height - padding * 2, 0);
@@ -91,14 +87,13 @@ const clampPositionToViewport = (
   };
 };
 
-const getCenteredLayout = (viewport: ViewportSize): {
+const getCenteredLayout = (
+  viewport: ViewportSize
+): {
   size: WindowSize;
   position: WindowPosition;
 } => {
-  const size = clampSizeToViewport(
-    { width: defaultSizePx, height: defaultSizePx },
-    viewport
-  );
+  const size = clampSizeToViewport({ width: defaultSizePx, height: defaultSizePx }, viewport);
   const padding = getOverlayPadding(viewport.width);
   const availableWidth = Math.max(viewport.width - padding * 2 - size.width, 0);
   const availableHeight = Math.max(viewport.height - padding * 2 - size.height, 0);
@@ -112,7 +107,9 @@ const getCenteredLayout = (viewport: ViewportSize): {
   };
 };
 
-const getMaximizedLayout = (viewport: ViewportSize): {
+const getMaximizedLayout = (
+  viewport: ViewportSize
+): {
   size: WindowSize;
   position: WindowPosition;
 } => {
@@ -168,8 +165,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
   const [viewportSize, setViewportSize] = useState<ViewportSize>(getViewportSize());
   const [isPinnedMaximized, setIsPinnedMaximized] = useState<boolean>(pinnedMaximized);
   const initialLayout = useMemo(
-    () =>
-      isPinnedMaximized ? getMaximizedLayout(viewportSize) : getCenteredLayout(viewportSize),
+    () => (isPinnedMaximized ? getMaximizedLayout(viewportSize) : getCenteredLayout(viewportSize)),
     [viewportSize, isPinnedMaximized]
   );
   const [windowState, setWindowState] = useState<WindowState>(
@@ -199,12 +195,15 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
     []
   );
   // Refactor: Added viewLayout state
-  const [viewLayout, setViewLayout] = useState<'stackedSimple' | 'tabbedConversation'>('stackedSimple');
+  const [viewLayout, setViewLayout] = useState<'stackedSimple' | 'tabbedConversation'>(
+    'stackedSimple'
+  );
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
   const isScrollingRef = useRef(false);
   const [contentHeight, setContentHeight] = useState<number>(0);
   const chatPortalRef = useRef<HTMLDivElement>(null);
+  const [iframeRefreshCounters, setIframeRefreshCounters] = useState<Record<string, number>>({});
 
   useEffect(() => {
     viewportRef.current = viewportSize;
@@ -221,6 +220,10 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
   useEffect(() => {
     setIsPinnedMaximized(pinnedMaximized);
   }, [pinnedMaximized]);
+
+  useEffect(() => {
+    setIframeRefreshCounters({});
+  }, [selectionId]);
 
   useEffect(() => {
     if (tabIndex === null) return;
@@ -276,13 +279,13 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
 
     const handleScroll = () => {
       if (!container) return;
-      
+
       // Simple intersection check using middle of viewport
       const containerRect = container.getBoundingClientRect();
       const threshold = containerRect.top + containerRect.height / 2;
 
       let newActiveIndex = -1;
-      
+
       sectionRefs.current.forEach((section, index) => {
         if (!section) return;
         const rect = section.getBoundingClientRect();
@@ -295,7 +298,9 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
         isScrollingRef.current = true;
         onChangeIndex(newActiveIndex);
         // Reset scroll flag after a short delay to allow prop update
-        setTimeout(() => { isScrollingRef.current = false; }, 100);
+        setTimeout(() => {
+          isScrollingRef.current = false;
+        }, 100);
       }
     };
 
@@ -306,12 +311,12 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
   // Scroll to tab logic (only when layout switches or initial load)
   useEffect(() => {
     if (viewLayout === 'stackedSimple' && !isScrollingRef.current) {
-       if (tabIndex !== null && sectionRefs.current[tabIndex]) {
-           // Use a small timeout to ensure rendering is complete
-           setTimeout(() => {
-               sectionRefs.current[tabIndex]?.scrollIntoView({ block: 'start' });
-           }, 0);
-       }
+      if (tabIndex !== null && sectionRefs.current[tabIndex]) {
+        // Use a small timeout to ensure rendering is complete
+        setTimeout(() => {
+          sectionRefs.current[tabIndex]?.scrollIntoView({ block: 'start' });
+        }, 0);
+      }
     }
   }, [viewLayout, selectionId, tabIndex]);
 
@@ -399,27 +404,29 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
   }, [isPinnedMaximized]);
 
   const handleTabClick = (index: number) => {
-      onChangeIndex(index);
-      // Always return to simple view when switching tabs via footer
-      setViewLayout('stackedSimple');
-      if (viewLayout === 'stackedSimple') {
-          sectionRefs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-      // Clean up any frozen heights
-      sectionRefs.current.forEach(el => { if (el) el.style.height = ''; });
+    onChangeIndex(index);
+    // Always return to simple view when switching tabs via footer
+    setViewLayout('stackedSimple');
+    if (viewLayout === 'stackedSimple') {
+      sectionRefs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    // Clean up any frozen heights
+    sectionRefs.current.forEach((el) => {
+      if (el) el.style.height = '';
+    });
   };
 
   const handleViewModeChange = (mode: ViewMode, index: number) => {
-      const el = sectionRefs.current[index];
-      if (mode === 'conversation') {
-          // Freeze the height of the container before portaling out to prevent scroll jump
-          if (el) el.style.height = `${el.offsetHeight}px`;
-          setViewLayout('tabbedConversation');
-          onChangeIndex(index);
-      } else {
-          // Unfreeze height
-          if (el) el.style.height = '';
-          setViewLayout('stackedSimple');
+    const el = sectionRefs.current[index];
+    if (mode === 'conversation') {
+      // Freeze the height of the container before portaling out to prevent scroll jump
+      if (el) el.style.height = `${el.offsetHeight}px`;
+      setViewLayout('tabbedConversation');
+      onChangeIndex(index);
+    } else {
+      // Unfreeze height
+      if (el) el.style.height = '';
+      setViewLayout('stackedSimple');
     }
   };
 
@@ -433,25 +440,18 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
 
   // ResizeObserver to measure exact content area height
   useEffect(() => {
-      const container = scrollContainerRef.current;
-      if (!container) return;
+    const container = scrollContainerRef.current;
+    if (!container) return;
 
-      const observer = new ResizeObserver((entries) => {
-          for (const entry of entries) {
-              setContentHeight(entry.contentRect.height);
-          }
-      });
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setContentHeight(entry.contentRect.height);
+      }
+    });
 
-      observer.observe(container);
-      return () => observer.disconnect();
+    observer.observe(container);
+    return () => observer.disconnect();
   }, [viewLayout, windowSize]); // Re-attach when layout or window size changes
-
-  if (tabIndex === null) {
-    return <></>;
-  }
-  if (activeItems.length === 0 || hasInvalidIndex) {
-    return <></>;
-  }
 
   const resolveModel = (item: AISettingItem): string => props.defaultModel || item.model || '';
   const maximized = windowState === 'maximized';
@@ -464,19 +464,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
   };
   const closeButton = (
     <HeaderButton ariaLabel="Close window" onClick={onClose}>
-      <svg
-        viewBox="0 0 20 20"
-        fill="none"
-        className="h-4 w-4 text-black"
-        aria-hidden
-      >
-        <path
-          d="M6 6l8 8M14 6l-8 8"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinecap="round"
-        />
-      </svg>
+      <MdClose className="size-5" />
     </HeaderButton>
   );
   const handlePinToggle = useCallback(() => {
@@ -493,10 +481,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
       onClick={handlePinToggle}
       className={isPinnedMaximized ? 'bg-gray-500 text-white hover:bg-gray-500' : ''}
     >
-      <BsPin
-        className={`h-4 w-4 ${isPinnedMaximized ? 'text-white' : 'text-black'}`}
-        aria-hidden
-      />
+      <BsPin className={`h-4 w-4 ${isPinnedMaximized ? 'text-white' : 'text-black'}`} aria-hidden />
     </HeaderButton>
   ) : null;
   const maximizeToggleButton = (
@@ -545,7 +530,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
         handleMaximize();
       }
     },
-    [handleMaximize, handleRestore, isPinnedMaximized, windowSizeLocked, windowState]
+    [handleMaximize, handleRestore, windowSizeLocked, windowState]
   );
 
   // Calculate content min-height for iframe sections in stacked mode
@@ -558,6 +543,12 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
   // Fallback if ResizeObserver hasn't fired yet
   const calculatedHeight = windowSize.height - chromeHeight;
   const effectiveHeight = contentHeight > 0 ? contentHeight : calculatedHeight;
+  const shouldRender =
+    tabIndex !== null && activeItems.length > 0 && hasInvalidIndex === false;
+
+  if (!shouldRender) {
+    return <></>;
+  }
 
   return (
     <div
@@ -566,8 +557,10 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
       style={props.zIndex ? { zIndex: props.zIndex } : undefined}
     >
       <div
-        className="absolute flex flex-col overflow-hidden divide-y divide-black rounded border border-black
-          bg-white text-black shadow-lg"
+        className={[
+          'absolute flex flex-col divide-y divide-black overflow-hidden',
+          'rounded border border-black bg-white text-black shadow-lg',
+        ].join(' ')}
         style={windowStyle}
         onClick={(e) => e.stopPropagation()}
       >
@@ -577,24 +570,20 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
           onDoubleClick={handleHeaderDoubleClick}
           role="presentation"
         >
-          <div className="flex flex-1 items-center gap-2">
-            {leadingControls}
-          </div>
+          <div className="flex flex-1 items-center gap-2">{leadingControls}</div>
 
           <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 select-none">
             Context Menu
           </div>
 
-          <div className="flex flex-1 items-center justify-end gap-2">
-            {trailingControls}
-          </div>
+          <div className="flex flex-1 items-center justify-end gap-2">{trailingControls}</div>
         </div>
-        
+
         <div className="relative flex-1 overflow-hidden">
           {/* Portal Target for Chat View - sits on top when occupied */}
           <div
             ref={chatPortalRef}
-            className={`absolute inset-0 z-20 pointer-events-none ${
+            className={`pointer-events-none absolute inset-0 z-20 ${
               viewLayout === 'tabbedConversation' ? 'block' : 'hidden'
             }`}
           />
@@ -609,6 +598,19 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
               const paneKey = `${props.selectionId}-${index}`;
               const isActive = index === tabIndex;
               const wrapperClass = 'relative border-b border-gray-200 last:border-b-0';
+              const isIframe = item.type === 'iframe';
+              const iframeKey = `${index}`;
+              const iframeUrl = isIframe
+                ? resolveIframeUrl(item.url, props.words, props.context)
+                : '';
+              const iframeRefreshKey = isIframe ? (iframeRefreshCounters[iframeKey] ?? 0) : 0;
+              const iframeHeaderButtonClass = [
+                'flex items-center justify-center rounded text-gray-500',
+                'hover:bg-gray-100',
+                'focus-visible:outline focus-visible:outline-2',
+                'focus-visible:outline-offset-2 focus-visible:outline-black',
+                'disabled:cursor-not-allowed disabled:text-gray-300',
+              ].join(' ');
 
               return (
                 <div
@@ -618,12 +620,42 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
                 >
                   {/* Section Header */}
                   <div
-                    className={
-                      'sticky top-0 z-20 border-b border-gray-100 bg-gray-50 px-4 py-2 text-xs ' +
-                      'font-semibold uppercase text-gray-500'
-                    }
+                    className={[
+                      'sticky top-0 z-20 flex items-center justify-between',
+                      'border-b border-gray-100 bg-gray-50 px-4 py-2',
+                      'text-xs font-semibold uppercase text-gray-500',
+                    ].join(' ')}
                   >
-                    {item.shortName || item.name}
+                    <span className="truncate">{item.shortName || item.name}</span>
+                    {isIframe ? (
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          aria-label="Refresh iframe"
+                          className={iframeHeaderButtonClass}
+                          onClick={() =>
+                            setIframeRefreshCounters((prev) => ({
+                              ...prev,
+                              [iframeKey]: (prev[iframeKey] ?? 0) + 1,
+                            }))
+                          }
+                          disabled={!iframeUrl}
+                        >
+                          <LuRefreshCcw className="h-4 w-4" aria-hidden />
+                        </button>
+                        <button
+                          type="button"
+                          aria-label="Open iframe in new window"
+                          className={iframeHeaderButtonClass}
+                          onClick={() =>
+                            iframeUrl && window.open(iframeUrl, '_blank', 'noreferrer noopener')
+                          }
+                          disabled={!iframeUrl}
+                        >
+                          <FaExternalLinkAlt className="h-3.5 w-3.5" aria-hidden />
+                        </button>
+                      </div>
+                    ) : null}
                   </div>
 
                   {item.type === 'AI' ? (
@@ -649,6 +681,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
                     </div>
                   ) : (
                     <IframeRender
+                      key={`${paneKey}-${iframeRefreshKey}`}
                       url={item.url}
                       words={props.words}
                       context={props.context}

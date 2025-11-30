@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { replaceWords } from '../AIAgent/utils';
 import { Loading } from '../Loading';
 
@@ -17,6 +17,15 @@ type IframeRenderProps = {
  * @param words - Words to replace in the URL template
  * @returns Iframe component with loading state
  */
+// eslint-disable-next-line react-refresh/only-export-components
+export const resolveIframeUrl = (template: string, words: string, context: string): string =>
+  replaceWords({
+    template,
+    words: encodeURIComponent(words),
+    context: encodeURIComponent(context),
+    wrapContext: false,
+  });
+
 export const IframeRender: React.FC<IframeRenderProps> = ({
   url,
   words,
@@ -28,16 +37,10 @@ export const IframeRender: React.FC<IframeRenderProps> = ({
   const [hasError, setHasError] = useState(false);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
-  // url encode the context.
-  const encodedContext = encodeURIComponent(context);
-  const encodedWords = encodeURIComponent(words);
-
-  const newUrl = replaceWords({
-    template: url,
-    words: encodedWords,
-    context: encodedContext,
-    wrapContext: false,
-  });
+  const resolvedUrl = useMemo(
+    () => resolveIframeUrl(url, words, context),
+    [context, url, words]
+  );
 
   // 2. Core processing - event handlers
   const handleIframeLoad = () => {
@@ -64,17 +67,14 @@ export const IframeRender: React.FC<IframeRenderProps> = ({
   }
 
   return (
-    <div
-      className="relative w-full overflow-hidden"
-      style={{ height: minHeight || '100%' }}
-    >
+    <div className="relative w-full overflow-hidden" style={{ height: minHeight || '100%' }}>
       {isLoading && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-50">
           <Loading />
         </div>
       )}
       <iframe
-        src={newUrl}
+        src={resolvedUrl}
         title="Iframe"
         className="h-full w-full border-0"
         style={{
