@@ -7,6 +7,7 @@ import { BsPin } from 'react-icons/bs';
 import { HiMiniArrowsPointingIn, HiMiniArrowsPointingOut } from 'react-icons/hi2';
 import { FaExternalLinkAlt, FaQuestionCircle } from 'react-icons/fa';
 import { LuRefreshCcw } from 'react-icons/lu';
+import { IoIosArrowUp, IoIosArrowDown } from 'react-icons/io';
 import { MdClose } from 'react-icons/md';
 
 type WindowState = 'normal' | 'maximized';
@@ -207,6 +208,10 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
   const [contentHeight, setContentHeight] = useState<number>(0);
   const chatPortalRef = useRef<HTMLDivElement>(null);
   const [iframeRefreshCounters, setIframeRefreshCounters] = useState<Record<string, number>>({});
+  const [aiRefreshCounters, setAiRefreshCounters] = useState<Record<number, number>>({});
+  const [activeScrollTarget, setActiveScrollTarget] = useState<HTMLElement | null>(null);
+  const [scrollState, setScrollState] = useState({ isAtTop: true, isAtBottom: false });
+
   const [showHelp, setShowHelp] = useState(false);
   const { getCachedUrl, setCachedUrl } = useIframeUrlCache(selectionId);
 
@@ -228,7 +233,76 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
 
   useEffect(() => {
     setIframeRefreshCounters({});
+    setAiRefreshCounters({});
   }, [selectionId]);
+
+  // --- Scroll Button Logic ---
+  const getScrollTarget = useCallback(
+    () => (viewLayout === 'tabbedConversation' ? activeScrollTarget : scrollContainerRef.current),
+    [viewLayout, activeScrollTarget]
+  );
+
+  useEffect(() => {
+    const target = getScrollTarget();
+
+    if (!target) {
+      setScrollState({ isAtTop: true, isAtBottom: true }); // Disable both if no target
+      return;
+    }
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = target;
+      // Use a small buffer for "bottom" detection to be forgiving
+      const isAtBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 2;
+      const isAtTop = scrollTop <= 0;
+
+      setScrollState({ isAtTop, isAtBottom });
+    };
+
+    // Initial check
+    handleScroll();
+
+    target.addEventListener('scroll', handleScroll);
+    // Also listen to resize observer on target to update scroll state if content changes size
+    const observer = new ResizeObserver(handleScroll);
+    observer.observe(target);
+
+    return () => {
+      target.removeEventListener('scroll', handleScroll);
+      observer.disconnect();
+    };
+  }, [getScrollTarget, contentHeight]);
+
+  const lineHeight = 32;
+  const handleScrollUp = useCallback(() => {
+    const target = getScrollTarget();
+
+    if (target) {
+      // Scroll up by clientHeight minus a small buffer (e.g., 24px for one line height) to keep context
+      const scrollAmount = target.clientHeight - lineHeight;
+      target.scrollBy({ top: -scrollAmount, behavior: 'smooth' });
+    }
+  }, [getScrollTarget]);
+
+  const handleScrollDown = useCallback(() => {
+    const target = getScrollTarget();
+
+    if (target) {
+      // Scroll to absolute bottom if we are close to it, otherwise page down
+      const { scrollTop, scrollHeight, clientHeight } = target;
+      const remaining = scrollHeight - clientHeight - scrollTop;
+
+      // Scroll down by clientHeight minus a buffer to ensure text continuity
+      const scrollAmount = clientHeight - lineHeight;
+
+      if (remaining <= scrollAmount) {
+        target.scrollTo({ top: scrollHeight, behavior: 'smooth' });
+      } else {
+        target.scrollBy({ top: scrollAmount, behavior: 'smooth' });
+      }
+    }
+  }, [getScrollTarget]);
+  // ---------------------------
 
   useEffect(() => {
     if (tabIndex === null) return;
@@ -523,6 +597,39 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
       {closeButton}
     </div>
   );
+
+  // --- Floating Scroll Buttons ---
+  const scrollButtonClass = [
+    'flex size-6 items-center justify-center rounded-full',
+    'bg-white text-black shadow-md border border-gray-200',
+    'hover:bg-gray-50 active:bg-gray-100',
+    'disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none',
+    'transition-all duration-200',
+  ].join(' ');
+
+  const buttonIconClass = 'size-5';
+  const floatingScrollControls = (
+    <div className="absolute right-4 top-1/2 z-50 flex -translate-y-1/2 flex-col gap-4">
+      <button
+        className={scrollButtonClass}
+        onClick={handleScrollUp}
+        disabled={scrollState.isAtTop}
+        aria-label="Scroll up"
+      >
+        <IoIosArrowUp className={buttonIconClass} />
+      </button>
+      <button
+        className={scrollButtonClass}
+        onClick={handleScrollDown}
+        disabled={scrollState.isAtBottom}
+        aria-label="Scroll down"
+      >
+        <IoIosArrowDown className={buttonIconClass} />
+      </button>
+    </div>
+  );
+  // -----------------------------
+
   const leadingControls = isMac ? macLeftControls : null;
   const trailingControls = isMac ? null : winRightControls;
 
@@ -592,6 +699,9 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
         </div>
 
         <div className="relative flex-1 overflow-hidden">
+          {/* Floating Controls */}
+          {floatingScrollControls}
+
           {/* Portal Target for Chat View - sits on top when occupied */}
           <div
             ref={chatPortalRef}
@@ -611,8 +721,11 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
               const isActive = index === tabIndex;
               const wrapperClass = 'relative border-b border-gray-200 last:border-b-0';
               const isIframe = item.type === 'iframe';
+              const isAI = item.type === 'AI';
               const iframeKey = `${index}`;
+              const aiKey = index;
               const iframeRefreshKey = isIframe ? (iframeRefreshCounters[iframeKey] ?? 0) : 0;
+              const aiRefreshKey = isAI ? (aiRefreshCounters[aiKey] ?? 0) : 0;
 
               // Resolve or get cached URL for iframes
               let iframeUrl = '';
@@ -649,33 +762,42 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
                     ].join(' ')}
                   >
                     <span className="truncate">{item.shortName || item.name}</span>
-                    {isIframe ? (
-                      <div className="flex items-center gap-2">
+                    {isIframe || isAI ? (
+                      <div className="flex items-center gap-4">
                         <button
                           type="button"
-                          aria-label="Refresh iframe"
+                          aria-label={isAI ? 'Regenerate response' : 'Refresh iframe'}
                           className={iframeHeaderButtonClass}
-                          onClick={() =>
-                            setIframeRefreshCounters((prev) => ({
-                              ...prev,
-                              [iframeKey]: (prev[iframeKey] ?? 0) + 1,
-                            }))
-                          }
-                          disabled={!iframeUrl}
+                          onClick={() => {
+                            if (isIframe) {
+                              setIframeRefreshCounters((prev) => ({
+                                ...prev,
+                                [iframeKey]: (prev[iframeKey] ?? 0) + 1,
+                              }));
+                            } else {
+                              setAiRefreshCounters((prev) => ({
+                                ...prev,
+                                [aiKey]: (prev[aiKey] ?? 0) + 1,
+                              }));
+                            }
+                          }}
+                          disabled={isIframe && !iframeUrl}
                         >
                           <LuRefreshCcw className="h-4 w-4" aria-hidden />
                         </button>
-                        <button
-                          type="button"
-                          aria-label="Open iframe in new window"
-                          className={iframeHeaderButtonClass}
-                          onClick={() =>
-                            iframeUrl && window.open(iframeUrl, '_blank', 'noreferrer noopener')
-                          }
-                          disabled={!iframeUrl}
-                        >
-                          <FaExternalLinkAlt className="h-3.5 w-3.5" aria-hidden />
-                        </button>
+                        {isIframe && (
+                          <button
+                            type="button"
+                            aria-label="Open iframe in new window"
+                            className={iframeHeaderButtonClass}
+                            onClick={() =>
+                              iframeUrl && window.open(iframeUrl, '_blank', 'noreferrer noopener')
+                            }
+                            disabled={!iframeUrl}
+                          >
+                            <FaExternalLinkAlt className="h-3.5 w-3.5" aria-hidden />
+                          </button>
+                        )}
                       </div>
                     ) : null}
                   </div>
@@ -701,6 +823,8 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
                         onViewModeChange={(mode) => handleViewModeChange(mode, index)}
                         containerHeight={effectiveHeight}
                         chatPortalTarget={chatPortalRef.current}
+                        refreshId={aiRefreshKey}
+                        onScrollTargetMount={setActiveScrollTarget}
                       />
                     </div>
                   ) : (

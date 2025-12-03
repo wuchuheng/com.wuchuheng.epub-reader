@@ -19,6 +19,8 @@ export type AIAgentComponentProps = AIAgentProps & {
   onViewModeChange?: (mode: ViewMode) => void;
   containerHeight?: number;
   chatPortalTarget?: HTMLElement | null;
+  refreshId?: number;
+  onScrollTargetMount?: (el: HTMLElement | null) => void;
 };
 
 export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
@@ -26,7 +28,7 @@ export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
   const isAutoScrollRef = useRef(true);
   const isGoToBottomRef = useRef<boolean>(true);
   const viewMode = props.viewMode ?? 'simple';
-  const { onViewModeChange } = props;
+  const { onViewModeChange, onScrollTargetMount } = props;
 
   // --- State & Logic moved from MessageList ---
   const content = replaceWords({
@@ -84,6 +86,29 @@ export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
     fetchAIMessage(messageList);
   }, [fetchAIMessage, messageList]);
 
+  // Handle refresh
+  const lastRefreshIdRef = useRef(props.refreshId);
+  useEffect(() => {
+    if (props.refreshId !== undefined && props.refreshId !== lastRefreshIdRef.current) {
+      lastRefreshIdRef.current = props.refreshId;
+      
+      // Only refresh if we have messages
+      if (messageList.length === 0) return;
+
+      let newMessageList = [...messageList];
+      const lastMessage = newMessageList[newMessageList.length - 1];
+
+      // If last message is from assistant, remove it to regenerate
+      if (lastMessage.role === 'assistant') {
+        newMessageList = newMessageList.slice(0, -1);
+        setMessageList(newMessageList);
+      }
+
+      // Trigger fetch with ignoreCache
+      fetchAIMessage(newMessageList, { ignoreCache: true });
+    }
+  }, [props.refreshId, messageList, fetchAIMessage]);
+
   useEffect(
     () => () => {
       abortControllerRef.current?.abort();
@@ -103,6 +128,19 @@ export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
     isGoToBottomRef,
     scrollContainerRef,
   });
+
+  // Update scroll target when mounted/changed
+  useEffect(() => {
+    if (viewMode === 'conversation' && scrollContainerRef.current) {
+      onScrollTargetMount?.(scrollContainerRef.current);
+    } else {
+      onScrollTargetMount?.(null);
+    }
+    
+    return () => {
+      onScrollTargetMount?.(null);
+    };
+  }, [viewMode, onScrollTargetMount]);
 
   // Reset scroll position or scroll to bottom when viewMode changes.
   useEffect(() => {

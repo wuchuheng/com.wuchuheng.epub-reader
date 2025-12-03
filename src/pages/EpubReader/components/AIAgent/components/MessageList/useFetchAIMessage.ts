@@ -62,9 +62,12 @@ export const useFetchAIMessage = ({
     });
   };
 
-  const fetchAIMessage = async (newMessageList: MessageItem[]) => {
+  const fetchAIMessage = async (
+    newMessageList: MessageItem[],
+    options?: { ignoreCache?: boolean }
+  ) => {
     // 1. Check cache for first request (single user message)
-    if (newMessageList.length === 1 && newMessageList[0].role === 'user') {
+    if (!options?.ignoreCache && newMessageList.length === 1 && newMessageList[0].role === 'user') {
       logger.log(
         `[useFetchAIMessage] Checking cache for tool "${props.toolName}" (context ${props.contextId})`
       );
