@@ -7,6 +7,7 @@ type IframeRenderProps = {
   context: string;
   words: string;
   minHeight?: number | string;
+  preResolvedUrl?: string;
 };
 
 /**
@@ -31,6 +32,7 @@ export const IframeRender: React.FC<IframeRenderProps> = ({
   words,
   context,
   minHeight,
+  preResolvedUrl,
 }) => {
   // 1. Input validation and preparation
   const [isLoading, setIsLoading] = useState(true);
@@ -38,8 +40,8 @@ export const IframeRender: React.FC<IframeRenderProps> = ({
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
   const resolvedUrl = useMemo(
-    () => resolveIframeUrl(url, words, context),
-    [context, url, words]
+    () => preResolvedUrl || resolveIframeUrl(url, words, context),
+    [context, url, words, preResolvedUrl]
   );
 
   // 2. Core processing - event handlers

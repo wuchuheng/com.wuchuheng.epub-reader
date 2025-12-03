@@ -5,6 +5,11 @@ import { Contents } from 'epubjs';
 
 export const handleComputerSelection = (props: SetupRenditionEventsProps, iframeView: Contents) => {
   props.rendition.on('touchend', () => {
+    if (!props.selectionEnabled) {
+      logger.log('Touch selection disabled - context menus are open');
+      return;
+    }
+
     logger.log('Touch end event detected');
 
     const doc = iframeView.document;
@@ -12,6 +17,11 @@ export const handleComputerSelection = (props: SetupRenditionEventsProps, iframe
   });
 
   props.rendition.on('mouseup', (event: MouseEvent) => {
+    if (!props.selectionEnabled) {
+      logger.log('Mouse selection disabled - context menus are open');
+      return;
+    }
+
     logger.log(`Mouse up event detected`);
     const doc = iframeView.document;
     handleSelectionEnd(doc, props.onSelectionCompleted, { x: event.clientX, y: event.clientY });

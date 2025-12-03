@@ -11,6 +11,7 @@ export type SetupRenditionEventsProps = {
   bookId: string;
   onClick: ((event: MouseEvent) => void) | undefined;
   onSelectionCompleted: (selectInfo: SelectInfo) => void;
+  selectionEnabled: boolean; // Whether text selection is enabled
   setter: {
     setCurrentPage: (page: number) => void;
     setCurrentChapterHref: (href: string) => void;

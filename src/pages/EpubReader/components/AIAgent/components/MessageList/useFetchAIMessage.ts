@@ -1,8 +1,11 @@
+import React from 'react';
 import OpenAI from 'openai';
 import type { ChatCompletionCreateParamsStreaming } from 'openai/resources/chat/completions';
-import { AIMessageRenderProps } from '../AIMessageRender';
-import { AIResponse, MessageItem } from '../../types/AIAgent';
+import type { AIMessageRenderProps } from '../AIMessageRender';
+import type { AIResponse, MessageItem } from '../../types/AIAgent';
 import { thinkingConfig } from '@/config/thinkingConfig';
+import { checkAIToolCache, saveAIToolCache } from '@/services/ContextMenuCacheService';
+import { logger } from '@/utils/logger';
 
 type UseFetchAIMessageProps = {
   setMessageList: React.Dispatch<React.SetStateAction<MessageItem[]>>;
@@ -13,6 +16,8 @@ type UseFetchAIMessageProps = {
   messageList: MessageItem[];
   onUpdateAIResponse: (res: AIMessageRenderProps) => void;
   abortControllerRef: React.MutableRefObject<AbortController | null>;
+  contextId: number; // Cache context ID
+  toolName: string; // Tool name for cache filename
 };
 
 /**
@@ -58,6 +63,48 @@ export const useFetchAIMessage = ({
   };
 
   const fetchAIMessage = async (newMessageList: MessageItem[]) => {
+    // 1. Check cache for first request (single user message)
+    if (newMessageList.length === 1 && newMessageList[0].role === 'user') {
+      logger.log(
+        `[useFetchAIMessage] Checking cache for tool "${props.toolName}" (context ${props.contextId})`
+      );
+
+      const cachedResponse = await checkAIToolCache(props.contextId, props.toolName);
+
+      if (cachedResponse) {
+        logger.log(
+          `[useFetchAIMessage] ⚡️ Cache HIT! Using cached response for "${props.toolName}"`
+        );
+
+        // 1.1 Restore conversation from cache
+        const restoredMessages: MessageItem[] = cachedResponse.conversations.map((msg) => {
+          if (msg.role === 'user') {
+            return { role: 'user', content: msg.content };
+          } else {
+            return {
+              role: 'assistant',
+              data: {
+                content: msg.content,
+                model: cachedResponse.model,
+                reasoningContentCompleted: true,
+                usage: {
+                  promptTokens: cachedResponse.tokenUsage.prompt,
+                  completionTokens: cachedResponse.tokenUsage.completion,
+                  totalTokens: cachedResponse.tokenUsage.total,
+                },
+              },
+            };
+          }
+        });
+
+        setMessageList(restoredMessages);
+        logger.log(`[useFetchAIMessage] ✅ Cache restored ${restoredMessages.length} messages`);
+        return;
+      }
+
+      logger.log(`[useFetchAIMessage] Cache MISS - fetching from API`);
+    }
+
     // 2. Send message to AI
     // 2.1 Push the AI message to message list.
     const aiMessage: AIMessageRenderProps = {
@@ -146,6 +193,39 @@ export const useFetchAIMessage = ({
       }
     } finally {
       props.abortControllerRef.current = null;
+
+      // 3. Save to cache if successful (only for first request)
+      if (
+        newMessageList.length === 1 &&
+        newMessageList[0].role === 'user' &&
+        aiMessage.usage &&
+        aiMessage.content
+      ) {
+        logger.log(`[useFetchAIMessage] Saving response to cache for tool "${props.toolName}"`);
+
+        const userMessage = newMessageList[0];
+
+        try {
+          await saveAIToolCache(props.contextId, props.toolName, {
+            toolName: props.toolName,
+            conversations: [
+              { role: 'user', content: userMessage.content },
+              { role: 'assistant', content: aiMessage.content },
+            ],
+            tokenUsage: {
+              prompt: aiMessage.usage.promptTokens,
+              completion: aiMessage.usage.completionTokens,
+              total: aiMessage.usage.totalTokens,
+            },
+            updatedAt: new Date().toISOString(),
+            model: props.model,
+          });
+
+          logger.log(`[useFetchAIMessage] ✅ Cache saved successfully`);
+        } catch (cacheError) {
+          logger.error(`[useFetchAIMessage] Failed to save cache:`, cacheError);
+        }
+      }
     }
   };
 

@@ -10,6 +10,8 @@ export type AIAgentProps = Pick<AISettingItem, 'prompt' | 'reasoningEnabled'> &
   Pick<ContextMenuSettings, 'api'> & {
     apiKey: string; // Renamed from 'key' to avoid React's reserved prop
     model: string;
+    contextId: number; // Cache context ID for OPFS caching
+    toolName: string; // Tool name for cache filename
     onDrilldownSelect?: (selection: SelectInfo) => void;
   };
 

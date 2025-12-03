@@ -5,7 +5,7 @@ import { IframeRender, resolveIframeUrl } from './IframeRender/IframeRender';
 import { ViewMode } from './AIAgent/components/MessageList/MessageList';
 import { BsPin } from 'react-icons/bs';
 import { HiMiniArrowsPointingIn, HiMiniArrowsPointingOut } from 'react-icons/hi2';
-import { FaExternalLinkAlt } from 'react-icons/fa';
+import { FaExternalLinkAlt, FaQuestionCircle } from 'react-icons/fa';
 import { LuRefreshCcw } from 'react-icons/lu';
 import { MdClose } from 'react-icons/md';
 
@@ -26,11 +26,14 @@ type ViewportSize = {
   height: number;
 };
 
+import { useIframeUrlCache } from '../hooks/useIframeUrlCache';
+
 export interface ContextMenuProps {
   tabIndex: number | null;
   words: string;
   context: string;
   selectionId: number;
+  contextId: number; // Cache context ID for AI responses
   items: ContextMenuSettings['items'];
   api: string;
   apiKey: string;
@@ -204,6 +207,8 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
   const [contentHeight, setContentHeight] = useState<number>(0);
   const chatPortalRef = useRef<HTMLDivElement>(null);
   const [iframeRefreshCounters, setIframeRefreshCounters] = useState<Record<string, number>>({});
+  const [showHelp, setShowHelp] = useState(false);
+  const { getCachedUrl, setCachedUrl } = useIframeUrlCache(selectionId);
 
   useEffect(() => {
     viewportRef.current = viewportSize;
@@ -484,6 +489,12 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
       <BsPin className={`h-4 w-4 ${isPinnedMaximized ? 'text-white' : 'text-black'}`} aria-hidden />
     </HeaderButton>
   ) : null;
+
+  const helpButton = (
+    <HeaderButton ariaLabel="Show help" onClick={() => setShowHelp(true)}>
+      <FaQuestionCircle className="h-4 w-4 text-black" aria-hidden />
+    </HeaderButton>
+  );
   const maximizeToggleButton = (
     <HeaderButton
       ariaLabel={maximized ? 'Restore window size' : 'Maximize window'}
@@ -501,10 +512,12 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
       {closeButton}
       {!isPinnedMaximized ? maximizeToggleButton : null}
       {thumbtackButton}
+      {helpButton}
     </div>
   );
   const winRightControls = (
     <div className="flex items-center gap-2">
+      {helpButton}
       {thumbtackButton}
       {!isPinnedMaximized ? maximizeToggleButton : null}
       {closeButton}
@@ -543,8 +556,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
   // Fallback if ResizeObserver hasn't fired yet
   const calculatedHeight = windowSize.height - chromeHeight;
   const effectiveHeight = contentHeight > 0 ? contentHeight : calculatedHeight;
-  const shouldRender =
-    tabIndex !== null && activeItems.length > 0 && hasInvalidIndex === false;
+  const shouldRender = tabIndex !== null && activeItems.length > 0 && hasInvalidIndex === false;
 
   if (!shouldRender) {
     return <></>;
@@ -600,10 +612,20 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
               const wrapperClass = 'relative border-b border-gray-200 last:border-b-0';
               const isIframe = item.type === 'iframe';
               const iframeKey = `${index}`;
-              const iframeUrl = isIframe
-                ? resolveIframeUrl(item.url, props.words, props.context)
-                : '';
               const iframeRefreshKey = isIframe ? (iframeRefreshCounters[iframeKey] ?? 0) : 0;
+
+              // Resolve or get cached URL for iframes
+              let iframeUrl = '';
+              if (isIframe) {
+                const cached = getCachedUrl(index);
+                if (cached) {
+                  iframeUrl = cached;
+                } else {
+                  iframeUrl = resolveIframeUrl(item.url, props.words, props.context);
+                  setCachedUrl(index, iframeUrl);
+                }
+              }
+
               const iframeHeaderButtonClass = [
                 'flex items-center justify-center rounded text-gray-500',
                 'hover:bg-gray-100',
@@ -665,6 +687,8 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
                         apiKey={props.apiKey}
                         words={props.words}
                         context={props.context}
+                        contextId={props.contextId}
+                        toolName={item.name}
                         model={resolveModel(item as AISettingItem)}
                         prompt={(item as AISettingItem).prompt}
                         reasoningEnabled={(item as AISettingItem).reasoningEnabled}
@@ -686,6 +710,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
                       words={props.words}
                       context={props.context}
                       minHeight={`${contentMinHeight}px`}
+                      preResolvedUrl={iframeUrl}
                     />
                   )}
                 </div>
@@ -706,6 +731,75 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
           ))}
         </div>
       </div>
+
+      {/* Help Modal */}
+      {showHelp && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50"
+          onClick={() => setShowHelp(false)}
+        >
+          <div
+            className="mx-4 max-w-lg rounded-lg bg-white p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900">Context Menu Help</h2>
+              <button
+                onClick={() => setShowHelp(false)}
+                className="rounded p-1 hover:bg-gray-100"
+                aria-label="Close help"
+              >
+                <MdClose className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="space-y-4 text-sm text-gray-700">
+              <div>
+                <h3 className="font-semibold text-gray-900">URL-Based State</h3>
+                <p>
+                  Context menus are saved in the URL (e.g.,{' '}
+                  <code className="rounded bg-gray-100 px-1">?contextMenu=1,2,3</code>). Share the
+                  URL or reload the page to restore your context menus.
+                </p>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Stacking Order</h3>
+                <p>
+                  Multiple context menus stack from left to right in the URL. The rightmost ID
+                  (e.g., <code className="rounded bg-gray-100 px-1">3</code>) is the topmost menu.
+                </p>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">AI Response Caching</h3>
+                <p>
+                  AI responses are cached automatically. Selecting the same text again will show the
+                  cached response instantly.
+                </p>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Closing Menus</h3>
+                <ul className="list-inside list-disc space-y-1">
+                  <li>
+                    Click the <strong>X</strong> button in the header
+                  </li>
+                  <li>Click outside the context menu</li>
+                  <li>
+                    Press <strong>ESC</strong> key (closes topmost menu)
+                  </li>
+                  <li>Navigate to a different page</li>
+                </ul>
+              </div>
+            </div>
+            <div className="mt-6">
+              <button
+                onClick={() => setShowHelp(false)}
+                className="w-full rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+              >
+                Got it!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

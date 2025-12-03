@@ -5,6 +5,7 @@ import { applyMobileStyles } from '../utils/style.util';
 import { TOUCH_TIMING } from '@/constants/epub';
 import { logger } from '@/utils/logger';
 import { handleSelectionEnd } from './selection.service';
+import { createCaretRange } from '../utils/selectionUtils';
 
 /**
  * Sets up mobile text selection for the given contents.
@@ -26,6 +27,11 @@ export const setupMobileTextSelection = (props: SetupRenditionEventsProps, conte
   applyMobileStyles(document);
 
   const handleTouchStart = (e: TouchEvent) => {
+    if (!props.selectionEnabled) {
+      logger.log('Touch selection disabled - context menus are open');
+      return;
+    }
+
     const touch = e.touches[0];
 
     if (touchState.timer) {
@@ -180,51 +186,4 @@ const completeSelection = (
     // 3. Callback execution
     handleSelectionEnd(document, onSelectionCompleted, lastTouchPos);
   }, TOUCH_TIMING.SELECTION_DELAY);
-};
-
-/**
- * Creates a caret range from touch coordinates using the browser's caret position API.
- * Converts touch coordinates into a DOM range for text selection operations.
- * @param document The document object for DOM manipulation.
- * @param window The window object for scroll calculations.
- * @param clientX The horizontal touch coordinate.
- * @param clientY The vertical touch coordinate.
- * @returns A Range object at the specified position, or null if creation fails.
- */
-const createCaretRange = (
-  document: Document,
-  window: Window,
-  clientX: number,
-  clientY: number
-): Range | null => {
-  try {
-    // 1. Input validation and preparation
-    const adjustedX = clientX - window.scrollX;
-    const adjustedY = clientY - window.scrollY;
-
-    // 2. Core caret position logic
-    const caretPosition = (
-      document as {
-        caretPositionFromPoint?(
-          x: number,
-          y: number
-        ):
-          | {
-              offsetNode: Node;
-              offset: number;
-            }
-          | undefined;
-      }
-    ).caretPositionFromPoint?.(adjustedX, adjustedY);
-
-    if (!caretPosition) return null;
-
-    // 3. Range creation and output
-    const range = document.createRange();
-    range.setStart(caretPosition.offsetNode, caretPosition.offset);
-    range.setEnd(caretPosition.offsetNode, caretPosition.offset);
-    return range;
-  } catch {
-    return null;
-  }
 };

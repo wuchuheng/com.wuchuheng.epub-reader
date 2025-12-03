@@ -6,8 +6,9 @@ import { useParams } from 'react-router-dom';
 import { createStorageManager } from './epub.utils';
 import { debounce } from '@wuchuheng/helper';
 import { RENDERING_CONFIG } from '../../../constants/epub';
-import { useKeyboardNavigation } from './useKeyboardNavigator';
+import { createNavigationFunctions } from '../utils/navigationUtils';
 import { isMobileDevice, setupRenditionEvents } from '../services/renditionEvent.service';
+import { useKeyboardNavigation } from './useKeyboardNavigation';
 
 // Types
 export type RenditionLocation = {
@@ -47,6 +48,7 @@ type UseReaderProps = {
   onClick?: (event: MouseEvent) => void;
   onSelect: (selectedInfo: SelectInfo) => void;
   onSelectionActivity?: () => void;
+  selectionEnabled?: boolean; // Disable selection when context menus are open
 };
 
 export const latestReadingLocation = createStorageManager('latestReadingLocation_');
@@ -63,29 +65,6 @@ const createRenditionConfig = () => ({
   manager: RENDERING_CONFIG.MANAGER,
   flow: RENDERING_CONFIG.FLOW,
   allowScriptedContent: true,
-});
-
-const createNavigationFunctions = (
-  rendition: Rendition,
-  currentLocation: React.MutableRefObject<RenditionLocation | null>
-) => ({
-  goToNext: () => {
-    if (currentLocation.current?.atEnd) {
-      logger.warn('Reached the end of the book');
-      return;
-    }
-    rendition.next();
-  },
-
-  goToPrev: () => {
-    if (currentLocation.current?.atStart) {
-      logger.log('Reached the start of the book');
-      return;
-    }
-    rendition.prev();
-  },
-
-  goToSelectChapter: (href: string) => rendition.display(href),
 });
 
 /**
@@ -155,6 +134,7 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
       bookId: bookId!,
       onSelectionCompleted,
       onClick: (event: MouseEvent) => onClickRef.current?.(event),
+      selectionEnabled: props.selectionEnabled ?? true,
       setter: {
         setCurrentPage,
         setCurrentChapterHref,
@@ -197,4 +177,3 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
     goToSelectChapter: navigation.goToSelectChapter,
   };
 };
-
