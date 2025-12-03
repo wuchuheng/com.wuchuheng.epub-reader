@@ -609,7 +609,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
 
   const buttonIconClass = 'size-5';
   const floatingScrollControls = (
-    <div className="absolute right-4 top-1/2 z-50 flex -translate-y-1/2 flex-col gap-4">
+    <div className="absolute bottom-[-1rem] right-1 z-50 flex -translate-y-1/2 flex-col gap-4">
       <button
         className={scrollButtonClass}
         onClick={handleScrollUp}
