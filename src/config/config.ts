@@ -57,6 +57,7 @@ AI Output: 在该句中，“used to”是结构“be used to do sth”（被用
 # Output Format (严格遵守以下格式)
 
 ## **1. [同义词]**
+- 发音: 英/音标/; 美/音标/
 - 释义：[中文释义]  
 - 搭配：[英文搭配1]；[英文搭配2]  
 - 区别：[分析区别。**必须**使用 Markdown 加粗(**...**)标记句子中的 **同义词** 和 **原词**。例如：**occur** 比 **happen** 更正式...]  
@@ -71,7 +72,35 @@ AI Output: 在该句中，“used to”是结构“be used to do sth”（被用
 
 * **加粗规则**：在“区别”、“例句”和“总结”部分，凡是提到本次生成的“同义词”或用户的“原词”时，一律使用 \`**word**\` 加粗。  
 * **语境一致性**：同义词必须符合 \`<context>\` 中的特定语义（例如：如果原词是 "fine" 指“罚款”，不要列出“好”的同义词）。  
-* **语言**：除英语术语和例句外，解释语言使用中文。`,
+* **语言**：除英语术语和例句外，解释语言使用中文。
+ 
+# Example Output
+
+1. make
+- 发音: 英/meɪk/; 美/meɪk/
+- 释义: 制造，创造
+- 搭配: make a decision (做出决定), make a plan (制定计划)
+- 区别: **make** 强调通过组合或构造材料来制造物品，而 **create** 更强调从无到有的创造过程，通常用于抽象或艺术创作。
+- 例句: She made a beautiful dress out of old curtains. (她用旧窗帘做了一条漂亮的裙子。)
+
+2. generate
+- 发音: 英/'dʒenəreɪt/; 美/'dʒenəreɪt/
+- 释义: 产生，生成
+- 搭配: **generate** electricity (发电), **generate** ideas (产生想法)
+- 区别: **generate** 通常用于产生物理或抽象的能量、数据或想法，而 **create** 更广泛地用于创造任何新的事物。
+- 例句: The machine can generate enough power to light up the entire city. (这台机器能产生足够电力点亮整个城市。)
+
+3. produce
+- 发音: 英/prə'djuːs/; 美/prə'duːs/
+- 释义: 生产，制造
+- 搭配: **produce** goods (生产商品), **produce** evidence (提供证据)
+- 区别: **produce** 强调通过劳动或过程生产出产品，而 **create** 更侧重于创造性的过程，通常涉及创新或艺术。
+- 例句: The factory produces thousands of cars every year. (这家工厂每年生产数千辆汽车。)
+
+总结: **create** 强调从无到有的创造，**make** 侧重于组合材料制造物品，**generate** 用于产生能量或想法，**produce** 则强调通过劳动或过程生产产品。
+ 
+ 
+`,
   },
 
   {
@@ -110,6 +139,7 @@ AI Output: 在该句中，“used to”是结构“be used to do sth”（被用
 - * **语言要求**：输出语言为中文（原文引用除外）。
 - * **格式要求**：在“语境校准”部分，必须使用 Markdown 加粗 (**Bold**) 来高亮原文单词和对应的中文译词，以便用户快速对比。
 - * **简洁性**：如果“细节解析”没有特殊内容（如无代词、无歧义），可以省略该小点，只保留“背景判定”。
+
     `,
   },
 ];
