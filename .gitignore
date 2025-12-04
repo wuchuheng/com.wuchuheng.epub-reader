@@ -22,5 +22,19 @@ dist-ssr
 *.sln
 *.sw?
 tsconfig.app.tsbuildinfo
+tsconfig.node.tsbuildinfo
+tsconfig.*.tsbuildinfo
 tmp.md
 tmp/
+
+# Build artifacts
+*.tsbuildinfo
+*.cache
+*.log
+
+# System files
+Thumbs.db
+*.tmp
+*.temp
+.env.local
+.env.*.local

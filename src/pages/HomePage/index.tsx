@@ -13,6 +13,8 @@ import * as OPFSManager from '../../services/OPFSManager';
 import { DragOverlay } from './components/DragOverlay';
 import { getEpubValidationError, isValidEpubFile } from '../../utils/epubValidation';
 import { Plus, Settings } from '../../components/icons';
+import { MdInstallDesktop } from 'react-icons/md';
+import { usePWAInstall } from '../../hooks/usePWAInstall';
 
 /**
  * Main bookshelf page component
@@ -23,6 +25,21 @@ export const BookshelfPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { books, isLoading, error } = useAppSelector((state) => state.bookshelf);
+  const { isInstalled, installPWA, canInstall } = usePWAInstall();
+
+  console.log('BookshelfPage: PWA State - isInstalled:', isInstalled, 'canInstall:', canInstall);
+
+  // Manual PWA install trigger for testing
+  const handleManualInstallTest = () => {
+    console.log('Manual PWA install test triggered');
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      console.log('Service Worker is active');
+      // Force show install prompt for testing
+      window.dispatchEvent(new Event('beforeinstallprompt'));
+    } else {
+      console.log('Service Worker not active or not found');
+    }
+  };
 
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -175,6 +192,26 @@ export const BookshelfPage: React.FC = () => {
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-gray-900">Epub reader</h1>
             <div className="flex items-center gap-4">
+              {!isInstalled && canInstall && (
+                <button
+                  onClick={installPWA}
+                  className="text-gray-600 hover:text-gray-900"
+                  aria-label="Install App"
+                  title="Install EPUB Reader"
+                >
+                  <MdInstallDesktop />
+                </button>
+              )}
+              {!isInstalled && !canInstall && (
+                <button
+                  onClick={handleManualInstallTest}
+                  className="text-orange-600 hover:text-orange-900"
+                  aria-label="Test PWA Install"
+                  title="Test PWA Install (Debug)"
+                >
+                  <MdInstallDesktop />
+                </button>
+              )}
               <button
                 onClick={() => navigate('/settings')}
                 className="text-gray-600 hover:text-gray-900"
