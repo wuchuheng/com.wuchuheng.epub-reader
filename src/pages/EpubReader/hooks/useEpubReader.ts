@@ -48,7 +48,7 @@ type UseReaderProps = {
   onClick?: () => void;
   onSelect: (selectedInfo: SelectInfo) => void;
   onSelectionActivity?: () => void;
-  selectionEnabled?: boolean; // Disable selection when context menus are open
+  isMenuOpenRef: React.RefObject<boolean>;
 };
 
 export const latestReadingLocation = createStorageManager('latestReadingLocation_');
@@ -137,7 +137,7 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
       bookId: bookId!,
       onSelectionCompleted,
       onClick: () => onClickRef.current?.(),
-      selectionEnabled: props.selectionEnabled ?? true,
+      isMenuOpenRef: props.isMenuOpenRef,
       setter: {
         setCurrentPage,
         setCurrentChapterHref,

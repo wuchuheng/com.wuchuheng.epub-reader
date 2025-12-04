@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 
-const now = () => dayjs().format('HH:mm:ss');
+const now = () => dayjs().format('HH:mm:ss.SSS');
 
 export const logger = {
   log: (...message: unknown[]) => {

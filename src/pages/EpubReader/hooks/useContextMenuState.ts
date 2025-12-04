@@ -1,7 +1,10 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { ContextMenu, SelectInfo } from '../../../types/epub';
 import { ContextMenuItem } from '../../../types/epub';
-import { getOrCreateContextId, getContextMetadata } from '../../../services/ContextMenuCacheService';
+import {
+  getOrCreateContextId,
+  getContextMetadata,
+} from '../../../services/ContextMenuCacheService';
 import { logger } from '../../../utils/logger';
 import { useNavigate } from 'react-router-dom';
 
@@ -17,6 +20,10 @@ interface UseContextMenuStateProps {
 
 export const useContextMenuState = ({ activeTools }: UseContextMenuStateProps) => {
   const [menuStack, setMenuStack] = useState<ContextMenuEntry[]>([]);
+  const isMenuOpenRef = useRef(false);
+  useEffect(() => {
+    isMenuOpenRef.current = menuStack.length > 0;
+  }, [menuStack]);
   const selectionCounterRef = useRef(0);
   const menuIdRef = useRef(0);
   const navigate = useNavigate();
@@ -175,38 +182,35 @@ export const useContextMenuState = ({ activeTools }: UseContextMenuStateProps) =
     setMenuStack((prev) => prev.map((entry) => (entry.id === id ? { ...entry, tabIndex } : entry)));
   }, []);
 
-  const restoreFromMetadata = useCallback(
-    async (ids: number[]) => {
-      const entries: ContextMenuEntry[] = [];
+  const restoreFromMetadata = useCallback(async (ids: number[]) => {
+    const entries: ContextMenuEntry[] = [];
 
-      for (const id of ids) {
-        logger.log(`[EpubReader] Fetching metadata for context ID ${id}...`);
-        const metadata = await getContextMetadata(id);
+    for (const id of ids) {
+      logger.log(`[EpubReader] Fetching metadata for context ID ${id}...`);
+      const metadata = await getContextMetadata(id);
 
-        if (!metadata) {
-          logger.error(`[EpubReader] ❌ Context metadata not found for ID ${id}`);
-          continue;
-        }
-
-        logger.log(`[EpubReader] ✅ Metadata found for ID ${id}:`, {
-          words: metadata.words.slice(0, 30),
-        });
-
-        selectionCounterRef.current += 1;
-
-        entries.push({
-          id,
-          parentId: null,
-          selectionId: selectionCounterRef.current,
-          tabIndex: 0,
-          words: metadata.words,
-          context: metadata.context,
-        });
+      if (!metadata) {
+        logger.error(`[EpubReader] ❌ Context metadata not found for ID ${id}`);
+        continue;
       }
-      return entries;
-    },
-    []
-  );
+
+      logger.log(`[EpubReader] ✅ Metadata found for ID ${id}:`, {
+        words: metadata.words.slice(0, 30),
+      });
+
+      selectionCounterRef.current += 1;
+
+      entries.push({
+        id,
+        parentId: null,
+        selectionId: selectionCounterRef.current,
+        tabIndex: 0,
+        words: metadata.words,
+        context: metadata.context,
+      });
+    }
+    return entries;
+  }, []);
 
   return {
     menuStack,
@@ -218,5 +222,6 @@ export const useContextMenuState = ({ activeTools }: UseContextMenuStateProps) =
     getSupportedTools,
     restoreFromMetadata,
     selectionCounterRef,
+    isMenuOpenRef,
   };
 };

@@ -30,7 +30,7 @@ export const setupMobileTouchAndTouchEndEvent = (
   applyMobileStyles(document);
 
   const handleTouchStart = (e: TouchEvent) => {
-    if (!props.selectionEnabled) {
+    if (props.isMenuOpenRef.current) {
       logger.log('Touch selection disabled - context menus are open');
       return;
     }

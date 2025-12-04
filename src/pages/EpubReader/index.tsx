@@ -77,6 +77,7 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
   // 2. Custom Hooks
   const {
     menuStack,
+    isMenuOpenRef,
     setMenuStack,
     pushBaseMenu,
     pushDrilldownMenu,
@@ -111,6 +112,7 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
   } = useReaderInteraction({
     book: props.book,
     menuStackLength: menuStack.length,
+    isMenuOpenRef,
     onMenuClose: () => setMenuStack([]),
     onSelection: pushBaseMenu,
   });

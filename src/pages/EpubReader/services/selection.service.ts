@@ -23,7 +23,8 @@ export const handleSelectionEnd = (
   if (result) {
     onExtractSelection(result);
   } else {
-    // Rigger click event
+    // Trigger click event
+    console.log('No valid selection - processing click');
     onClick();
   }
 };

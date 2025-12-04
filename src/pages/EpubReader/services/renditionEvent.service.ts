@@ -11,7 +11,7 @@ export type SetupRenditionEventsProps = {
   bookId: string;
   onClick: (() => void) | undefined;
   onSelectionCompleted: (selectInfo: SelectInfo) => void;
-  selectionEnabled: boolean; // Whether text selection is enabled
+  isMenuOpenRef: React.RefObject<boolean>;
   setter: {
     setCurrentPage: (page: number) => void;
     setCurrentChapterHref: (href: string) => void;

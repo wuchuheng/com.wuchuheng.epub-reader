@@ -8,6 +8,7 @@ import { logger } from '../../../utils/logger';
 interface UseReaderInteractionProps {
   book: Book;
   menuStackLength: number;
+  isMenuOpenRef: React.RefObject<boolean>;
   onMenuClose: () => void;
   onSelection: (info: SelectInfo) => void;
 }
@@ -23,6 +24,7 @@ export const useReaderInteraction = ({
   menuStackLength,
   onMenuClose,
   onSelection,
+  isMenuOpenRef,
 }: UseReaderInteractionProps) => {
   const [menuVisible, setMenuVisible] = useState<boolean>(false);
   const [tocVisible, setTocVisible] = useState(false);
@@ -47,14 +49,16 @@ export const useReaderInteraction = ({
   } = useReader({
     book,
     onClick: () => clickHandlerRef.current(),
+    // TODO: These comments should bo removed after testing.
     onSelect: (selectedInfo: SelectInfo) => {
+      console.log('Selection completed:', selectedInfo);
       lastSelectionTimeRef.current = Date.now();
       onSelection(selectedInfo);
       setMenuVisible(false);
       setTocVisible(false);
     },
     onSelectionActivity: markSelectionActivity,
-    selectionEnabled: menuStackLength === 0,
+    isMenuOpenRef,
   });
 
   const getViewportRatio = useCallback((event: MouseEvent) => {
@@ -76,6 +80,8 @@ export const useReaderInteraction = ({
 
   useEffect(() => {
     clickHandlerRef.current = () => {
+      console.log('Click detected');
+
       setMenuVisible((prev) => !prev);
     };
   }, [getViewportRatio, onPrev, onNext, tocVisible, menuStackLength, onMenuClose]);
