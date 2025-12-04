@@ -2,14 +2,14 @@ import { Book, Contents, Rendition } from 'epubjs';
 import Section from 'epubjs/types/section';
 import { SelectInfo } from '../../../types/epub';
 import { latestReadingLocation, RenditionLocation } from '../hooks/useEpubReader';
-import { setupMobileTextSelection } from './mobileSelection.service';
-import { handleComputerSelection } from './computerSelection.service';
+import { setupMobileTouchAndTouchEndEvent } from './mobileSelection.service';
+import { handleComputerMouseDownAndUpEvent } from './computerSelection.service';
 
 export type SetupRenditionEventsProps = {
   rendition: Rendition;
   book: Book;
   bookId: string;
-  onClick: ((event: MouseEvent) => void) | undefined;
+  onClick: (() => void) | undefined;
   onSelectionCompleted: (selectInfo: SelectInfo) => void;
   selectionEnabled: boolean; // Whether text selection is enabled
   setter: {
@@ -47,14 +47,10 @@ export const setupRenditionEvents = (props: SetupRenditionEventsProps) => {
       props.setter.setCurrentChapterHref(current.href);
     }
 
-    props.rendition.on('click', (event: MouseEvent) => {
-      if (props.onClick) props.onClick(event);
-    });
-
     if (isMobileDevice()) {
-      setupMobileTextSelection(props, contents);
+      setupMobileTouchAndTouchEndEvent(props, contents);
     } else {
-      handleComputerSelection(props, contents);
+      handleComputerMouseDownAndUpEvent(props, contents);
     }
   });
 };

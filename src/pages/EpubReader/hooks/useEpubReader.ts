@@ -45,7 +45,7 @@ type UseReaderReturn = {
 
 type UseReaderProps = {
   book: Book;
-  onClick?: (event: MouseEvent) => void;
+  onClick?: () => void;
   onSelect: (selectedInfo: SelectInfo) => void;
   onSelectionActivity?: () => void;
   selectionEnabled?: boolean; // Disable selection when context menus are open
@@ -105,9 +105,12 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
   const onSelectionCompletedDebounced = useMemo(
     () =>
       debounce<SelectInfo>((selectedInfo: SelectInfo) => {
+        console.log('selectedInfo', selectedInfo);
         if (selectedInfo) {
           logger.log(`Omit event:`, selectedInfo);
           onSelectRef.current(selectedInfo);
+        } else {
+          logger.log('Emit click event');
         }
       }, 200),
     []
@@ -133,7 +136,7 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
       book: props.book,
       bookId: bookId!,
       onSelectionCompleted,
-      onClick: (event: MouseEvent) => onClickRef.current?.(event),
+      onClick: () => onClickRef.current?.(),
       selectionEnabled: props.selectionEnabled ?? true,
       setter: {
         setCurrentPage,

@@ -12,17 +12,20 @@ type OnExtractSelection = (selectedInfo: SelectInfo) => void;
 export const handleSelectionEnd = (
   doc: Document,
   onExtractSelection: OnExtractSelection,
+  onClick: () => void,
+
   clickPos?: { x: number; y: number }
 ) => {
   // 2. Handle logic.
   // 2.1 Adjust selection to word boundaries
   const result = extractSelectionToWords(doc, clickPos);
 
-  if (!result) {
-    return;
+  if (result) {
+    onExtractSelection(result);
+  } else {
+    // Rigger click event
+    onClick();
   }
-
-  onExtractSelection(result);
 };
 
 /**

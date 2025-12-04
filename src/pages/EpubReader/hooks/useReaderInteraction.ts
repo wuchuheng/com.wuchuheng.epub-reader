@@ -27,7 +27,7 @@ export const useReaderInteraction = ({
   const [menuVisible, setMenuVisible] = useState<boolean>(false);
   const [tocVisible, setTocVisible] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  const clickHandlerRef = useRef<(e: MouseEvent) => void>(() => {});
+  const clickHandlerRef = useRef<() => void>(() => {});
   const lastSelectionTimeRef = useRef(0);
   const navigate = useNavigate();
 
@@ -46,7 +46,7 @@ export const useReaderInteraction = ({
     currentChapterHref,
   } = useReader({
     book,
-    onClick: (e) => clickHandlerRef.current(e),
+    onClick: () => clickHandlerRef.current(),
     onSelect: (selectedInfo: SelectInfo) => {
       lastSelectionTimeRef.current = Date.now();
       onSelection(selectedInfo);
@@ -75,30 +75,8 @@ export const useReaderInteraction = ({
   }, []);
 
   useEffect(() => {
-    clickHandlerRef.current = (event: MouseEvent) => {
-      if (Date.now() - lastSelectionTimeRef.current < 500) {
-        return;
-      }
-
-      if (tocVisible) {
-        setTocVisible(false);
-        return;
-      }
-
-      if (menuStackLength > 0) {
-        onMenuClose();
-        return;
-      }
-
-      const ratio = getViewportRatio(event);
-
-      if (ratio < 0.2) {
-        onPrev();
-      } else if (ratio > 0.8) {
-        onNext();
-      } else {
-        setMenuVisible((prev) => !prev);
-      }
+    clickHandlerRef.current = () => {
+      setMenuVisible((prev) => !prev);
     };
   }, [getViewportRatio, onPrev, onNext, tocVisible, menuStackLength, onMenuClose]);
 

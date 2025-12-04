@@ -14,7 +14,10 @@ import { createCaretRange } from '../utils/selectionUtils';
  * @param contents The epub contents object containing document and window references.
  * @returns A cleanup function to remove event listeners and clear timers.
  */
-export const setupMobileTextSelection = (props: SetupRenditionEventsProps, contents: Contents) => {
+export const setupMobileTouchAndTouchEndEvent = (
+  props: SetupRenditionEventsProps,
+  contents: Contents
+) => {
   // 2.handle logic.
   const touchState: TouchState = {
     isLongPress: false,
@@ -77,16 +80,27 @@ export const setupMobileTextSelection = (props: SetupRenditionEventsProps, conte
       completeSelection(
         document,
         props.onSelectionCompleted,
+
+        //  Process click event
+        () => {
+          props.onClick?.();
+        },
+
         touchState.startPos // Use startPos for long press
       );
     } else if (duration < TOUCH_TIMING.REGULAR_TAP_THRESHOLD) {
       completeSelection(
         document,
         props.onSelectionCompleted,
+
+        // Process click event
+        () => {
+          props.onClick?.();
+        },
+
         { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY } // Use release pos for tap
       );
     }
-
     // 3. State reset
     touchState.isLongPress = false;
   };
@@ -173,6 +187,7 @@ const extendSelection = (touch: Touch, document: Document, window: Window) => {
 const completeSelection = (
   document: Document,
   onSelectionCompleted: (selectInfo: SelectInfo) => void,
+  onClick: () => void,
   lastTouchPos?: { x: number; y: number }
 ) => {
   // 1. Input validation
@@ -184,6 +199,6 @@ const completeSelection = (
   // 2. Delayed processing
   setTimeout(() => {
     // 3. Callback execution
-    handleSelectionEnd(document, onSelectionCompleted, lastTouchPos);
+    handleSelectionEnd(document, onSelectionCompleted, onClick, lastTouchPos);
   }, TOUCH_TIMING.SELECTION_DELAY);
 };
