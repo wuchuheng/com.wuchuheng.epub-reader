@@ -60,6 +60,7 @@ export default defineConfig({
         short_name: 'EPUB Reader',
         description: 'An AI-enhanced EPUB reader with offline support',
         theme_color: '#3b82f6',
+        display_override: ['fullscreen', 'standalone', 'minimal-ui', 'browser'],
         background_color: '#f8fafc',
         display: 'standalone',
         orientation: 'any',

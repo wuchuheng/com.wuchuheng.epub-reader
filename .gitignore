@@ -38,3 +38,5 @@ Thumbs.db
 *.temp
 .env.local
 .env.*.local
+
+dev-dist/
