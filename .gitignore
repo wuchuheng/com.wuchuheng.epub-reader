@@ -40,3 +40,4 @@ Thumbs.db
 .env.*.local
 
 dev-dist/
+tsconfig.node.tsbuildinfo
