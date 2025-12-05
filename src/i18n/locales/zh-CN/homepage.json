@@ -1,11 +1,16 @@
 {
-  "appTitle": "电子书阅读器",
+  "appTitle": "英语小白阅读器",
   "header": {
     "installApp": "安装应用",
-    "installTitle": "安装电子书阅读器",
+    "installTitle": "安装英语小白阅读器",
     "testInstall": "测试安装（调试）",
     "uploadBook": "上传书籍",
     "settings": "设置"
+  },
+  "slogan": {
+    "badge": "品牌宣言",
+    "title": "让小白也能阅读英文",
+    "subtitle": "AI 导航、精选工具和舒适界面，帮助英语初学者自信开启阅读旅程。"
   },
   "alerts": {
     "deleteConfirm": "您确定要删除这本书吗？",

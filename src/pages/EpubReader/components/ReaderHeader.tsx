@@ -51,15 +51,6 @@ export const ReaderHeader: React.FC<ReaderHeaderProps> = (props) => {
             >
               <Icons.Home />
             </button>
-
-            <button
-              onClick={() => console.log('Search coming soon')}
-              className="p-2 text-gray-600 hover:text-gray-900"
-              title={t('header.search')}
-              aria-label={t('header.search')}
-            >
-              <Icons.Search />
-            </button>
           </div>
 
           <div className="flex items-center space-x-4">
@@ -67,14 +58,6 @@ export const ReaderHeader: React.FC<ReaderHeaderProps> = (props) => {
           </div>
 
           <div className="flex items-center space-x-4">
-            <button
-              onClick={props.onHelpClick}
-              className="p-2 text-gray-600 hover:text-gray-900"
-              title={t('header.help')}
-              aria-label={t('header.help')}
-            >
-              <Icons.QuestionMark />
-            </button>
             {!isStandalone && (
               <button
                 onClick={handleFullscreen}

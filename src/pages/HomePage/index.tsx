@@ -193,9 +193,12 @@ export const BookshelfPage: React.FC = () => {
 
       {/* Header */}
       <header className="border-b bg-white shadow-sm">
-        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl p-2 sm:px-2 lg:px-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">{t('appTitle')}</h1>
+            <p>
+              <h1 className="sm:text-1xl font-bold text-gray-900">{t('appTitle')}</h1>
+              <span className="text-sm text-gray-600">{t('slogan.title')}</span>
+            </p>
             <div className="flex items-center gap-4">
               <LanguageSwitcher />
               {!isInstalled && canInstall && (
@@ -204,15 +207,6 @@ export const BookshelfPage: React.FC = () => {
                   className="text-gray-600 hover:text-gray-900"
                   aria-label={t('header.installApp')}
                   title={t('header.installTitle')}
-                >
-                  <MdInstallDesktop />
-                </button>
-              )}
-              {!isInstalled && (
-                <button
-                  onClick={handleManualInstallTest}
-                  aria-label={t('header.testInstall')}
-                  title={t('header.testInstall')}
                 >
                   <MdInstallDesktop />
                 </button>
@@ -239,7 +233,7 @@ export const BookshelfPage: React.FC = () => {
       </header>
 
       {/* Main content */}
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl px-2 py-2 sm:px-6 lg:px-8">
         {/* Error state */}
         {error && (
           <div className="mb-6 rounded-md border border-red-200 bg-red-50 p-4">
@@ -264,7 +258,6 @@ export const BookshelfPage: React.FC = () => {
             </div>
           </div>
         )}
-
         {/* Browser compatibility warning */}
         {!OPFSManager.isSupported() && (
           <div className="mb-6 rounded-md border border-yellow-200 bg-yellow-50 p-4">
@@ -273,9 +266,7 @@ export const BookshelfPage: React.FC = () => {
                 <span className="text-yellow-400">⚠️</span>
               </div>
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-yellow-800">
-                  {t('browserWarning.title')}
-                </h3>
+                <h3 className="text-sm font-medium text-yellow-800">{t('browserWarning.title')}</h3>
                 <div className="mt-2 text-sm text-yellow-700">
                   <p>{t('browserWarning.description')}</p>
                 </div>
@@ -291,7 +282,6 @@ export const BookshelfPage: React.FC = () => {
             <p className="text-gray-600">{t('loadingBookshelf')}</p>
           </div>
         )}
-
         {/* Empty state */}
         {!isLoading && books.length === 0 && (
           <div className="py-12 text-center">
@@ -306,7 +296,6 @@ export const BookshelfPage: React.FC = () => {
             </button>
           </div>
         )}
-
         {/* Books grid */}
         {!isLoading && books.length > 0 && (
           <div className="grid grid-cols-2 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">

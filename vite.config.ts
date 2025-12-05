@@ -56,9 +56,9 @@ export default defineConfig({
         ],
       },
       manifest: {
-        name: 'EPUB Reader - Immersive AI-Enhanced Reader',
-        short_name: 'EPUB Reader',
-        description: 'An AI-enhanced EPUB reader with offline support',
+        name: "英语小白阅读器 (Beginner's English Reader)",
+        short_name: '英语小白阅读器',
+        description: '让小白也能阅读英文 | Helping beginners read English with ease',
         theme_color: '#3b82f6',
         display_override: ['fullscreen', 'standalone', 'minimal-ui', 'browser'],
         background_color: '#f8fafc',

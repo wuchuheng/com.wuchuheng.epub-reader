@@ -1,11 +1,16 @@
 {
-  "appTitle": "Epub Reader",
+  "appTitle": "Beginner's English Reader",
   "header": {
     "installApp": "Install App",
-    "installTitle": "Install EPUB Reader",
+    "installTitle": "Install Beginner's English Reader",
     "testInstall": "Test PWA Install (Debug)",
     "uploadBook": "Upload Book",
     "settings": "Settings"
+  },
+  "slogan": {
+    "badge": "Tagline",
+    "title": "Helping beginners read English with ease",
+    "subtitle": "AI guidance, curated tools, and a calm interface so beginners feel confident reading English."
   },
   "alerts": {
     "deleteConfirm": "Are you sure you want to delete this book?",
@@ -15,7 +20,7 @@
   },
   "browserWarning": {
     "title": "Browser Not Supported",
-    "description": "This browser doesn't support the required file system features. Please use Chrome 86+, Edge 86+, or Firefox 102+."
+    "description": "This browser lacks required file system features. Please use Chrome 86+, Edge 86+, or Firefox 102+."
   },
   "loadingBookshelf": "Loading your bookshelf...",
   "emptyState": {
