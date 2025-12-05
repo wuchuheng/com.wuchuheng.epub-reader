@@ -63,7 +63,6 @@ export default defineConfig({
         display_override: ['fullscreen', 'standalone', 'minimal-ui', 'browser'],
         background_color: '#f8fafc',
         display: 'standalone',
-        orientation: 'portrait', // Keep it portrait for reading experience
         scope: '/',
         start_url: '/',
         icons: [
