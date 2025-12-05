@@ -202,10 +202,9 @@ export const BookshelfPage: React.FC = () => {
                   <MdInstallDesktop />
                 </button>
               )}
-              {!isInstalled && !canInstall && (
+              {!isInstalled && (
                 <button
                   onClick={handleManualInstallTest}
-                  className="text-orange-600 hover:text-orange-900"
                   aria-label="Test PWA Install"
                   title="Test PWA Install (Debug)"
                 >
