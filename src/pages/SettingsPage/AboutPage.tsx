@@ -22,8 +22,7 @@ const categoryOrder: ChangelogCategory[] = [
   'style',
 ];
 
-export const AboutPage: React.FC = () => {
-  return (
+export const AboutPage: React.FC = () => (
     <div className="space-y-6">
       <div className="space-y-6 border-gray-200 p-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -99,6 +98,5 @@ export const AboutPage: React.FC = () => {
       </div>
     </div>
   );
-};
 
 export default AboutPage;

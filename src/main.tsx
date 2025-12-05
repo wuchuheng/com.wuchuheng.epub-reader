@@ -5,6 +5,7 @@ import store from './store';
 import { RouterProvider } from 'react-router-dom';
 import router from './config/router';
 import { registerSW } from 'virtual:pwa-register';
+import { MessageProvider } from './components/Message';
 
 // Register service worker
 const updateSW = registerSW({
@@ -21,6 +22,8 @@ const updateSW = registerSW({
 
 createRoot(document.getElementById('root')!).render(
   <Provider store={store}>
-    <RouterProvider router={router} />
+    <MessageProvider>
+      <RouterProvider router={router} />
+    </MessageProvider>
   </Provider>
 );

@@ -15,6 +15,7 @@ import { useContextMenuSettings } from '../ContextMenuSettingsPage/hooks/useCont
 import { useContextMenuState } from './hooks/useContextMenuState';
 import { useUrlSync } from './hooks/useUrlSync';
 import { useReaderInteraction } from './hooks/useReaderInteraction';
+import { useMessage } from '../../components/Message';
 
 /**
  * Complete EPUB reader page component
@@ -69,6 +70,7 @@ type EpubReaderRenderProps = {
 const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
   // 1. State declarations
   const { settings: contextMenuSettings, updatePinnedMaximized } = useContextMenuSettings();
+  const message = useMessage();
   const activeTools = useMemo(
     () => contextMenuSettings.items.filter((item) => item.enabled !== false),
     [contextMenuSettings.items]
@@ -85,7 +87,11 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
     updateTabIndex,
     getSupportedTools,
     restoreFromMetadata,
-  } = useContextMenuState({ activeTools });
+  } = useContextMenuState({
+    activeTools,
+    maxSelectedWords: contextMenuSettings.maxSelectedWords,
+    onShowMessage: (msg) => message.warning(msg),
+  });
 
   useUrlSync({
     menuStack,
@@ -115,6 +121,8 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
     isMenuOpenRef,
     onMenuClose: () => setMenuStack([]),
     onSelection: pushBaseMenu,
+    maxSelectedWords: contextMenuSettings.maxSelectedWords,
+    onShowMessage: (msg) => message.warning(msg),
   });
 
   // 3. Effects

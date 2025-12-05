@@ -6,6 +6,7 @@ import { ToolList } from './components/ToolList';
 import { SectionCard } from './components/SectionCard';
 import { useContextMenuSettings } from './hooks/useContextMenuSettings';
 import { PlusSmall } from '../../components/icons';
+import { DEFAULT_CONFIG } from '../../constants/epub';
 
 /**
  * Context Menu Settings page component.
@@ -162,45 +163,78 @@ export const ContextMenuSettingsPage: React.FC = () => {
           </div>
 
           <div className="grid gap-6 lg:grid-cols-[minmax(320px,1fr)_minmax(0,2fr)]">
-            {/* Provider & Authentication */}
-            <SectionCard
-              title="AI Provider"
-              description="Connect your model provider for AI tools."
-              statusSlot={renderStatusChip()}
-              tint="sky"
-            >
-              <ApiConfig
-                providerId={contextMenuSettings.settings.providerId}
-                apiEndpoint={contextMenuSettings.settings.api || ''}
-                apiKey={contextMenuSettings.settings.key || ''}
-                onProviderChange={contextMenuSettings.updateProvider}
-                onApiEndpointChange={contextMenuSettings.updateApiEndpoint}
-                onApiKeyChange={contextMenuSettings.updateApiKey}
-                onStatusChange={setApiStatus}
-                testNonce={testNonce}
-              />
-
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <label className="block text-sm font-medium text-gray-700">Default Model</label>
-                  <span className="text-xs text-gray-500">Used unless a tool overrides it</span>
+            <div className="space-y-6">
+              {/* General Settings */}
+              <SectionCard
+                title="General"
+                description="General configuration for the context menu."
+                tint="gray"
+              >
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Max selected words
+                  </label>
+                  <div className="mt-1">
+                    <input
+                      type="number"
+                      min="1"
+                      className="block w-full rounded-md border-gray-300 py-2 px-3 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
+                      value={contextMenuSettings.settings.maxSelectedWords ?? DEFAULT_CONFIG.DEFAULT_MAX_SELECTED_WORDS}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value, 10);
+                        if (!isNaN(val) && val > 0) {
+                          contextMenuSettings.updateMaxSelectedWords(val);
+                        }
+                      }}
+                    />
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Selections over this limit will be blocked.
+                  </p>
                 </div>
-                <ModelSearchInput
-                  value={contextMenuSettings.settings.defaultModel || ''}
-                  onChange={contextMenuSettings.updateDefaultModel}
+              </SectionCard>
+
+              {/* Provider & Authentication */}
+              <SectionCard
+                title="AI Provider"
+                description="Connect your model provider for AI tools."
+                statusSlot={renderStatusChip()}
+                tint="sky"
+              >
+                <ApiConfig
+                  providerId={contextMenuSettings.settings.providerId}
                   apiEndpoint={contextMenuSettings.settings.api || ''}
                   apiKey={contextMenuSettings.settings.key || ''}
-                  placeholder="Search or enter model name (e.g. gpt-4o-mini)"
+                  onProviderChange={contextMenuSettings.updateProvider}
+                  onApiEndpointChange={contextMenuSettings.updateApiEndpoint}
+                  onApiKeyChange={contextMenuSettings.updateApiKey}
+                  onStatusChange={setApiStatus}
+                  testNonce={testNonce}
                 />
-              </div>
 
-              {renderStatusBanner()}
-            </SectionCard>
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-sm font-medium text-gray-700">Default Model</label>
+                    <span className="text-xs text-gray-500">Used unless a tool overrides it</span>
+                  </div>
+                  <ModelSearchInput
+                    value={contextMenuSettings.settings.defaultModel || ''}
+                    onChange={contextMenuSettings.updateDefaultModel}
+                    apiEndpoint={contextMenuSettings.settings.api || ''}
+                    apiKey={contextMenuSettings.settings.key || ''}
+                    placeholder="Search or enter model name (e.g. gpt-4o-mini)"
+                  />
+                </div>
+
+                {renderStatusBanner()}
+              </SectionCard>
+            </div>
 
             {/* Custom Tools */}
             <SectionCard
               title="Custom AI Tools"
               description="Shown in the reader context menu in this order."
+              className="h-full"
               statusSlot={
                 <div className="hidden text-xs text-gray-500 sm:block">Drag to reorder</div>
               }

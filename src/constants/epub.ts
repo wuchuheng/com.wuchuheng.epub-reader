@@ -45,6 +45,7 @@ export const DEFAULT_CONFIG = {
   THEME: 'light' as const,
   FONT_SIZE: 'medium' as const,
   CONFIG_VERSION: 1,
+  DEFAULT_MAX_SELECTED_WORDS: 10000,
 } as const;
 
 /**

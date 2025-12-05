@@ -4,6 +4,8 @@ import { Book } from 'epubjs';
 import { SelectInfo } from '../../../types/epub';
 import { useNavigate } from 'react-router-dom';
 import { logger } from '../../../utils/logger';
+import { getWordCount } from '../utils/domUtils';
+import { DEFAULT_CONFIG } from '../../../constants/epub';
 
 interface UseReaderInteractionProps {
   book: Book;
@@ -11,6 +13,8 @@ interface UseReaderInteractionProps {
   isMenuOpenRef: React.RefObject<boolean>;
   onMenuClose: () => void;
   onSelection: (info: SelectInfo) => void;
+  maxSelectedWords?: number;
+  onShowMessage?: (msg: string) => void;
 }
 
 const clampRatio = (value: number) => {
@@ -25,6 +29,8 @@ export const useReaderInteraction = ({
   onMenuClose,
   onSelection,
   isMenuOpenRef,
+  maxSelectedWords,
+  onShowMessage,
 }: UseReaderInteractionProps) => {
   const [menuVisible, setMenuVisible] = useState<boolean>(false);
   const [tocVisible, setTocVisible] = useState(false);
@@ -51,11 +57,20 @@ export const useReaderInteraction = ({
     onClick: () => clickHandlerRef.current(),
     // TODO: These comments should bo removed after testing.
     onSelect: (selectedInfo: SelectInfo) => {
+      setMenuVisible(false);
+      setTocVisible(false);
+
+      const limit = maxSelectedWords ?? DEFAULT_CONFIG.DEFAULT_MAX_SELECTED_WORDS;
+      const count = getWordCount(selectedInfo.words);
+
+      if (count > limit) {
+        onShowMessage?.('Selection exceeds the max word limit. Reduce your selection to continue.');
+        return;
+      }
+
       console.log('Selection completed:', selectedInfo);
       lastSelectionTimeRef.current = Date.now();
       onSelection(selectedInfo);
-      setMenuVisible(false);
-      setTocVisible(false);
     },
     onSelectionActivity: markSelectionActivity,
     isMenuOpenRef,

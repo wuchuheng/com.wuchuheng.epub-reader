@@ -5,8 +5,9 @@ interface SectionCardProps {
   description?: string;
   statusSlot?: React.ReactNode;
   children: React.ReactNode;
-  tint?: 'slate' | 'sky';
+  tint?: 'slate' | 'sky' | 'gray';
   footer?: React.ReactNode;
+  className?: string;
 }
 
 /**
@@ -19,11 +20,15 @@ export const SectionCard: React.FC<SectionCardProps> = ({
   children,
   tint = 'slate',
   footer,
+  className = '',
 }) => {
-  const background = tint === 'sky' ? 'bg-sky-50' : 'bg-slate-50';
+  const background =
+    tint === 'sky' ? 'bg-sky-50' : tint === 'gray' ? 'bg-gray-50' : 'bg-slate-50';
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+    <div
+      className={`flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm ${className}`}
+    >
       <div className="flex items-start justify-between gap-3 border-b border-gray-100 px-5 py-4">
         <div>
           <h4 className="text-base font-semibold text-gray-900">{title}</h4>

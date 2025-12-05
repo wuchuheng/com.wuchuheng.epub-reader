@@ -155,7 +155,7 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
 
     const nav = createNavigationFunctions(rendition, currentLocationRef);
     setNavigation(nav);
-  }, [bookId, onSelectionCompleted, props.book]);
+  }, [bookId, onSelectionCompleted, props.book, props.isMenuOpenRef]);
 
   // Setup keyboard navigation
   useKeyboardNavigation(navigation.goToNext, navigation.goToPrev, {

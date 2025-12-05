@@ -7,6 +7,8 @@ import {
 } from '../../../services/ContextMenuCacheService';
 import { logger } from '../../../utils/logger';
 import { useNavigate } from 'react-router-dom';
+import { getWordCount } from '../utils/domUtils';
+import { DEFAULT_CONFIG } from '../../../constants/epub';
 
 export type ContextMenuEntry = ContextMenu & {
   id: number;
@@ -16,9 +18,11 @@ export type ContextMenuEntry = ContextMenu & {
 
 interface UseContextMenuStateProps {
   activeTools: ContextMenuItem[];
+  maxSelectedWords?: number;
+  onShowMessage?: (msg: string) => void;
 }
 
-export const useContextMenuState = ({ activeTools }: UseContextMenuStateProps) => {
+export const useContextMenuState = ({ activeTools, maxSelectedWords, onShowMessage }: UseContextMenuStateProps) => {
   const [menuStack, setMenuStack] = useState<ContextMenuEntry[]>([]);
   const isMenuOpenRef = useRef(false);
   useEffect(() => {
@@ -77,6 +81,14 @@ export const useContextMenuState = ({ activeTools }: UseContextMenuStateProps) =
         contextLength: info.context.length,
       });
 
+      const limit = maxSelectedWords ?? DEFAULT_CONFIG.DEFAULT_MAX_SELECTED_WORDS;
+      const count = getWordCount(info.words);
+
+      if (count > limit) {
+        onShowMessage?.('Selection exceeds the max word limit. Reduce your selection to continue.');
+        return;
+      }
+
       const supportedTools = getSupportedTools(info.words);
 
       if (supportedTools.length === 0) {
@@ -124,11 +136,19 @@ export const useContextMenuState = ({ activeTools }: UseContextMenuStateProps) =
       setMenuStack([entry]);
       logger.log('[EpubReader] ✅ MenuStack updated with new entry');
     },
-    [activeTools.length, getSupportedTools]
+    [activeTools.length, getSupportedTools, maxSelectedWords, onShowMessage]
   );
 
   const pushDrilldownMenu = useCallback(
     (parentId: number, info: SelectInfo) => {
+      const limit = maxSelectedWords ?? DEFAULT_CONFIG.DEFAULT_MAX_SELECTED_WORDS;
+      const count = getWordCount(info.words);
+
+      if (count > limit) {
+        onShowMessage?.('Selection exceeds the max word limit. Reduce your selection to continue.');
+        return;
+      }
+
       const supportedTools = getSupportedTools(info.words);
       if (supportedTools.length === 0) {
         if (activeTools.length === 0) {
@@ -147,7 +167,7 @@ export const useContextMenuState = ({ activeTools }: UseContextMenuStateProps) =
 
       setMenuStack((prev) => [...prev, entry]);
     },
-    [activeTools.length, createMenuEntry, getSupportedTools]
+    [activeTools.length, createMenuEntry, getSupportedTools, maxSelectedWords, onShowMessage]
   );
 
   const removeMenuAndChildren = useCallback(

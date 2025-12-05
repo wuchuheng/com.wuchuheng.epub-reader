@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 /**
  * Props for searchable model input component.
@@ -38,15 +39,55 @@ export const ModelSearchInput: React.FC<ModelSearchInputProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasFetchedModels, setHasFetchedModels] = useState(false);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Helper to update dropdown position
+  const updatePosition = () => {
+    if (!inputRef.current) return;
+    const rect = inputRef.current.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+    const estimatedHeight = 200; // Approximate max height
+
+    // Prefer down, unless space is tight and there is more space above
+    const showAbove = spaceBelow < estimatedHeight && spaceAbove > spaceBelow;
+
+    setDropdownStyle({
+      position: 'fixed',
+      left: rect.left,
+      width: rect.width,
+      zIndex: 9999,
+      ...(showAbove
+        ? { bottom: window.innerHeight - rect.top + 5, maxHeight: Math.min(spaceAbove - 20, 300) }
+        : { top: rect.bottom + 5, maxHeight: Math.min(spaceBelow - 20, 300) }),
+    });
+  };
+
+  // Update position on scroll/resize when open
+  useLayoutEffect(() => {
+    if (isDropdownOpen) {
+      updatePosition();
+      window.addEventListener('scroll', updatePosition, true);
+      window.addEventListener('resize', updatePosition);
+    }
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [isDropdownOpen, filteredModels.length]); // Update when content changes too
 
   // 2. Effects
   // 2.1 Handle outside clicks to close dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      const clickedDropdown = dropdownRef.current && dropdownRef.current.contains(target);
+      const clickedInput = inputRef.current && inputRef.current.contains(target);
+
+      if (!clickedDropdown && !clickedInput) {
         setIsDropdownOpen(false);
       }
     };
@@ -183,7 +224,7 @@ export const ModelSearchInput: React.FC<ModelSearchInputProps> = ({
 
   // 4. Render
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative">
       <div className="relative">
         <input
           ref={inputRef}
@@ -198,37 +239,45 @@ export const ModelSearchInput: React.FC<ModelSearchInputProps> = ({
       </div>
 
       {/* Dropdown with model options */}
-      {isDropdownOpen && (
-        <div className="absolute z-10 mt-1 w-full rounded-md border border-gray-300 bg-white shadow-lg">
-          <div className="max-h-60 overflow-y-auto">
-            {isLoading && <div className="px-3 py-2 text-sm text-gray-500">Loading models...</div>}
+      {isDropdownOpen &&
+        createPortal(
+          <div
+            ref={dropdownRef}
+            style={dropdownStyle}
+            className="fixed z-[9999] rounded-md border border-gray-300 bg-white shadow-lg"
+          >
+            <div className="overflow-y-auto" style={{ maxHeight: dropdownStyle.maxHeight }}>
+              {isLoading && (
+                <div className="px-3 py-2 text-sm text-gray-500">Loading models...</div>
+              )}
 
-            {error && <div className="px-3 py-2 text-sm text-orange-600">{error}</div>}
+              {error && <div className="px-3 py-2 text-sm text-orange-600">{error}</div>}
 
-            {!isLoading && !error && filteredModels.length === 0 && (
-              <div className="px-3 py-2 text-sm text-gray-500">
-                No models found matching "{inputValue}"
-              </div>
-            )}
+              {!isLoading && !error && filteredModels.length === 0 && (
+                <div className="px-3 py-2 text-sm text-gray-500">
+                  No models found matching "{inputValue}"
+                </div>
+              )}
 
-            {!isLoading && !error && filteredModels.length > 0 && (
-              <div className="py-1">
-                {filteredModels.map((model) => (
-                  <div
-                    key={model}
-                    className={`cursor-pointer px-3 py-2 text-sm hover:bg-gray-100 ${
-                      model === inputValue ? 'bg-blue-50 text-blue-600' : 'text-gray-900'
-                    }`}
-                    onClick={() => handleModelSelect(model)}
-                  >
-                    {model}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+              {!isLoading && !error && filteredModels.length > 0 && (
+                <div className="py-1">
+                  {filteredModels.map((model) => (
+                    <div
+                      key={model}
+                      className={`cursor-pointer px-3 py-2 text-sm hover:bg-gray-100 ${
+                        model === inputValue ? 'bg-blue-50 text-blue-600' : 'text-gray-900'
+                      }`}
+                      onClick={() => handleModelSelect(model)}
+                    >
+                      {model}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 };

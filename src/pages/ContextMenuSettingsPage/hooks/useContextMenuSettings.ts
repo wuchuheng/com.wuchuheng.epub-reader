@@ -94,6 +94,7 @@ export const useContextMenuSettings = () => {
 
         const sanitizedItems = (savedSettings?.items || []).map((item) => sanitizeTool(item));
         const pinnedMaximized = savedSettings.pinnedMaximized ?? false;
+        const maxSelectedWords = savedSettings.maxSelectedWords ?? DEFAULT_CONFIG.DEFAULT_MAX_SELECTED_WORDS;
 
         // Ensure we have valid settings object
         const validSettings: ContextMenuSettings = {
@@ -101,6 +102,7 @@ export const useContextMenuSettings = () => {
           key: activeKey,
           defaultModel,
           pinnedMaximized,
+          maxSelectedWords,
           items: sanitizedItems,
           providerId,
           providerApiKeyCache,
@@ -117,6 +119,7 @@ export const useContextMenuSettings = () => {
           key: '',
           defaultModel: '',
           pinnedMaximized: false,
+          maxSelectedWords: DEFAULT_CONFIG.DEFAULT_MAX_SELECTED_WORDS,
           items: [],
           providerId: 'custom',
           providerApiKeyCache: {},
@@ -134,6 +137,13 @@ export const useContextMenuSettings = () => {
   const updateSettings = useCallback(
     <K extends keyof ContextMenuSettings>(field: K, value: ContextMenuSettings[K]) => {
       setSettings((prev) => ({ ...prev, [field]: value }));
+    },
+    []
+  );
+  
+  const updateMaxSelectedWords = useCallback(
+    (limit: number) => {
+      setSettings((prev) => ({ ...prev, maxSelectedWords: limit }));
     },
     []
   );
@@ -428,6 +438,7 @@ export const useContextMenuSettings = () => {
     toggleToolEnabled,
     toggleToolSupport,
     updatePinnedMaximized,
+    updateMaxSelectedWords,
   };
 };
 

@@ -104,6 +104,9 @@ export type ContextMenuSettings = {
   // Cache of default models keyed by provider
   providerDefaultModelCache?: Partial<Record<AiProviderId, string>>;
 
+  // Maximum number of words allowed in a selection before blocking context menu
+  maxSelectedWords?: number;
+
   // An array of ContextMenuItem objects representing individual menu items.
   items: ContextMenuItem[];
 };

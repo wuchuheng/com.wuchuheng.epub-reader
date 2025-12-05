@@ -39,6 +39,7 @@ export const usePWAInstall = (): PWAInstallState => {
       // Check if already installed
       if (
         window.matchMedia('(display-mode: standalone)').matches ||
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (window as any).navigator.standalone === true
       ) {
         console.log('PWA Install Hook: Already in standalone mode');
