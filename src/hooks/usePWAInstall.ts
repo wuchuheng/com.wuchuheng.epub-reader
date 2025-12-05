@@ -8,6 +8,7 @@ interface BeforeInstallPromptEvent extends Event {
 
 interface PWAInstallState {
   isInstalled: boolean;
+  isStandalone: boolean;
   installPWA: () => Promise<void>;
   canInstall: boolean;
 }
@@ -15,6 +16,7 @@ interface PWAInstallState {
 export const usePWAInstall = (): PWAInstallState => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -44,6 +46,7 @@ export const usePWAInstall = (): PWAInstallState => {
       ) {
         console.log('PWA Install Hook: Already in standalone mode');
         setIsInstalled(true);
+        setIsStandalone(true);
         setIsLoading(false);
         return;
       }
@@ -109,7 +112,7 @@ export const usePWAInstall = (): PWAInstallState => {
     }
   };
 
-  const finalState = { isInstalled, installPWA, canInstall: !!deferredPrompt && !isLoading };
+  const finalState = { isInstalled, isStandalone, installPWA, canInstall: !!deferredPrompt && !isLoading };
   console.log('PWA Install Hook: Returning state:', finalState);
   return finalState;
 };

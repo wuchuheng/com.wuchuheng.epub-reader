@@ -2,6 +2,7 @@ import { useCallback, useState, useEffect, useRef } from 'react';
 import { ContextMenuSettings, ContextMenuItem, AISettingItem } from '../../../types/epub';
 import { getContextMenuSettings, updateContextMenuSettings } from '../../../services/OPFSManager';
 import { AiProviderId, AI_PROVIDER_CATALOG } from '@/config/aiProviders';
+import { DEFAULT_CONFIG } from '../../../constants/epub';
 
 const sanitizeSupports = (tool: ContextMenuItem): ContextMenuItem => {
   const supportsSingleWord = tool.supportsSingleWord !== false;

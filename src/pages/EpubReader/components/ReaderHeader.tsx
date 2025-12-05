@@ -1,6 +1,7 @@
 import React from 'react';
 import * as Icons from '../../../components/icons';
 import { useNavigate } from 'react-router-dom';
+import { usePWAInstall } from '../../../hooks/usePWAInstall';
 
 interface ReaderHeaderProps {
   visible: boolean;
@@ -23,6 +24,7 @@ export const ReaderHeader: React.FC<ReaderHeaderProps> = (props) => {
 
   // access navigator hooks from react-router.
   const navigate = useNavigate();
+  const { isStandalone } = usePWAInstall();
 
   return (
     <header
@@ -63,13 +65,15 @@ export const ReaderHeader: React.FC<ReaderHeaderProps> = (props) => {
             >
               <Icons.QuestionMark />
             </button>
-            <button
-              onClick={handleFullscreen}
-              className="p-2 text-gray-600 hover:text-gray-900"
-              title="Fullscreen"
-            >
-              <Icons.Fullscreen />
-            </button>
+            {!isStandalone && (
+              <button
+                onClick={handleFullscreen}
+                className="p-2 text-gray-600 hover:text-gray-900"
+                title="Fullscreen"
+              >
+                <Icons.Fullscreen />
+              </button>
+            )}
             <button
               onClick={() => navigate('/settings')}
               className="p-2 text-gray-600 hover:text-gray-900"
