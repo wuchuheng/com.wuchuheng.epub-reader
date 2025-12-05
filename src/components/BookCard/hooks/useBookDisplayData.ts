@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { BookMetadata } from '../../../types/book';
 
 /**
@@ -6,21 +7,23 @@ import { BookMetadata } from '../../../types/book';
  * @returns Formatted display values with fallbacks
  */
 export function useBookDisplayData(book: BookMetadata) {
+  const { t } = useTranslation('homepage');
+
   // 1. Input validation
   if (!book) {
     return {
-      displayName: 'Untitled Book',
-      displayAuthor: 'Unknown Author',
+      displayName: t('bookshelf.unknownTitle'),
+      displayAuthor: t('bookshelf.unknownAuthor'),
       displayProgress: 0,
-      displaySize: 'Unknown size',
+      displaySize: t('bookshelf.unknownSize'),
     };
   }
 
   // 2. Core processing - format display data with fallbacks
-  const displayName = book.name || 'Untitled Book';
-  const displayAuthor = book.author || 'Unknown Author';
+  const displayName = book.name || t('bookshelf.unknownTitle');
+  const displayAuthor = book.author || t('bookshelf.unknownAuthor');
   const displayProgress = book.progress || 0;
-  const displaySize = book.size || 'Unknown size';
+  const displaySize = book.size || t('bookshelf.unknownSize');
 
   // 3. Return formatted data
   return {

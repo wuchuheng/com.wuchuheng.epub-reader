@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { ContextMenuItem } from '../../../types/epub';
 
 /**
@@ -18,34 +19,38 @@ interface ToolTypeSelectorProps {
 export const ToolTypeSelector: React.FC<ToolTypeSelectorProps> = ({
   selectedType,
   onTypeChange,
-}) => (
-  <div>
-    <label className="mb-2 block text-sm font-medium text-gray-700">
-      Tool Type
-    </label>
-    <div className="flex space-x-4">
-      <button
-        type="button"
-        onClick={() => onTypeChange('AI')}
-        className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-          selectedType === 'AI'
-            ? 'bg-blue-500 text-white'
-            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-        }`}
-      >
-        AI Tool
-      </button>
-      <button
-        type="button"
-        onClick={() => onTypeChange('iframe')}
-        className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-          selectedType === 'iframe'
-            ? 'bg-blue-500 text-white'
-            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-        }`}
-      >
-        Iframe Tool
-      </button>
+}) => {
+  const { t } = useTranslation('settings');
+
+  return (
+    <div>
+      <label className="mb-2 block text-sm font-medium text-gray-700">
+        {t('contextMenu.toolType.label')}
+      </label>
+      <div className="flex space-x-4">
+        <button
+          type="button"
+          onClick={() => onTypeChange('AI')}
+          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+            selectedType === 'AI'
+              ? 'bg-blue-500 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          {t('contextMenu.toolType.ai')}
+        </button>
+        <button
+          type="button"
+          onClick={() => onTypeChange('iframe')}
+          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+            selectedType === 'iframe'
+              ? 'bg-blue-500 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          {t('contextMenu.toolType.iframe')}
+        </button>
+      </div>
     </div>
-  </div>
-);
+  );
+};

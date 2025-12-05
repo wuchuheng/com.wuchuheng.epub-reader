@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface ProgressBarProps {
   /** Progress percentage (0-100) */
@@ -21,6 +22,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   showPercentage = true,
   color = 'bg-blue-600',
 }) => {
+  const { t } = useTranslation('common');
   // 1. Input validation
   if (typeof progress !== 'number' || progress < 0 || progress > 100) {
     console.warn('ProgressBar: progress must be a number between 0 and 100');
@@ -39,7 +41,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
     <div className={`mb-3 ${className}`}>
       {showPercentage && (
         <div className="mb-1 flex justify-between text-xs text-gray-500">
-          <span>Progress</span>
+          <span>{t('progress')}</span>
           <span>{progress}%</span>
         </div>
       )}
@@ -51,7 +53,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
           aria-valuenow={progress}
           aria-valuemin={0}
           aria-valuemax={100}
-          aria-label={`Reading progress: ${progress}%`}
+          aria-label={`${t('progress')}: ${progress}%`}
         />
       </div>
     </div>

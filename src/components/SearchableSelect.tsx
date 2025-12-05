@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export interface SearchableSelectOption {
   value: string;
@@ -23,12 +24,14 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   value,
   onChange,
   options,
-  placeholder = 'Select...',
+  placeholder,
   disabled = false,
   className = '',
   renderOption,
   isFilterable = true,
 }) => {
+  const { t } = useTranslation('common');
+  const resolvedPlaceholder = placeholder ?? t('selectPlaceholder');
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredOptions, setFilteredOptions] = useState<SearchableSelectOption[]>(options);
@@ -135,7 +138,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
           onChange={handleInputChange}
           onFocus={handleInputFocus}
           onClick={handleInputClick}
-          placeholder={placeholder}
+          placeholder={resolvedPlaceholder}
           disabled={disabled}
         />
         <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
@@ -157,7 +160,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
           className={`absolute z-50 ${dropdownPosition} max-h-60 w-full overflow-auto rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none`}
         >
           {filteredOptions.length === 0 ? (
-            <div className="px-4 py-2 text-sm text-gray-500">No options found</div>
+            <div className="px-4 py-2 text-sm text-gray-500">{t('noOptions')}</div>
           ) : (
             filteredOptions.map((option) => (
               <div

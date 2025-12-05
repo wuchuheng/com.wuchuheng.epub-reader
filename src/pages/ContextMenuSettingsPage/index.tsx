@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ApiConfig, type ApiStatus } from './components/ApiConfig';
 import { ModelSearchInput } from './components/ModelSearchInput';
 import { ToolList } from './components/ToolList';
@@ -15,6 +16,7 @@ import { DEFAULT_CONFIG } from '../../constants/epub';
  */
 export const ContextMenuSettingsPage: React.FC = () => {
   // 1. State and logic using custom hooks
+  const { t } = useTranslation('settings');
   const contextMenuSettings = useContextMenuSettings();
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [apiStatus, setApiStatus] = useState<ApiStatus | null>(null);
@@ -24,7 +26,7 @@ export const ContextMenuSettingsPage: React.FC = () => {
     // Validation: Check if default model is set when AI tools exist
     const hasAITools = contextMenuSettings.settings.items.some((item) => item.type === 'AI');
     if (hasAITools && !contextMenuSettings.settings.defaultModel) {
-      alert('Please select a Default Model for your AI tools.');
+      alert(t('contextMenu.messages.defaultModelRequired'));
       return;
     }
 
@@ -43,11 +45,15 @@ export const ContextMenuSettingsPage: React.FC = () => {
     if (!api || !key) {
       setApiStatus({
         type: 'warning',
-        message: 'Add Base URL and API key to test connection',
+        message: t('contextMenu.messages.testInputNeeded'),
         isTesting: false,
       });
     } else {
-      setApiStatus({ type: 'success', message: 'Testing API connection...', isTesting: true });
+      setApiStatus({
+        type: 'success',
+        message: t('contextMenu.actions.testConnectionRunning'),
+        isTesting: true,
+      });
     }
     setTestNonce((prev) => prev + 1);
   };
@@ -56,20 +62,20 @@ export const ContextMenuSettingsPage: React.FC = () => {
     const baseClasses =
       'inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium';
     let variant = 'border-gray-200 bg-gray-50 text-gray-700';
-    let label = 'Not tested';
+    let label = t('contextMenu.status.notTested');
 
     if (apiStatus?.isTesting) {
       variant = 'border-blue-200 bg-blue-50 text-blue-700';
-      label = 'Testing';
+      label = t('contextMenu.status.testing');
     } else if (apiStatus?.type === 'success') {
       variant = 'border-green-200 bg-green-50 text-green-700';
-      label = 'OK';
+      label = t('contextMenu.status.ok');
     } else if (apiStatus?.type === 'warning') {
       variant = 'border-yellow-200 bg-yellow-50 text-yellow-700';
-      label = 'Needs input';
+      label = t('contextMenu.status.needsInput');
     } else if (apiStatus?.type === 'error') {
       variant = 'border-red-200 bg-red-50 text-red-700';
-      label = 'Error';
+      label = t('contextMenu.status.error');
     }
 
     return (
@@ -112,7 +118,7 @@ export const ContextMenuSettingsPage: React.FC = () => {
             rel="noopener noreferrer"
             className="text-[11px] font-semibold text-blue-700 underline hover:text-blue-800"
           >
-            Help
+            {t('common:help', { defaultValue: t('reader:header.help') })}
           </a>
         )}
       </div>
@@ -141,7 +147,7 @@ export const ContextMenuSettingsPage: React.FC = () => {
       {/* Loading State */}
       {contextMenuSettings.isLoading && (
         <div className="flex items-center justify-center py-8">
-          <div className="text-gray-500">Loading settings...</div>
+          <div className="text-gray-500">{t('contextMenu.loading')}</div>
         </div>
       )}
 
@@ -156,23 +162,21 @@ export const ContextMenuSettingsPage: React.FC = () => {
       {!contextMenuSettings.isLoading && (
         <>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">Context Menu Configuration</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Configure AI providers and custom tools for the reader context menu.
-            </p>
+            <h3 className="text-lg font-semibold text-gray-900">{t('contextMenu.title')}</h3>
+            <p className="mt-1 text-sm text-gray-500">{t('contextMenu.description')}</p>
           </div>
 
           <div className="grid gap-6 lg:grid-cols-[minmax(320px,1fr)_minmax(0,2fr)]">
             <div className="space-y-6">
               {/* General Settings */}
               <SectionCard
-                title="General"
-                description="General configuration for the context menu."
+                title={t('contextMenu.generalTitle')}
+                description={t('contextMenu.generalDescription')}
                 tint="gray"
               >
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Max selected words
+                    {t('contextMenu.maxSelectedWords')}
                   </label>
                   <div className="mt-1">
                     <input
@@ -189,15 +193,15 @@ export const ContextMenuSettingsPage: React.FC = () => {
                     />
                   </div>
                   <p className="mt-1 text-xs text-gray-500">
-                    Selections over this limit will be blocked.
+                    {t('contextMenu.maxSelectedWordsHint')}
                   </p>
                 </div>
               </SectionCard>
 
               {/* Provider & Authentication */}
               <SectionCard
-                title="AI Provider"
-                description="Connect your model provider for AI tools."
+                title={t('contextMenu.providerTitle')}
+                description={t('contextMenu.providerDescription')}
                 statusSlot={renderStatusChip()}
                 tint="sky"
               >
@@ -214,15 +218,19 @@ export const ContextMenuSettingsPage: React.FC = () => {
 
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <label className="block text-sm font-medium text-gray-700">Default Model</label>
-                    <span className="text-xs text-gray-500">Used unless a tool overrides it</span>
+                    <label className="block text-sm font-medium text-gray-700">
+                      {t('contextMenu.defaultModelLabel')}
+                    </label>
+                    <span className="text-xs text-gray-500">
+                      {t('contextMenu.defaultModelHint')}
+                    </span>
                   </div>
                   <ModelSearchInput
                     value={contextMenuSettings.settings.defaultModel || ''}
                     onChange={contextMenuSettings.updateDefaultModel}
                     apiEndpoint={contextMenuSettings.settings.api || ''}
                     apiKey={contextMenuSettings.settings.key || ''}
-                    placeholder="Search or enter model name (e.g. gpt-4o-mini)"
+                    placeholder={t('contextMenu.modelPlaceholder')}
                   />
                 </div>
 
@@ -232,20 +240,20 @@ export const ContextMenuSettingsPage: React.FC = () => {
 
             {/* Custom Tools */}
             <SectionCard
-              title="Custom AI Tools"
-              description="Shown in the reader context menu in this order."
+              title={t('contextMenu.customToolsTitle')}
+              description={t('contextMenu.customToolsDescription')}
               className="h-full"
               statusSlot={
-                <div className="hidden text-xs text-gray-500 sm:block">Drag to reorder</div>
+                <div className="hidden text-xs text-gray-500 sm:block">
+                  {t('contextMenu.reorderHint')}
+                </div>
               }
             >
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-sm text-gray-600">
-                  Arrange tools and choose which ones handle single-word vs. multi-word selections.
-                </p>
+                <p className="text-sm text-gray-600">{t('contextMenu.customToolsSupport')}</p>
                 <Link
                   to="/settings/contextmenu/add-tool"
-                  aria-label="Add tool"
+                  aria-label={t('contextMenu.addToolAria')}
                   className={addToolButtonClass}
                 >
                   <PlusSmall />
@@ -272,26 +280,30 @@ export const ContextMenuSettingsPage: React.FC = () => {
                   disabled={contextMenuSettings.isSaving}
                   className={testConnectionButtonClass}
                 >
-                  {apiStatus?.isTesting ? 'Testing…' : 'Test connection'}
+                  {apiStatus?.isTesting
+                    ? t('contextMenu.actions.testConnectionRunning')
+                    : t('contextMenu.actions.testConnection')}
                 </button>
                 <button
                   onClick={handleSaveSettings}
                   disabled={contextMenuSettings.isSaving}
                   className={saveButtonClass}
                 >
-                  {contextMenuSettings.isSaving ? 'Saving...' : 'Save Settings'}
+                  {contextMenuSettings.isSaving
+                    ? t('contextMenu.actions.saving')
+                    : t('contextMenu.actions.save')}
                 </button>
               </div>
 
               <div className="text-sm">
                 {saveStatus === 'success' && (
-                  <span className="text-green-600">Settings saved successfully!</span>
+                  <span className="text-green-600">{t('contextMenu.messages.settingsSaved')}</span>
                 )}
                 {saveStatus === 'error' && (
-                  <span className="text-red-600">Failed to save settings</span>
+                  <span className="text-red-600">{t('contextMenu.messages.settingsSaveError')}</span>
                 )}
                 {contextMenuSettings.isSaving && (
-                  <span className="text-gray-600">Saving changes…</span>
+                  <span className="text-gray-600">{t('contextMenu.messages.saving')}</span>
                 )}
               </div>
             </div>

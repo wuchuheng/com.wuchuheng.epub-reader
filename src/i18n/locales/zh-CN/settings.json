@@ -1,0 +1,209 @@
+{
+  "nav": {
+    "general": "通用",
+    "storage": "存储",
+    "contextMenu": "上下文菜单",
+    "about": "关于"
+  },
+  "navDescriptions": {
+    "general": "通用应用程序设置",
+    "storage": "本地缓存概览与重置",
+    "contextMenu": "配置 AI 提供商和自定义工具",
+    "about": "应用信息和版本"
+  },
+  "breadcrumbs": {
+    "home": "首页",
+    "settings": "设置",
+    "contextMenu": "上下文菜单",
+    "addTool": "添加新工具",
+    "editTool": "编辑工具"
+  },
+  "general": {
+    "title": "通用设置",
+    "description": "配置通用应用程序首选项。",
+    "comingSoon": "即将推出",
+    "themeCustomization": "主题自定义",
+    "languageSelection": "语言选择",
+    "languageDescription": "选择界面显示语言。"
+  },
+  "storage": {
+    "title": "存储",
+    "description": "查看本地缓存的 OPFS 文件，并在需要时重置所有内容。",
+    "notSupported": "您的浏览器不支持 OPFS。请使用基于 Chromium 的浏览器来管理缓存文件。",
+    "error": "加载存储详情失败。",
+    "cards": {
+      "total": "总缓存",
+      "books": "书籍",
+      "config": "配置"
+    },
+    "table": {
+      "title": "缓存文件",
+      "description": "存储在 OPFS 中的文件及其大小。",
+      "loading": "正在加载存储详情...",
+      "empty": "未找到缓存文件。",
+      "items": "{{count}} 项",
+      "loadingLabel": "加载中..."
+    },
+    "danger": {
+      "title": "危险操作",
+      "description": "重置会删除所有本地数据：所有缓存的书籍文件、封面图片以及配置文件。此操作无法撤销。",
+      "action": {
+        "default": "删除所有缓存数据",
+        "working": "正在重置..."
+      },
+      "success": "本地数据清除成功。",
+      "error": "重置本地数据失败。"
+    },
+    "resetConfirm": "这将删除 OPFS 中所有缓存的书籍和设置。此操作无法撤销。是否继续？"
+  },
+  "contextMenu": {
+    "title": "上下文菜单配置",
+    "description": "为阅读器上下文菜单配置 AI 提供商和自定义工具。",
+    "generalTitle": "通用",
+    "generalDescription": "上下文菜单的通用配置。",
+    "maxSelectedWords": "最大选中文字数",
+    "maxSelectedWordsHint": "超过该限制的选择将被阻止。",
+    "providerTitle": "AI 提供商",
+    "providerDescription": "为 AI 工具连接模型提供商。",
+    "defaultModelLabel": "默认模型",
+    "defaultModelHint": "除非工具覆盖，否则使用该模型",
+    "modelPlaceholder": "搜索或输入模型名称（例如 gpt-4o-mini）",
+    "customToolsTitle": "自定义 AI 工具",
+    "customToolsDescription": "按此顺序显示在阅读器上下文菜单中。",
+    "customToolsSupport": "排列工具并选择单词/多词支持。",
+    "reorderHint": "拖动以重新排序",
+    "addToolAria": "添加工具",
+    "loading": "正在加载设置...",
+    "error": "加载设置失败。",
+    "status": {
+      "notTested": "未测试",
+      "testing": "测试中",
+      "ok": "正常",
+      "needsInput": "需要填写",
+      "error": "错误"
+    },
+    "messages": {
+      "defaultModelRequired": "请选择默认模型以保存 AI 工具。",
+      "settingsSaved": "设置已保存！",
+      "settingsSaveError": "保存设置失败",
+      "saving": "正在保存更改…",
+      "testInputNeeded": "请添加基础 URL 和 API 密钥以测试连接"
+    },
+    "actions": {
+      "testConnection": "测试连接",
+      "testConnectionRunning": "测试中…",
+      "save": "保存设置",
+      "saving": "正在保存..."
+    },
+    "api": {
+      "providerLabel": "API 提供商",
+      "providerPlaceholder": "选择 AI 提供商...",
+      "baseUrl": "基础 URL",
+      "baseUrlPlaceholder": "https://api.example.com/v1",
+      "apiKey": "API 密钥",
+      "apiKeyPlaceholder": "您的 API 密钥",
+      "viewDocs": "查看提供商文档",
+      "customProvider": "自定义兼容 OpenAI 的服务",
+      "errors": {
+        "validUrl": "请输入有效的 URL",
+        "baseUrlRequired": "基础 URL 为必填项",
+        "apiKeyRequired": "API 密钥为必填项",
+        "fixUrlFormat": "请修复基础 URL 格式"
+      },
+      "status": {
+        "testing": "正在测试 API 连接...",
+        "connected": "API 连接成功",
+        "connectedWithCount": "API 连接成功（{{count}} 个可用模型）",
+        "failed": "API 连接失败：{{status}}",
+        "networkError": "网络错误：{{message}}",
+        "needConfig": "请配置提供商、基础 URL 和 API 密钥",
+        "missingBaseUrl": "请输入基础 URL",
+        "missingApiKey": "请输入 API 密钥"
+      }
+    },
+    "modelSearch": {
+      "loading": "正在加载模型...",
+      "usingDefaults": "使用默认模型",
+      "noResults": "未找到与“{{query}}”匹配的模型"
+    },
+    "toolList": {
+      "singleWord": "单词",
+      "multiWord": "多词",
+      "edit": "编辑工具",
+      "remove": "移除工具",
+      "enable": "启用工具",
+      "disable": "禁用工具",
+      "drag": "拖动以重新排序",
+      "noToolsTitle": "暂无工具",
+      "noToolsDescription": "添加您的第一个工具以便在阅读器菜单中显示。"
+    },
+    "toolType": {
+      "label": "工具类型",
+      "ai": "AI 工具",
+      "iframe": "Iframe 工具"
+    },
+    "aiForm": {
+      "prompt": "提示词",
+      "promptPlaceholder": "使用 {{words}} 表示选中文本，{{context}} 表示周边内容。例如：用 2 句话总结 {{words}}。",
+      "promptTips": "提示词建议",
+      "tipsWords": "{{words}}：选中的文本。",
+      "tipsContext": "{{context}}：提供背景的上下文内容。",
+      "reasoning": "启用推理（适用于支持的模型）",
+      "selectionSupport": "选择支持",
+      "singleWord": "单词查询",
+      "multiWord": "多词查询",
+      "selectionHint": "至少选择一项，以便该工具可用于单词或多词选择。"
+    },
+    "iframeForm": {
+      "url": "URL",
+      "urlPlaceholder": "https://example.com?words={{words}}&context={{context}}",
+      "tipsTitle": "提示",
+      "tipsWords": "{{words}}：插入用户选择的文本。例如：https://example.com?q={{words}}",
+      "tipsContext": "{{context}}：添加周边文本或元数据作为上下文。例如：https://example.com?ctx={{context}}",
+      "selectionSupport": "选择支持",
+      "singleWord": "单词查询",
+      "multiWord": "多词查询",
+      "selectionHint": "至少选择一项，以便该工具可用于单词或多词选择。"
+    }
+  },
+  "toolForm": {
+    "addBreadcrumb": "添加新工具",
+    "editBreadcrumb": "编辑工具",
+    "addTitle": "添加新工具",
+    "editTitle": "编辑工具",
+    "description": "为上下文菜单配置新的 AI 工具或 iframe 工具",
+    "editDescription": "更新此上下文菜单工具的配置",
+    "loading": "正在加载工具...",
+    "notFound": "无法找到请求的工具。请返回上下文菜单设置后重试。",
+    "backToSettings": "返回设置",
+    "toolName": "工具名称",
+    "toolNamePlaceholder": "例如：简单解释",
+    "shortName": "简称",
+    "shortNameHint": "（可选，最多 15 个字符）",
+    "shortNamePlaceholder": "例如：简解",
+    "shortNameHelper": "留空则根据工具名称自动生成",
+    "enabled": "启用",
+    "cancel": "取消",
+    "saveChanges": "保存更改",
+    "saving": "正在保存...",
+    "adding": "正在添加工具...",
+    "addAction": "添加工具",
+    "error": "保存设置失败"
+  },
+  "about": {
+    "title": "沉浸式阅读器",
+    "description": "一款离线优先、具备 AI 上下文增强的 EPUB 阅读器。",
+    "released": "发布日期 {{date}}",
+    "builtWith": "基于 React、TypeScript 和 Tailwind CSS 构建。",
+    "changelogHistory": "更新记录",
+    "categories": {
+      "feat": "功能",
+      "fix": "修复",
+      "refactor": "重构",
+      "docs": "文档",
+      "chore": "杂项",
+      "perf": "性能",
+      "style": "样式"
+    }
+  }
+}

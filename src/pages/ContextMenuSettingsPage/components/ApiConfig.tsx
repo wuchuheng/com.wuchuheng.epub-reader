@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { EyeOpen, EyeClosed } from '../../../components/icons';
 import { AiProviderId, AI_PROVIDER_CATALOG } from '@/config/aiProviders';
 import { SearchableSelect } from '@/components/SearchableSelect';
@@ -60,6 +61,7 @@ export const ApiConfig: React.FC<ApiConfigProps> = ({
   onStatusChange,
   testNonce = 0,
 }) => {
+  const { t } = useTranslation('settings');
   // Field error states (only show errors)
   const [endpointError, setEndpointError] = useState<string>('');
   const [keyError, setKeyError] = useState<string>('');
@@ -94,13 +96,13 @@ export const ApiConfig: React.FC<ApiConfigProps> = ({
     const shouldShowBecauseOtherFieldFilled = apiKey.length > 0 && apiEndpoint.length === 0;
 
     if (hasInvalidUrl) {
-      setEndpointError('Please enter a valid URL');
+      setEndpointError(t('contextMenu.api.errors.validUrl'));
     } else if (shouldShowBecauseOtherFieldFilled) {
-      setEndpointError('Base URL is required');
+      setEndpointError(t('contextMenu.api.errors.baseUrlRequired'));
     } else {
       setEndpointError('');
     }
-  }, [apiEndpoint, apiKey]);
+  }, [apiEndpoint, apiKey, t]);
 
   useEffect(() => {
     // Show key error only if:
@@ -110,17 +112,21 @@ export const ApiConfig: React.FC<ApiConfigProps> = ({
       apiKey.length === 0 && apiEndpoint.length > 0 && isValidUrl(apiEndpoint);
 
     if (shouldShowKeyError) {
-      setKeyError('API key is required');
+      setKeyError(t('contextMenu.api.errors.apiKeyRequired'));
     } else {
       setKeyError('');
     }
-  }, [apiKey, apiEndpoint]);
+  }, [apiKey, apiEndpoint, t]);
 
   // Test API connection when both fields are filled and valid
   useEffect(() => {
     const testApiConnection = async () => {
       if (apiEndpoint && apiKey && isValidUrl(apiEndpoint)) {
-        onStatusChange?.({ type: 'success', message: 'Testing API connection...', isTesting: true });
+        onStatusChange?.({
+          type: 'success',
+          message: t('contextMenu.api.status.testing'),
+          isTesting: true,
+        });
         try {
           const response = await fetch(`${apiEndpoint}/models`, {
             method: 'GET',
@@ -137,14 +143,16 @@ export const ApiConfig: React.FC<ApiConfigProps> = ({
               type: 'success',
               message:
                 modelCount > 0
-                  ? `API connected successfully (${modelCount} models available)`
-                  : 'API connected successfully',
+                  ? t('contextMenu.api.status.connectedWithCount', { count: modelCount })
+                  : t('contextMenu.api.status.connected'),
               isTesting: false,
             });
           } else {
             onStatusChange?.({
               type: 'error',
-              message: `API connection failed: ${response.status} ${response.statusText}`,
+              message: t('contextMenu.api.status.failed', {
+                status: `${response.status} ${response.statusText}`,
+              }),
               link: selectedProvider?.docsUrl,
               isTesting: false,
             });
@@ -152,7 +160,9 @@ export const ApiConfig: React.FC<ApiConfigProps> = ({
         } catch (error) {
           onStatusChange?.({
             type: 'error',
-            message: `Network error: ${error instanceof Error ? error.message : 'Connection failed'}`,
+            message: t('contextMenu.api.status.networkError', {
+              message: error instanceof Error ? error.message : t('errors:unknown'),
+            }),
             link: selectedProvider?.docsUrl,
             isTesting: false,
           });
@@ -162,25 +172,25 @@ export const ApiConfig: React.FC<ApiConfigProps> = ({
         if (!apiEndpoint && !apiKey) {
           onStatusChange?.({
             type: 'warning',
-            message: 'Please configure provider, Base URL and API key',
+            message: t('contextMenu.api.status.needConfig'),
             isTesting: false,
           });
         } else if (!apiEndpoint) {
           onStatusChange?.({
             type: 'warning',
-            message: 'Please enter Base URL',
+            message: t('contextMenu.api.status.missingBaseUrl'),
             isTesting: false,
           });
         } else if (!apiKey) {
           onStatusChange?.({
             type: 'warning',
-            message: 'Please enter API key',
+            message: t('contextMenu.api.status.missingApiKey'),
             isTesting: false,
           });
         } else if (!isValidUrl(apiEndpoint)) {
           onStatusChange?.({
             type: 'error',
-            message: 'Please fix Base URL format',
+            message: t('contextMenu.api.errors.fixUrlFormat'),
             isTesting: false,
           });
         } else {
@@ -192,25 +202,27 @@ export const ApiConfig: React.FC<ApiConfigProps> = ({
     // Debounce the API test
     const timeoutId = setTimeout(testApiConnection, 1000);
     return () => clearTimeout(timeoutId);
-  }, [apiEndpoint, apiKey, selectedProvider, onStatusChange, testNonce]);
+  }, [apiEndpoint, apiKey, selectedProvider, onStatusChange, testNonce, t]);
 
   return (
     <div className="space-y-4">
       {/* Provider Selector */}
       <div>
         <SearchableSelect
-          label="API Provider"
+          label={t('contextMenu.api.providerLabel')}
           value={providerId || ''}
           onChange={(val) => onProviderChange(val as AiProviderId)}
           options={providerOptions}
-          placeholder="Select an AI provider..."
+          placeholder={t('contextMenu.api.providerPlaceholder')}
           className="w-full"
           isFilterable={false}
         />
         {selectedProvider && (
           <div className="mt-2 text-xs text-gray-600">
             <div className="font-medium text-gray-700">
-              {selectedProvider.baseUrl ? `Base URL: ${selectedProvider.baseUrl}` : 'Custom OpenAI-compatible service'}
+              {selectedProvider.baseUrl
+                ? `${t('contextMenu.api.baseUrl')}: ${selectedProvider.baseUrl}`
+                : t('contextMenu.api.customProvider')}
             </div>
             {selectedProvider.docsUrl && (
               <a
@@ -219,7 +231,7 @@ export const ApiConfig: React.FC<ApiConfigProps> = ({
                 rel="noopener noreferrer"
                 className="text-blue-600 hover:underline"
               >
-                View provider docs
+                {t('contextMenu.api.viewDocs')}
               </a>
             )}
           </div>
@@ -229,12 +241,14 @@ export const ApiConfig: React.FC<ApiConfigProps> = ({
       {/* API Endpoint Field - Only shown for Custom provider */}
       {isCustomProvider && (
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Base URL</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            {t('contextMenu.api.baseUrl')}
+          </label>
           <input
             type="text"
             value={apiEndpoint}
             onChange={(e) => onApiEndpointChange(e.target.value)}
-            placeholder="https://api.example.com/v1"
+            placeholder={t('contextMenu.api.baseUrlPlaceholder')}
             className={`w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 ${
               endpointError
                 ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
@@ -247,13 +261,15 @@ export const ApiConfig: React.FC<ApiConfigProps> = ({
 
       {/* API Key Field */}
       <div>
-        <label className="mb-1 block text-sm font-medium text-gray-700">API Key</label>
+        <label className="mb-1 block text-sm font-medium text-gray-700">
+          {t('contextMenu.api.apiKey')}
+        </label>
         <div className="relative">
           <input
             type={showApiKey ? 'text' : 'password'}
             value={apiKey}
             onChange={(e) => onApiKeyChange(e.target.value)}
-            placeholder="Your API key"
+            placeholder={t('contextMenu.api.apiKeyPlaceholder')}
             className={`w-full rounded-md border px-3 py-2 pr-10 focus:outline-none focus:ring-2 ${
               keyError
                 ? 'border-red-300 focus:border-red-500 focus:ring-red-500'

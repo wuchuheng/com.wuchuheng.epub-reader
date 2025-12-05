@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Props for iframe tool form component.
@@ -29,62 +30,74 @@ export const IframeToolForm: React.FC<IframeToolFormProps> = ({
   supportsDisabled,
   onUrlChange,
   onSupportChange,
-}) => (
-  <>
-    {/* URL */}
-    <div>
-      <label className="mb-1 block text-sm font-medium text-gray-700">URL</label>
-      <input
-        type="url"
-        value={url}
-        onChange={(e) => onUrlChange(e.target.value)}
-        placeholder="https://example.com?words={{words}}&context={{context}}"
-        className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-      />
-      <div className="mt-2 text-sm">
-        <div className="mb-1 font-medium text-gray-700">Tips</div>
-        <ul className="list-inside list-disc space-y-1 text-xs text-gray-500">
-          <li>
-            <span className="font-medium">{'{{words}}'}</span>: Inserts the text the user selected.
-            Example: <code className="font-mono">https://example.com?q={'{{words}}'}</code>
-          </li>
-          <li>
-            <span className="font-medium">{'{{context}}'}</span>: Adds nearby text or metadata to
-            give more context. Example:
-            <code className="font-mono">https://example.com?ctx={'{{context}}'}</code>
-          </li>
-        </ul>
-      </div>
-    </div>
+}) => {
+  const { t } = useTranslation('settings');
 
-    {/* Selection support */}
-    <div className="mt-4 border-t border-gray-100 pt-2">
-      <label className="mb-2 block text-sm font-medium text-gray-700">Selection support</label>
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-        <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-700">
-          <input
-            type="checkbox"
-            checked={supportsSingleWord}
-            disabled={supportsDisabled}
-            onChange={(e) => onSupportChange('single', e.target.checked)}
-            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-          />
-          <span>Single-word queries</span>
+  return (
+    <>
+      {/* URL */}
+      <div>
+        <label className="mb-1 block text-sm font-medium text-gray-700">
+          {t('contextMenu.iframeForm.url')}
         </label>
-        <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-700">
-          <input
-            type="checkbox"
-            checked={supportsMultiWord}
-            disabled={supportsDisabled}
-            onChange={(e) => onSupportChange('multi', e.target.checked)}
-            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-          />
-          <span>Multi-word queries</span>
-        </label>
+        <input
+          type="url"
+          value={url}
+          onChange={(e) => onUrlChange(e.target.value)}
+          placeholder={t('contextMenu.iframeForm.urlPlaceholder', {
+            words: '{{words}}',
+            context: '{{context}}',
+          })}
+          className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+        />
+        <div className="mt-2 text-sm">
+          <div className="mb-1 font-medium text-gray-700">
+            {t('contextMenu.iframeForm.tipsTitle')}
+          </div>
+          <ul className="list-inside list-disc space-y-1 text-xs text-gray-500">
+            <li>
+              <span className="font-medium">{'{{words}}'}</span>:{' '}
+              {t('contextMenu.iframeForm.tipsWords', { words: '{{words}}' })}
+            </li>
+            <li>
+              <span className="font-medium">{'{{context}}'}</span>:{' '}
+              {t('contextMenu.iframeForm.tipsContext', { context: '{{context}}' })}
+            </li>
+          </ul>
+        </div>
       </div>
-      <p className="mt-1 text-xs text-gray-500">
-        Pick at least one option so this tool appears for single or multi-word selections.
-      </p>
-    </div>
-  </>
-);
+
+      {/* Selection support */}
+      <div className="mt-4 border-t border-gray-100 pt-2">
+        <label className="mb-2 block text-sm font-medium text-gray-700">
+          {t('contextMenu.iframeForm.selectionSupport')}
+        </label>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              checked={supportsSingleWord}
+              disabled={supportsDisabled}
+              onChange={(e) => onSupportChange('single', e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span>{t('contextMenu.iframeForm.singleWord')}</span>
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              checked={supportsMultiWord}
+              disabled={supportsDisabled}
+              onChange={(e) => onSupportChange('multi', e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span>{t('contextMenu.iframeForm.multiWord')}</span>
+          </label>
+        </div>
+        <p className="mt-1 text-xs text-gray-500">
+          {t('contextMenu.iframeForm.selectionHint')}
+        </p>
+      </div>
+    </>
+  );
+};

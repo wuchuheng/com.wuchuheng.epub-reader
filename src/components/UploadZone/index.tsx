@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAppDispatch } from '../../store';
 import { uploadBook } from '../../store/slices/bookshelfSlice';
 import {
@@ -19,6 +20,7 @@ interface UploadZoneProps {
  */
 export const UploadZone: React.FC<UploadZoneProps> = ({ onUploadComplete }) => {
   const dispatch = useAppDispatch();
+  const { t } = useTranslation('homepage');
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -39,12 +41,13 @@ export const UploadZone: React.FC<UploadZoneProps> = ({ onUploadComplete }) => {
         await dispatch(uploadBook(file)).unwrap();
         onUploadComplete?.();
       } catch (error) {
-        alert(`Upload failed: ${error}`);
+        const message = error instanceof Error ? error.message : String(error);
+        alert(t('alerts.uploadFailed', { error: message }));
       } finally {
         setIsUploading(false);
       }
     },
-    [dispatch, onUploadComplete]
+    [dispatch, onUploadComplete, t]
   );
 
   // 3. Output handling - drag and drop events
@@ -69,10 +72,10 @@ export const UploadZone: React.FC<UploadZoneProps> = ({ onUploadComplete }) => {
       if (epubFile) {
         handleFileUpload(epubFile);
       } else {
-        alert('Please drop a valid EPUB file');
+        alert(t('alerts.invalidFile'));
       }
     },
-    [handleFileUpload]
+    [handleFileUpload, t]
   );
 
   const handleFileInput = useCallback(
@@ -95,15 +98,13 @@ export const UploadZone: React.FC<UploadZoneProps> = ({ onUploadComplete }) => {
       {isUploading ? (
         <div className="flex flex-col items-center">
           <div className="mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
-          <p className="text-gray-600">Uploading book...</p>
+          <p className="text-gray-600">{t('uploadZone.uploading')}</p>
         </div>
       ) : (
         <>
           <div className="mb-4 text-6xl">📚</div>
-          <h3 className="mb-2 text-lg font-semibold text-gray-900">Upload EPUB Book</h3>
-          <p className="mb-4 text-gray-600">
-            Drag and drop your EPUB file here, or click to browse
-          </p>
+          <h3 className="mb-2 text-lg font-semibold text-gray-900">{t('uploadZone.title')}</h3>
+          <p className="mb-4 text-gray-600">{t('uploadZone.description')}</p>
           <input
             type="file"
             accept=".epub,application/epub+zip"
@@ -116,10 +117,10 @@ export const UploadZone: React.FC<UploadZoneProps> = ({ onUploadComplete }) => {
             htmlFor="file-upload"
             className="inline-block cursor-pointer rounded-md bg-blue-600 px-6 py-2 text-white transition-colors duration-200 hover:bg-blue-700"
           >
-            Choose File
+            {t('uploadZone.chooseFile')}
           </label>
           <p className="mt-2 text-xs text-gray-500">
-            Maximum file size: {formatFileSize(MAX_EPUB_SIZE)}
+            {t('uploadZone.maxSize', { size: formatFileSize(MAX_EPUB_SIZE) })}
           </p>
         </>
       )}

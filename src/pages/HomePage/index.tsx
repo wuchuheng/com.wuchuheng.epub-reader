@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '../../store';
 import {
   initializeBookshelf,
@@ -15,6 +16,7 @@ import { getEpubValidationError, isValidEpubFile } from '../../utils/epubValidat
 import { Plus, Settings } from '../../components/icons';
 import { MdInstallDesktop } from 'react-icons/md';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
+import LanguageSwitcher from '../../components/LanguageSwitcher';
 
 /**
  * Main bookshelf page component
@@ -24,6 +26,7 @@ import { usePWAInstall } from '../../hooks/usePWAInstall';
 export const BookshelfPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { t } = useTranslation('homepage');
   const { books, isLoading, error } = useAppSelector((state) => state.bookshelf);
   const { isInstalled, installPWA, canInstall } = usePWAInstall();
 
@@ -65,11 +68,12 @@ export const BookshelfPage: React.FC = () => {
   };
 
   const handleDeleteBook = async (bookId: string) => {
-    if (window.confirm('Are you sure you want to delete this book?')) {
+    if (window.confirm(t('alerts.deleteConfirm'))) {
       try {
         await dispatch(deleteBook(bookId)).unwrap();
       } catch (error) {
-        alert(`Failed to delete book: ${error}`);
+        const message = error instanceof Error ? error.message : String(error);
+        alert(t('alerts.deleteFailed', { error: message }));
       }
     }
   };
@@ -89,10 +93,11 @@ export const BookshelfPage: React.FC = () => {
         await dispatch(uploadBook(file)).unwrap();
         dispatch(loadBooks());
       } catch (error) {
-        alert(`Upload failed: ${error}`);
+        const message = error instanceof Error ? error.message : String(error);
+        alert(t('alerts.uploadFailed', { error: message }));
       }
     },
-    [dispatch]
+    [dispatch, t]
   );
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
@@ -141,10 +146,10 @@ export const BookshelfPage: React.FC = () => {
       if (epubFile) {
         handleFileUpload(epubFile);
       } else if (files.length > 0) {
-        alert('Please drop a valid EPUB file');
+        alert(t('alerts.invalidFile'));
       }
     },
-    [handleFileUpload]
+    [handleFileUpload, t]
   );
 
   const handleUploadBtnClick = () => {
@@ -190,14 +195,15 @@ export const BookshelfPage: React.FC = () => {
       <header className="border-b bg-white shadow-sm">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">Epub reader</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{t('appTitle')}</h1>
             <div className="flex items-center gap-4">
+              <LanguageSwitcher />
               {!isInstalled && canInstall && (
                 <button
                   onClick={installPWA}
                   className="text-gray-600 hover:text-gray-900"
-                  aria-label="Install App"
-                  title="Install EPUB Reader"
+                  aria-label={t('header.installApp')}
+                  title={t('header.installTitle')}
                 >
                   <MdInstallDesktop />
                 </button>
@@ -205,8 +211,8 @@ export const BookshelfPage: React.FC = () => {
               {!isInstalled && (
                 <button
                   onClick={handleManualInstallTest}
-                  aria-label="Test PWA Install"
-                  title="Test PWA Install (Debug)"
+                  aria-label={t('header.testInstall')}
+                  title={t('header.testInstall')}
                 >
                   <MdInstallDesktop />
                 </button>
@@ -214,16 +220,16 @@ export const BookshelfPage: React.FC = () => {
               <button
                 onClick={() => navigate('/settings')}
                 className="text-gray-600 hover:text-gray-900"
-                aria-label="Settings"
-                title="Settings"
+                aria-label={t('header.settings')}
+                title={t('header.settings')}
               >
                 <Settings />
               </button>
               <button
                 onClick={handleUploadBtnClick}
                 className="text-gray-600 hover:text-gray-900"
-                aria-label="Upload Book"
-                title="Upload Book"
+                aria-label={t('header.uploadBook')}
+                title={t('header.uploadBook')}
               >
                 <Plus />
               </button>
@@ -242,7 +248,7 @@ export const BookshelfPage: React.FC = () => {
                 <span className="text-red-400">⚠️</span>
               </div>
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">Error</h3>
+                <h3 className="text-sm font-medium text-red-800">{t('errorHeading')}</h3>
                 <div className="mt-2 text-sm text-red-700">
                   <p>{error}</p>
                 </div>
@@ -253,7 +259,7 @@ export const BookshelfPage: React.FC = () => {
                 onClick={() => dispatch(clearError())}
                 className="text-sm text-red-600 hover:text-red-500"
               >
-                Dismiss
+                {t('common:dismiss')}
               </button>
             </div>
           </div>
@@ -267,12 +273,11 @@ export const BookshelfPage: React.FC = () => {
                 <span className="text-yellow-400">⚠️</span>
               </div>
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-yellow-800">Browser Not Supported</h3>
+                <h3 className="text-sm font-medium text-yellow-800">
+                  {t('browserWarning.title')}
+                </h3>
                 <div className="mt-2 text-sm text-yellow-700">
-                  <p>
-                    This browser doesn't support the required file system features. Please use
-                    Chrome 86+, Edge 86+, or Firefox 102+.
-                  </p>
+                  <p>{t('browserWarning.description')}</p>
                 </div>
               </div>
             </div>
@@ -283,7 +288,7 @@ export const BookshelfPage: React.FC = () => {
         {isLoading && books.length === 0 && (
           <div className="py-12 text-center">
             <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
-            <p className="text-gray-600">Loading your bookshelf...</p>
+            <p className="text-gray-600">{t('loadingBookshelf')}</p>
           </div>
         )}
 
@@ -291,16 +296,13 @@ export const BookshelfPage: React.FC = () => {
         {!isLoading && books.length === 0 && (
           <div className="py-12 text-center">
             <div className="mb-4 text-6xl">📚</div>
-            <h2 className="mb-2 text-xl font-semibold text-gray-900">No books yet</h2>
-            <p className="mb-4 text-gray-600">
-              Start building your digital library by dragging an EPUB file here or clicking the Plus
-              icon.
-            </p>
+            <h2 className="mb-2 text-xl font-semibold text-gray-900">{t('emptyState.title')}</h2>
+            <p className="mb-4 text-gray-600">{t('emptyState.description')}</p>
             <button
               onClick={handleUploadBtnClick}
               className="rounded-md bg-blue-600 px-6 py-2 text-white transition-colors duration-200 hover:bg-blue-700"
             >
-              Upload Your First Book
+              {t('emptyState.uploadButton')}
             </button>
           </div>
         )}

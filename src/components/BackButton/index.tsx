@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 interface BackButtonProps {
   to?: string; // Optional specific path, otherwise uses browser history
@@ -10,8 +11,10 @@ interface BackButtonProps {
  * Back button component for navigation
  * Allows users to easily navigate back to the previous page
  */
-export const BackButton: React.FC<BackButtonProps> = ({ to, label = 'Back' }) => {
+export const BackButton: React.FC<BackButtonProps> = ({ to, label }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation('common');
+  const buttonLabel = label ?? t('back');
 
   const handleBack = () => {
     if (to) {
@@ -25,12 +28,12 @@ export const BackButton: React.FC<BackButtonProps> = ({ to, label = 'Back' }) =>
     <button
       onClick={handleBack}
       className="flex items-center space-x-1 text-gray-600 transition-colors hover:text-gray-900"
-      title={label}
+      title={buttonLabel}
     >
       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
       </svg>
-      <span>{label}</span>
+      <span>{buttonLabel}</span>
     </button>
   );
 };

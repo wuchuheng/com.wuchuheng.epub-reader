@@ -1,11 +1,12 @@
 import { createRoot } from 'react-dom/client';
-import './index.css';
 import { Provider } from 'react-redux';
 import store from './store';
 import { RouterProvider } from 'react-router-dom';
 import router from './config/router';
 import { registerSW } from 'virtual:pwa-register';
 import { MessageProvider } from './components/Message';
+import './index.css';
+import './i18n/config';
 
 // Register service worker
 const updateSW = registerSW({

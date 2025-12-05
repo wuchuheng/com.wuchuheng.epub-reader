@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Container } from '../../components/Container';
 import { ToolTypeSelector } from '../ContextMenuSettingsPage/components/ToolTypeSelector';
 import { AIToolForm } from '../ContextMenuSettingsPage/components/AIToolForm';
@@ -19,6 +20,7 @@ export const ToolExtractPage: React.FC = () => {
   const contextMenuSettings = useContextMenuSettings();
   const form = useToolForm();
   const { resetForm } = form;
+  const { t } = useTranslation('settings');
 
   // 2. Effects
   // 2.1 Reset form when component mounts
@@ -58,20 +60,20 @@ export const ToolExtractPage: React.FC = () => {
   return (
     <Container
       breadcrumbItems={[
-        { label: 'Home', path: '/' },
-        { label: 'Settings', path: '/settings' },
-        { label: 'Context Menu', path: '/settings/contextmenu' },
-        { label: 'Add New Tool' },
+        { label: t('breadcrumbs.home'), path: '/' },
+        { label: t('breadcrumbs.settings'), path: '/settings' },
+        { label: t('breadcrumbs.contextMenu'), path: '/settings/contextmenu' },
+        { label: t('toolForm.addBreadcrumb') },
       ]}
       backTo="/settings/contextmenu"
     >
       <div className="min-h-screen bg-white p-4 md:p-6" onKeyDown={handleKeyDown} tabIndex={0}>
         {/* Header */}
         <div className="mb-6 md:mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 md:text-3xl">Add New Tool</h1>
-          <p className="mt-2 text-sm text-gray-600 md:text-base">
-            Configure a new AI tool or iframe tool for your context menu
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900 md:text-3xl">
+            {t('toolForm.addTitle')}
+          </h1>
+          <p className="mt-2 text-sm text-gray-600 md:text-base">{t('toolForm.description')}</p>
         </div>
 
         {/* Form */}
@@ -83,12 +85,14 @@ export const ToolExtractPage: React.FC = () => {
 
           {/* Tool Name */}
           <div className="rounded-lg bg-gray-50 p-4">
-            <label className="mb-2 block text-sm font-medium text-gray-700">Tool Name</label>
+            <label className="mb-2 block text-sm font-medium text-gray-700">
+              {t('toolForm.toolName')}
+            </label>
             <input
               type="text"
               value={form.toolName}
               onChange={(e) => form.setToolName(e.target.value)}
-              placeholder="e.g., Simple Explanation"
+              placeholder={t('toolForm.toolNamePlaceholder')}
               className="w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-blue-500
               focus:outline-none focus:ring-blue-500"
             />
@@ -97,20 +101,19 @@ export const ToolExtractPage: React.FC = () => {
           {/* Short Name */}
           <div className="rounded-lg bg-gray-50 p-4">
             <label className="mb-2 block text-sm font-medium text-gray-700">
-              Short Name <span className="text-xs text-gray-500">(optional, max 15 chars)</span>
+              {t('toolForm.shortName')}{' '}
+              <span className="text-xs text-gray-500">{t('toolForm.shortNameHint')}</span>
             </label>
             <input
               type="text"
               value={form.toolShortName}
               onChange={(e) => form.setToolShortName(e.target.value)}
-              placeholder="e.g., Simple Exp"
+              placeholder={t('toolForm.shortNamePlaceholder')}
               maxLength={15}
               className="w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-blue-500
               focus:outline-none focus:ring-blue-500"
             />
-            <p className="mt-2 text-xs text-gray-500">
-              Leave empty to auto-generate from tool name
-            </p>
+            <p className="mt-2 text-xs text-gray-500">{t('toolForm.shortNameHelper')}</p>
           </div>
 
           {/* Enabled Toggle */}
@@ -172,7 +175,7 @@ export const ToolExtractPage: React.FC = () => {
               className="flex-1 rounded-md border border-gray-300 px-4 py-3 text-base font-medium text-gray-700
               transition-colors hover:bg-gray-100"
             >
-              Cancel
+              {t('toolForm.cancel')}
             </button>
             <button
               type="button"
@@ -181,7 +184,7 @@ export const ToolExtractPage: React.FC = () => {
               className="flex-1 rounded-md bg-blue-500 px-4 py-3 text-base font-medium text-white transition-colors
               hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {contextMenuSettings.isSaving ? 'Adding Tool...' : 'Add Tool'}
+              {contextMenuSettings.isSaving ? t('toolForm.adding') : t('toolForm.addAction')}
             </button>
           </div>
 

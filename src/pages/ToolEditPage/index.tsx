@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Container } from '../../components/Container';
 import { ToolTypeSelector } from '../ContextMenuSettingsPage/components/ToolTypeSelector';
 import { AIToolForm } from '../ContextMenuSettingsPage/components/AIToolForm';
@@ -10,6 +11,7 @@ import { useContextMenuSettings } from '../ContextMenuSettingsPage/hooks/useCont
 export const ToolEditPage: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { t } = useTranslation('settings');
   const contextMenuSettings = useContextMenuSettings();
   const form = useToolForm();
   const { loadTool } = form;
@@ -55,35 +57,36 @@ export const ToolEditPage: React.FC = () => {
   return (
     <Container
       breadcrumbItems={[
-        { label: 'Home', path: '/' },
-        { label: 'Settings', path: '/settings' },
-        { label: 'Context Menu', path: '/settings/contextmenu' },
-        { label: 'Edit Tool' },
+        { label: t('breadcrumbs.home'), path: '/' },
+        { label: t('breadcrumbs.settings'), path: '/settings' },
+        { label: t('breadcrumbs.contextMenu'), path: '/settings/contextmenu' },
+        { label: t('toolForm.editBreadcrumb') },
       ]}
       backTo="/settings/contextmenu"
     >
       <div className="min-h-screen bg-white p-4 md:p-6" onKeyDown={handleKeyDown} tabIndex={0}>
         <div className="mb-6 md:mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 md:text-3xl">Edit Tool</h1>
+          <h1 className="text-2xl font-bold text-gray-900 md:text-3xl">
+            {t('toolForm.editTitle')}
+          </h1>
           <p className="mt-2 text-sm text-gray-600 md:text-base">
-            Update the configuration for this context menu tool
+            {t('toolForm.editDescription')}
           </p>
         </div>
 
         {contextMenuSettings.isLoading ? (
           <div className="flex min-h-[200px] items-center justify-center text-gray-500">
-            Loading tool...
+            {t('toolForm.loading')}
           </div>
         ) : !isValidIndex ? (
           <div className="mx-auto max-w-2xl rounded-md bg-red-50 p-4 text-red-700">
-            Unable to find the requested tool. Please return to the context menu settings and try
-            again.
+            {t('toolForm.notFound')}
             <div className="mt-4">
               <button
                 onClick={handleCancel}
                 className="rounded-md bg-blue-500 px-4 py-2 text-white transition-colors hover:bg-blue-600"
               >
-                Back to settings
+                {t('toolForm.backToSettings')}
               </button>
             </div>
           </div>
@@ -94,12 +97,14 @@ export const ToolEditPage: React.FC = () => {
             </div>
 
             <div className="rounded-lg bg-gray-50 p-4">
-              <label className="mb-2 block text-sm font-medium text-gray-700">Tool Name</label>
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                {t('toolForm.toolName')}
+              </label>
               <input
                 type="text"
                 value={form.toolName}
                 onChange={(e) => form.setToolName(e.target.value)}
-                placeholder="e.g., Simple Explanation"
+                placeholder={t('toolForm.toolNamePlaceholder')}
                 className="w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-blue-500
                 focus:outline-none focus:ring-blue-500"
               />
@@ -107,20 +112,19 @@ export const ToolEditPage: React.FC = () => {
 
             <div className="rounded-lg bg-gray-50 p-4">
               <label className="mb-2 block text-sm font-medium text-gray-700">
-                Short Name <span className="text-xs text-gray-500">(optional, max 15 chars)</span>
+                {t('toolForm.shortName')}{' '}
+                <span className="text-xs text-gray-500">{t('toolForm.shortNameHint')}</span>
               </label>
               <input
                 type="text"
                 value={form.toolShortName}
                 onChange={(e) => form.setToolShortName(e.target.value)}
-                placeholder="e.g., Simple Exp"
+                placeholder={t('toolForm.shortNamePlaceholder')}
                 maxLength={15}
                 className="w-full rounded-md border border-gray-300 px-3 py-3 text-base focus:border-blue-500
                 focus:outline-none focus:ring-blue-500"
               />
-              <p className="mt-2 text-xs text-gray-500">
-                Leave empty to auto-generate from tool name
-              </p>
+              <p className="mt-2 text-xs text-gray-500">{t('toolForm.shortNameHelper')}</p>
             </div>
 
             <div className="rounded-lg bg-gray-50 p-4">
@@ -179,7 +183,7 @@ export const ToolEditPage: React.FC = () => {
                 className="flex-1 rounded-md border border-gray-300 px-4 py-3 text-base font-medium text-gray-700
                 transition-colors hover:bg-gray-100"
               >
-                Cancel
+                {t('toolForm.cancel')}
               </button>
               <button
                 type="button"
@@ -188,7 +192,7 @@ export const ToolEditPage: React.FC = () => {
                 className="flex-1 rounded-md bg-blue-500 px-4 py-3 text-base font-medium text-white transition-colors
                 hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {contextMenuSettings.isSaving ? 'Saving...' : 'Save Changes'}
+                {contextMenuSettings.isSaving ? t('toolForm.saving') : t('toolForm.saveChanges')}
               </button>
             </div>
 

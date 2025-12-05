@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   DndContext,
   closestCenter,
@@ -53,6 +54,7 @@ const SortableToolItem: React.FC<SortableToolItemProps> = ({
   onToggleEnabled,
   onToggleSupport,
 }) => {
+  const { t } = useTranslation('settings');
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: index.toString(),
   });
@@ -80,7 +82,7 @@ const SortableToolItem: React.FC<SortableToolItemProps> = ({
               className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-[11px]
               font-medium text-blue-800"
             >
-              {tool.type === 'AI' ? 'AI' : 'Iframe'}
+              {tool.type === 'AI' ? t('contextMenu.toolType.ai') : t('contextMenu.toolType.iframe')}
             </span>
           </div>
 
@@ -98,7 +100,7 @@ const SortableToolItem: React.FC<SortableToolItemProps> = ({
                 onClick={(e) => e.stopPropagation()}
                 className="h-3.5 w-3.5 cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
-              <span className="font-medium">Single-word</span>
+              <span className="font-medium">{t('contextMenu.toolList.singleWord')}</span>
             </label>
 
             <label className="flex cursor-pointer select-none items-center gap-1.5">
@@ -113,7 +115,7 @@ const SortableToolItem: React.FC<SortableToolItemProps> = ({
                 onClick={(e) => e.stopPropagation()}
                 className="h-3.5 w-3.5 cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
-              <span className="font-medium">Multi-word</span>
+              <span className="font-medium">{t('contextMenu.toolList.multiWord')}</span>
             </label>
           </div>
         </div>
@@ -122,7 +124,11 @@ const SortableToolItem: React.FC<SortableToolItemProps> = ({
           <button
             type="button"
             aria-pressed={tool.enabled !== false}
-            aria-label={tool.enabled !== false ? 'Disable tool' : 'Enable tool'}
+            aria-label={
+              tool.enabled !== false
+                ? t('contextMenu.toolList.disable')
+                : t('contextMenu.toolList.enable')
+            }
             onClick={(e) => {
               e.stopPropagation();
               onToggleEnabled(index, !(tool.enabled !== false));
@@ -139,8 +145,8 @@ const SortableToolItem: React.FC<SortableToolItemProps> = ({
           </button>
           <Link
             to={`/settings/contextmenu/${index}/edit`}
-            aria-label="Edit tool"
-            title="Edit tool"
+            aria-label={t('contextMenu.toolList.edit')}
+            title={t('contextMenu.toolList.edit')}
             className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200
             bg-white text-gray-600
             shadow-sm transition
@@ -149,8 +155,8 @@ const SortableToolItem: React.FC<SortableToolItemProps> = ({
             <Edit />
           </Link>
           <button
-            aria-label="Remove tool"
-            title="Remove tool"
+            aria-label={t('contextMenu.toolList.remove')}
+            title={t('contextMenu.toolList.remove')}
             onClick={() => onToolRemove(index)}
             className="flex h-8 w-8 items-center justify-center rounded-full bg-red-50 text-red-600 transition
             hover:bg-red-100"
@@ -162,7 +168,7 @@ const SortableToolItem: React.FC<SortableToolItemProps> = ({
             {...listeners}
             className="cursor-move touch-none rounded-md p-1 text-gray-400 transition hover:bg-gray-100
             hover:text-gray-700"
-            aria-label="Drag to reorder"
+            aria-label={t('contextMenu.toolList.drag')}
           >
             <DragHandle />
           </div>
@@ -183,6 +189,7 @@ export const ToolList: React.FC<ToolListProps> = ({
   onToggleEnabled,
   onToggleSupport,
 }) => {
+  const { t } = useTranslation('settings');
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -208,8 +215,10 @@ export const ToolList: React.FC<ToolListProps> = ({
         className="flex flex-col items-center justify-center rounded-lg border border-dashed border-gray-200 bg-white/70
         px-6 py-8 text-center text-gray-600"
       >
-        <div className="mb-2 text-lg font-semibold text-gray-800">No tools yet</div>
-        <p className="text-sm text-gray-500">Add your first tool to show it in the reader menu.</p>
+        <div className="mb-2 text-lg font-semibold text-gray-800">
+          {t('contextMenu.toolList.noToolsTitle')}
+        </div>
+        <p className="text-sm text-gray-500">{t('contextMenu.toolList.noToolsDescription')}</p>
       </div>
     );
   }

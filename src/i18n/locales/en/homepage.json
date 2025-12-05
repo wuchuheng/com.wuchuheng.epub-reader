@@ -1,0 +1,46 @@
+{
+  "appTitle": "Epub Reader",
+  "header": {
+    "installApp": "Install App",
+    "installTitle": "Install EPUB Reader",
+    "testInstall": "Test PWA Install (Debug)",
+    "uploadBook": "Upload Book",
+    "settings": "Settings"
+  },
+  "alerts": {
+    "deleteConfirm": "Are you sure you want to delete this book?",
+    "deleteFailed": "Failed to delete book: {{error}}",
+    "uploadFailed": "Upload failed: {{error}}",
+    "invalidFile": "Please drop a valid EPUB file"
+  },
+  "browserWarning": {
+    "title": "Browser Not Supported",
+    "description": "This browser doesn't support the required file system features. Please use Chrome 86+, Edge 86+, or Firefox 102+."
+  },
+  "loadingBookshelf": "Loading your bookshelf...",
+  "emptyState": {
+    "title": "No books yet",
+    "description": "Start building your digital library by dragging an EPUB file here or clicking the Plus icon.",
+    "uploadButton": "Upload Your First Book"
+  },
+  "dragOverlay": {
+    "title": "Drop EPUB file here",
+    "description": "Release to upload your book"
+  },
+  "errorHeading": "Error",
+  "bookshelf": {
+    "chapters": "{{count}} chapters",
+    "unknownTitle": "Untitled Book",
+    "unknownAuthor": "Unknown Author",
+    "unknownSize": "Unknown size",
+    "openBookAria": "Open book: {{name}}"
+  },
+  "uploadZone": {
+    "title": "Upload EPUB Book",
+    "description": "Drag and drop your EPUB file here, or click to browse",
+    "chooseFile": "Choose File",
+    "uploading": "Uploading book...",
+    "maxSize": "Maximum file size: {{size}}",
+    "button": "Upload EPUB Book"
+  }
+}

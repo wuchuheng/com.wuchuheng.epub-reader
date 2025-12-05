@@ -1,0 +1,46 @@
+{
+  "appTitle": "电子书阅读器",
+  "header": {
+    "installApp": "安装应用",
+    "installTitle": "安装电子书阅读器",
+    "testInstall": "测试安装（调试）",
+    "uploadBook": "上传书籍",
+    "settings": "设置"
+  },
+  "alerts": {
+    "deleteConfirm": "您确定要删除这本书吗？",
+    "deleteFailed": "删除书籍失败：{{error}}",
+    "uploadFailed": "上传失败：{{error}}",
+    "invalidFile": "请拖放有效的 EPUB 文件"
+  },
+  "browserWarning": {
+    "title": "浏览器不支持",
+    "description": "此浏览器不支持所需的文件系统功能。请使用 Chrome 86+、Edge 86+ 或 Firefox 102+。"
+  },
+  "loadingBookshelf": "正在加载您的书架...",
+  "emptyState": {
+    "title": "还没有书籍",
+    "description": "通过拖拽 EPUB 文件到这里或点击加号图标开始建立您的数字图书馆。",
+    "uploadButton": "上传您的第一本书"
+  },
+  "dragOverlay": {
+    "title": "将 EPUB 文件拖放到这里",
+    "description": "松开以上传您的书籍"
+  },
+  "errorHeading": "错误",
+  "bookshelf": {
+    "chapters": "{{count}} 章节",
+    "unknownTitle": "未命名书籍",
+    "unknownAuthor": "未知作者",
+    "unknownSize": "未知大小",
+    "openBookAria": "打开书籍：{{name}}"
+  },
+  "uploadZone": {
+    "title": "上传 EPUB 书籍",
+    "description": "拖放您的 EPUB 文件到此处，或点击浏览",
+    "chooseFile": "选择文件",
+    "uploading": "正在上传书籍...",
+    "maxSize": "最大文件大小：{{size}}",
+    "button": "上传 EPUB 书籍"
+  }
+}

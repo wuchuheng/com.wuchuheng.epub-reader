@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { TocItem } from '../../../types/epub';
 
 /**
@@ -29,6 +30,7 @@ interface TOCSidebarProps {
  * @returns
  */
 export const TOCSidebar: React.FC<TOCSidebarProps> = (props) => {
+  const { t } = useTranslation('reader');
   // 1. Render TOC items recursively
   const renderTocItems = (items: TocItem[], level = 0) =>
     items.map((item) => (
@@ -59,11 +61,11 @@ export const TOCSidebar: React.FC<TOCSidebarProps> = (props) => {
         {/* Header */}
         <div className="border-b p-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">Table of Contents</h3>
+            <h3 className="text-lg font-semibold text-gray-900">{t('toc.title')}</h3>
             <button
               onClick={props.onToggle}
               className="p-1 text-gray-500 hover:text-gray-700"
-              aria-label="Close table of contents"
+              aria-label={t('toc.closeAria')}
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -81,7 +83,7 @@ export const TOCSidebar: React.FC<TOCSidebarProps> = (props) => {
         <div className="h-[calc(100vh-4rem)] overflow-y-auto p-4">
           {props.tableOfContents.length === 0 ? (
             <div className="py-8 text-center text-gray-500">
-              <p>No table of contents available</p>
+              <p>{t('toc.empty')}</p>
             </div>
           ) : (
             <div className="space-y-1">{renderTocItems(props.tableOfContents)}</div>

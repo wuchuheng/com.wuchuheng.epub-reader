@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import * as Icons from '../../../components/icons';
 
 interface ReaderFooterProps {
@@ -14,6 +15,7 @@ interface ReaderFooterProps {
  * Implements the bottom navigation area from DESIGN.md
  */
 export const ReaderFooter: React.FC<ReaderFooterProps> = (props) => {
+  const { t } = useTranslation('reader');
   const progress =
     props.totalPages > 0 ? Math.round(((props.currentPage + 1) / props.totalPages) * 100) : 0;
 
@@ -27,7 +29,10 @@ export const ReaderFooter: React.FC<ReaderFooterProps> = (props) => {
           <div className="mr-4 flex-1">
             <div className="mb-1 flex items-center justify-between text-sm text-gray-600">
               <span>
-                Page {props.currentPage + 1} of {props.totalPages}
+                {t('footer.pageStatus', {
+                  current: props.currentPage + 1,
+                  total: props.totalPages,
+                })}
               </span>
               <span>{progress}%</span>
             </div>
@@ -45,7 +50,7 @@ export const ReaderFooter: React.FC<ReaderFooterProps> = (props) => {
               onClick={props.onPrev}
               // disabled={props.navigation.isAtStart}
               className="p-2 text-gray-600 hover:text-gray-900 disabled:cursor-not-allowed disabled:opacity-50"
-              title="Previous Page"
+              title={t('common:previousPage')}
             >
               <Icons.LeftArrow />
             </button>
@@ -53,7 +58,7 @@ export const ReaderFooter: React.FC<ReaderFooterProps> = (props) => {
               onClick={props.onNext}
               // disabled={props.navigation.isAtEnd}
               className="p-2 text-gray-600 hover:text-gray-900 disabled:cursor-not-allowed disabled:opacity-50"
-              title="Next Page"
+              title={t('common:nextPage')}
             >
               <Icons.RightArrow />
             </button>

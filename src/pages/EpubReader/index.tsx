@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ReaderHeader } from './components/ReaderHeader';
 import { ReaderHelpOverlay } from './components/ReaderHelpOverlay';
 import { Book } from 'epubjs';
@@ -26,6 +27,7 @@ export const EpubReader: React.FC = () => {
   const { bookId } = useParams<{ bookId: string }>();
   const [book, setBook] = useState<Book | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation('reader');
 
   useEffect(() => {
     if (!bookId) return;
@@ -38,12 +40,12 @@ export const EpubReader: React.FC = () => {
       .catch((err) => {
         if (!isMounted) return;
         console.error('Failed to load book:', err);
-        setError('Failed to load book. Please try again later.');
+        setError(t('invalidBook.loadError'));
       });
     return () => {
       isMounted = false;
     };
-  }, [bookId]);
+  }, [bookId, t]);
 
   useEffect(
     () => () => {

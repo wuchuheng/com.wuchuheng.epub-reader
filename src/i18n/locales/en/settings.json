@@ -1,0 +1,209 @@
+{
+  "nav": {
+    "general": "General",
+    "storage": "Storage",
+    "contextMenu": "Context Menu",
+    "about": "About"
+  },
+  "navDescriptions": {
+    "general": "General application settings",
+    "storage": "Local cache overview and reset",
+    "contextMenu": "Configure AI providers and custom tools",
+    "about": "App information and version"
+  },
+  "breadcrumbs": {
+    "home": "Home",
+    "settings": "Settings",
+    "contextMenu": "Context Menu",
+    "addTool": "Add New Tool",
+    "editTool": "Edit Tool"
+  },
+  "general": {
+    "title": "General Settings",
+    "description": "Configure general application preferences.",
+    "comingSoon": "Coming Soon",
+    "themeCustomization": "Theme Customization",
+    "languageSelection": "Language Selection",
+    "languageDescription": "Choose your display language."
+  },
+  "storage": {
+    "title": "Storage",
+    "description": "Review locally cached OPFS files and reset everything when needed.",
+    "notSupported": "Your browser does not support OPFS. Switch to a Chromium-based browser to manage cached files.",
+    "error": "Failed to load storage details.",
+    "cards": {
+      "total": "Total cached",
+      "books": "Books",
+      "config": "Config"
+    },
+    "table": {
+      "title": "Cached files",
+      "description": "Files stored in OPFS with their sizes.",
+      "loading": "Loading storage details...",
+      "empty": "No cached files found.",
+      "items": "{{count}} items",
+      "loadingLabel": "Loading..."
+    },
+    "danger": {
+      "title": "Danger zone",
+      "description": "Resetting removes all local data: every cached book file, cover image, and the config file. This cannot be undone.",
+      "action": {
+        "default": "Delete all cached data",
+        "working": "Resetting..."
+      },
+      "success": "Local data cleared successfully.",
+      "error": "Failed to reset local data."
+    },
+    "resetConfirm": "This will delete all locally cached books and settings in OPFS. The action cannot be undone. Continue?"
+  },
+  "contextMenu": {
+    "title": "Context Menu Configuration",
+    "description": "Configure AI providers and custom tools for the reader context menu.",
+    "generalTitle": "General",
+    "generalDescription": "General configuration for the context menu.",
+    "maxSelectedWords": "Max selected words",
+    "maxSelectedWordsHint": "Selections over this limit will be blocked.",
+    "providerTitle": "AI Provider",
+    "providerDescription": "Connect your model provider for AI tools.",
+    "defaultModelLabel": "Default Model",
+    "defaultModelHint": "Used unless a tool overrides it",
+    "modelPlaceholder": "Search or enter model name (e.g. gpt-4o-mini)",
+    "customToolsTitle": "Custom AI Tools",
+    "customToolsDescription": "Shown in the reader context menu in this order.",
+    "customToolsSupport": "Arrange tools and choose which ones handle single-word vs. multi-word selections.",
+    "reorderHint": "Drag to reorder",
+    "addToolAria": "Add tool",
+    "loading": "Loading settings...",
+    "error": "Failed to load settings.",
+    "status": {
+      "notTested": "Not tested",
+      "testing": "Testing",
+      "ok": "OK",
+      "needsInput": "Needs input",
+      "error": "Error"
+    },
+    "messages": {
+      "defaultModelRequired": "Please select a Default Model for your AI tools.",
+      "settingsSaved": "Settings saved successfully!",
+      "settingsSaveError": "Failed to save settings",
+      "saving": "Saving changes…",
+      "testInputNeeded": "Add Base URL and API key to test connection"
+    },
+    "actions": {
+      "testConnection": "Test connection",
+      "testConnectionRunning": "Testing…",
+      "save": "Save Settings",
+      "saving": "Saving..."
+    },
+    "api": {
+      "providerLabel": "API Provider",
+      "providerPlaceholder": "Select an AI provider...",
+      "baseUrl": "Base URL",
+      "baseUrlPlaceholder": "https://api.example.com/v1",
+      "apiKey": "API Key",
+      "apiKeyPlaceholder": "Your API key",
+      "viewDocs": "View provider docs",
+      "customProvider": "Custom OpenAI-compatible service",
+      "errors": {
+        "validUrl": "Please enter a valid URL",
+        "baseUrlRequired": "Base URL is required",
+        "apiKeyRequired": "API key is required",
+        "fixUrlFormat": "Please fix Base URL format"
+      },
+      "status": {
+        "testing": "Testing API connection...",
+        "connected": "API connected successfully",
+        "connectedWithCount": "API connected successfully ({{count}} models available)",
+        "failed": "API connection failed: {{status}}",
+        "networkError": "Network error: {{message}}",
+        "needConfig": "Please configure provider, Base URL and API key",
+        "missingBaseUrl": "Please enter Base URL",
+        "missingApiKey": "Please enter API key"
+      }
+    },
+    "modelSearch": {
+      "loading": "Loading models...",
+      "usingDefaults": "Using default models",
+      "noResults": "No models found matching \"{{query}}\""
+    },
+    "toolList": {
+      "singleWord": "Single-word",
+      "multiWord": "Multi-word",
+      "edit": "Edit tool",
+      "remove": "Remove tool",
+      "enable": "Enable tool",
+      "disable": "Disable tool",
+      "drag": "Drag to reorder",
+      "noToolsTitle": "No tools yet",
+      "noToolsDescription": "Add your first tool to show it in the reader menu."
+    },
+    "toolType": {
+      "label": "Tool Type",
+      "ai": "AI Tool",
+      "iframe": "Iframe Tool"
+    },
+    "aiForm": {
+      "prompt": "Prompt",
+      "promptPlaceholder": "Use {{words}} for selected text and {{context}} for nearby content. e.g. Summarize {{words}} in 2 sentences.",
+      "promptTips": "Prompt tips",
+      "tipsWords": "{{words}}: the selected text.",
+      "tipsContext": "{{context}}: nearby content for background.",
+      "reasoning": "Enable reasoning (for supported models)",
+      "selectionSupport": "Selection support",
+      "singleWord": "Single-word queries",
+      "multiWord": "Multi-word queries",
+      "selectionHint": "Pick at least one option so this tool appears for single or multi-word selections."
+    },
+    "iframeForm": {
+      "url": "URL",
+      "urlPlaceholder": "https://example.com?words={{words}}&context={{context}}",
+      "tipsTitle": "Tips",
+      "tipsWords": "{{words}}: Inserts the text the user selected. Example: https://example.com?q={{words}}",
+      "tipsContext": "{{context}}: Adds nearby text or metadata for context. Example: https://example.com?ctx={{context}}",
+      "selectionSupport": "Selection support",
+      "singleWord": "Single-word queries",
+      "multiWord": "Multi-word queries",
+      "selectionHint": "Pick at least one option so this tool appears for single or multi-word selections."
+    }
+  },
+  "toolForm": {
+    "addBreadcrumb": "Add New Tool",
+    "editBreadcrumb": "Edit Tool",
+    "addTitle": "Add New Tool",
+    "editTitle": "Edit Tool",
+    "description": "Configure a new AI tool or iframe tool for your context menu",
+    "editDescription": "Update the configuration for this context menu tool",
+    "loading": "Loading tool...",
+    "notFound": "Unable to find the requested tool. Please return to the context menu settings and try again.",
+    "backToSettings": "Back to settings",
+    "toolName": "Tool Name",
+    "toolNamePlaceholder": "e.g., Simple Explanation",
+    "shortName": "Short Name",
+    "shortNameHint": "(optional, max 15 chars)",
+    "shortNamePlaceholder": "e.g., Simple Exp",
+    "shortNameHelper": "Leave empty to auto-generate from tool name",
+    "enabled": "Enabled",
+    "cancel": "Cancel",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "adding": "Adding Tool...",
+    "addAction": "Add Tool",
+    "error": "Failed to save settings"
+  },
+  "about": {
+    "title": "Immersive Reader",
+    "description": "An offline-first EPUB reader with AI-powered context enhancements.",
+    "released": "Released {{date}}",
+    "builtWith": "Built with React, TypeScript, and Tailwind CSS.",
+    "changelogHistory": "Changelog History",
+    "categories": {
+      "feat": "Features",
+      "fix": "Fixes",
+      "refactor": "Refactors",
+      "docs": "Docs",
+      "chore": "Chores",
+      "perf": "Performance",
+      "style": "Style"
+    }
+  }
+}

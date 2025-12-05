@@ -1,0 +1,33 @@
+{
+  "back": "Back",
+  "cancel": "Cancel",
+  "save": "Save",
+  "delete": "Delete",
+  "edit": "Edit",
+  "add": "Add",
+  "upload": "Upload",
+  "settings": "Settings",
+  "loading": "Loading...",
+  "error": "Error",
+  "success": "Success",
+  "confirm": "Confirm",
+  "dismiss": "Dismiss",
+  "read": "Read",
+  "progress": "Progress",
+  "close": "Close",
+  "search": "Search",
+  "help": "Help",
+  "install": "Install",
+  "menu": "Menu",
+  "previousPage": "Previous Page",
+  "nextPage": "Next Page",
+  "uploading": "Uploading book...",
+  "selectPlaceholder": "Select...",
+  "noOptions": "No options found",
+  "language": {
+    "zhCN": "中文",
+    "en": "English",
+    "switchAria": "Switch language (current: {{language}})",
+    "currentLabel": "Current: {{language}}"
+  }
+}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { BookMetadata } from '../../types/book';
 import { useBookDisplayData } from './hooks/useBookDisplayData';
 import { BookCover } from './BookCover';
@@ -21,6 +22,7 @@ interface BookCardProps {
  */
 export const BookCard: React.FC<BookCardProps> = ({ book, onOpen, onDelete }) => {
   // 1. Input validation and core processing
+  const { t } = useTranslation('homepage');
   const { displayName, displayAuthor, displayProgress, displaySize } = useBookDisplayData(book);
 
   // 2. Early return for invalid book data
@@ -55,7 +57,7 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onOpen, onDelete }) =>
           handleCardClick();
         }
       }}
-      aria-label={`Open book: ${displayName}`}
+      aria-label={t('bookshelf.openBookAria', { name: displayName })}
     >
       {/* Book cover */}
       <BookCover coverPath={book.coverPath} title={displayName} />
@@ -75,7 +77,9 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onOpen, onDelete }) =>
         {/* Book details */}
         <div className="mb-3 flex items-center justify-between text-xs text-gray-500">
           <span>{displaySize}</span>
-          {book.chapterCount && <span>{book.chapterCount} chapters</span>}
+          {book.chapterCount ? (
+            <span>{t('bookshelf.chapters', { count: book.chapterCount })}</span>
+          ) : null}
         </div>
 
         {/* Action buttons */}

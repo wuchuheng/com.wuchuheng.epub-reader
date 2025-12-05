@@ -1,0 +1,33 @@
+{
+  "back": "返回",
+  "cancel": "取消",
+  "save": "保存",
+  "delete": "删除",
+  "edit": "编辑",
+  "add": "添加",
+  "upload": "上传",
+  "settings": "设置",
+  "loading": "加载中...",
+  "error": "错误",
+  "success": "成功",
+  "confirm": "确认",
+  "dismiss": "关闭",
+  "read": "阅读",
+  "progress": "进度",
+  "close": "关闭",
+  "search": "搜索",
+  "help": "帮助",
+  "install": "安装",
+  "menu": "菜单",
+  "previousPage": "上一页",
+  "nextPage": "下一页",
+  "uploading": "正在上传书籍...",
+  "selectPlaceholder": "请选择...",
+  "noOptions": "没有可选项",
+  "language": {
+    "zhCN": "中文",
+    "en": "English",
+    "switchAria": "切换语言（当前：{{language}}）",
+    "currentLabel": "当前：{{language}}"
+  }
+}

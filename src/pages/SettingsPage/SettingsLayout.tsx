@@ -1,44 +1,43 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Container } from '../../components/Container';
-
-interface SettingsNavCallback {
-  label: string;
-  description?: string;
-  path: string;
-}
-
-const navItems: SettingsNavCallback[] = [
-  {
-    label: 'General',
-    path: '/settings/general',
-    description: 'General application settings',
-  },
-  {
-    label: 'Storage',
-    path: '/settings/storage',
-    description: 'Local cache overview and reset',
-  },
-  {
-    label: 'Context Menu',
-    path: '/settings/contextmenu',
-    description: 'Configure AI providers and custom tools',
-  },
-  {
-    label: 'About',
-    path: '/settings/about',
-    description: 'App information and version',
-  },
-];
 
 export const SettingsLayout: React.FC = () => {
   const location = useLocation();
+  const { t } = useTranslation('settings');
+
+  const navItems = useMemo(
+    () => [
+      {
+        label: t('nav.general'),
+        path: '/settings/general',
+        description: t('navDescriptions.general'),
+      },
+      {
+        label: t('nav.storage'),
+        path: '/settings/storage',
+        description: t('navDescriptions.storage'),
+      },
+      {
+        label: t('nav.contextMenu'),
+        path: '/settings/contextmenu',
+        description: t('navDescriptions.contextMenu'),
+      },
+      {
+        label: t('nav.about'),
+        path: '/settings/about',
+        description: t('navDescriptions.about'),
+      },
+    ],
+    [t]
+  );
 
   // Determine breadcrumbs based on current path
   const getBreadcrumbs = () => {
     const base = [
-      { label: 'Home', path: '/' },
-      { label: 'Settings', path: '/settings' },
+      { label: t('breadcrumbs.home'), path: '/' },
+      { label: t('breadcrumbs.settings'), path: '/settings' },
     ];
     const current = navItems.find((item) => item.path === location.pathname);
     if (current) {
@@ -54,7 +53,7 @@ export const SettingsLayout: React.FC = () => {
           {/* Left Navigation Rail */}
           <nav
             className="w-full border-b border-gray-200 bg-white md:min-h-[calc(100vh-12rem)] md:w-56 md:border-b-0 md:border-r"
-            aria-label="Settings sections"
+            aria-label={t('breadcrumbs.settings')}
           >
             <div className="flex flex-col space-y-1 p-2">
               {navItems.map((item) => (

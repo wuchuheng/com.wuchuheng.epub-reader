@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
 
 /**
@@ -31,6 +32,8 @@ export const ModelSearchInput: React.FC<ModelSearchInputProps> = ({
   placeholder = 'Search or enter model name...',
   defaultModels = [],
 }) => {
+  const { t } = useTranslation('settings');
+  const resolvedPlaceholder = placeholder || t('contextMenu.modelPlaceholder');
   // 1. State management
   const [inputValue, setInputValue] = useState(value);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -140,7 +143,7 @@ export const ModelSearchInput: React.FC<ModelSearchInputProps> = ({
         }
       } catch (err) {
         console.warn('Failed to fetch models from API, using defaults:', err);
-        setError('Using default models');
+        setError(t('contextMenu.modelSearch.usingDefaults'));
         // Keep using default models if API fails
         setAvailableModels(defaultModels);
         setFilteredModels(defaultModels);
@@ -150,7 +153,7 @@ export const ModelSearchInput: React.FC<ModelSearchInputProps> = ({
     };
 
     fetchModels();
-  }, [apiEndpoint, apiKey, hasFetchedModels, defaultModels]);
+  }, [apiEndpoint, apiKey, hasFetchedModels, defaultModels, t]);
 
   // 2.3 Filter models based on input value
   useEffect(() => {
@@ -233,7 +236,7 @@ export const ModelSearchInput: React.FC<ModelSearchInputProps> = ({
           onChange={handleInputChange}
           onFocus={handleInputFocus}
           onKeyDown={handleKeyDown}
-          placeholder={placeholder}
+          placeholder={resolvedPlaceholder}
           className="w-full rounded-md border border-gray-300 px-3 py-2 text-black focus:border-blue-500 focus:outline-none focus:ring-blue-500"
         />
       </div>
@@ -248,14 +251,16 @@ export const ModelSearchInput: React.FC<ModelSearchInputProps> = ({
           >
             <div className="overflow-y-auto" style={{ maxHeight: dropdownStyle.maxHeight }}>
               {isLoading && (
-                <div className="px-3 py-2 text-sm text-gray-500">Loading models...</div>
+                <div className="px-3 py-2 text-sm text-gray-500">
+                  {t('contextMenu.modelSearch.loading')}
+                </div>
               )}
 
               {error && <div className="px-3 py-2 text-sm text-orange-600">{error}</div>}
 
               {!isLoading && !error && filteredModels.length === 0 && (
                 <div className="px-3 py-2 text-sm text-gray-500">
-                  No models found matching "{inputValue}"
+                  {t('contextMenu.modelSearch.noResults', { query: inputValue })}
                 </div>
               )}
 

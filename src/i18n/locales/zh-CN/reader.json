@@ -1,0 +1,33 @@
+{
+  "header": {
+    "title": "EPUB 阅读器",
+    "toc": "目录",
+    "home": "首页",
+    "search": "搜索",
+    "help": "帮助",
+    "fullscreen": "全屏",
+    "settings": "设置"
+  },
+  "helpOverlay": {
+    "previous": "上一页",
+    "menu": "菜单",
+    "next": "下一页"
+  },
+  "toc": {
+    "title": "目录",
+    "closeAria": "关闭目录",
+    "empty": "没有可用的目录"
+  },
+  "footer": {
+    "pageStatus": "第 {{current}} / {{total}} 页"
+  },
+  "menuButton": {
+    "show": "显示菜单"
+  },
+  "loading": "正在加载书籍...",
+  "invalidBook": {
+    "title": "无效的书籍 ID",
+    "message": "请选择有效的书籍进行阅读。",
+    "loadError": "加载书籍失败，请稍后重试。"
+  }
+}

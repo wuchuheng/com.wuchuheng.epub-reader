@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Trash } from '../icons';
 
 interface BookActionsProps {
@@ -22,6 +23,8 @@ export const BookActions: React.FC<BookActionsProps> = ({
   className = '',
   disabled = false,
 }) => {
+  const { t } = useTranslation();
+
   // 1. Input validation
   if (typeof onRead !== 'function' || typeof onDelete !== 'function') {
     console.error('BookActions: onRead and onDelete must be functions');
@@ -48,16 +51,16 @@ export const BookActions: React.FC<BookActionsProps> = ({
         onClick={onRead}
         disabled={disabled}
         className={readButtonClasses.trim()}
-        aria-label="Read book"
+        aria-label={t('common:read')}
       >
-        Read
+        {t('common:read')}
       </button>
       <button
         onClick={onDelete}
         disabled={disabled}
         className={deleteButtonClasses.trim()}
-        aria-label="Delete book"
-        title="Delete book"
+        aria-label={t('common:delete')}
+        title={t('common:delete')}
       >
         <Trash />
       </button>

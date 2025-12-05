@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getCoverBase64ByPath } from '../../services/OPFSManager';
 
 interface BookCoverProps {
@@ -22,6 +23,7 @@ export const BookCover: React.FC<BookCoverProps> = ({
   onError,
   className = '',
 }) => {
+  const { t } = useTranslation('common');
   const [coverUrl, setCoverUrl] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -66,7 +68,7 @@ export const BookCover: React.FC<BookCoverProps> = ({
         <div className="flex h-full w-full items-center justify-center">
           <div className="text-gray-400">
             <div className="mb-2 text-4xl">📚</div>
-            <div className="text-sm">Loading...</div>
+            <div className="text-sm">{t('loading')}</div>
           </div>
         </div>
       </div>
