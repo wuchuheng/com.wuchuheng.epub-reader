@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { CHANGELOG_CONFIG, LATEST_CHANGELOG } from '../../config/changelog';
 import { type ChangelogCategory } from '../../types/changelog';
+import LogoSvg from '../../assets/logo.svg';
 
 const categoryOrder: ChangelogCategory[] = [
   'feat',
@@ -16,39 +17,35 @@ const categoryOrder: ChangelogCategory[] = [
 export const AboutPage: React.FC = () => {
   const { t } = useTranslation('settings');
 
-  const getCategoryLabel = (category: ChangelogCategory) =>
-    t(`about.categories.${category}`);
+  const getCategoryLabel = (category: ChangelogCategory) => t(`about.categories.${category}`);
 
   return (
     <div className="space-y-6">
-      <div className="space-y-6 border-gray-200 p-6">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="space-y-3">
-            <div>
-              <h4 className="text-base font-semibold text-gray-900">{t('about.title')}</h4>
-              <p className="mt-1 text-sm text-gray-500">{t('about.description')}</p>
-            </div>
-            <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500">
-              <span className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
-                v{LATEST_CHANGELOG.version}
-              </span>
-              <span>{t('about.released', { date: LATEST_CHANGELOG.releasedAt })}</span>
-            </div>
-            <p className="text-sm font-medium text-gray-900">{LATEST_CHANGELOG.summary}</p>
+      <div className="space-y-10 p-8">
+        {/* Header Section with Logo and Title */}
+        <div className="flex flex-col items-center gap-6">
+          <img src={LogoSvg} alt="App Logo" className="h-24 w-24" />
+          <div className="space-y-2 text-center">
+            <h4 className="text-2xl font-semibold text-gray-900">{t('about.title')}</h4>
+            <p className="text-base text-gray-600">{t('about.description')}</p>
           </div>
+
+          <p className="inline-block flex items-center gap-2 text-sm text-gray-600">
+            <span className="font-medium text-gray-900">{t('about.author')}:</span> wuchuheng
+            <a href="mailto:root@wuchuheng.com" className="text-blue-600 hover:underline">
+              root@wuchuheng.com
+            </a>
+          </p>
         </div>
 
-        <div className="mt-6 border-t border-gray-100 pt-4">
-          <p className="text-sm text-gray-500">{t('about.builtWith')}</p>
-        </div>
+        <div className="flex justify-center border-t border-gray-200 pt-8"></div>
 
         <div className="mt-8 space-y-8">
           <h5 className="text-lg font-semibold text-gray-900">{t('about.changelogHistory')}</h5>
           <div className="space-y-8">
             {CHANGELOG_CONFIG.map((version) => {
               const nonEmptyCategories = categoryOrder.filter(
-                (category) =>
-                  version.changes[category] && version.changes[category].length > 0
+                (category) => version.changes[category] && version.changes[category].length > 0
               );
 
               return (
@@ -65,7 +62,7 @@ export const AboutPage: React.FC = () => {
                     {nonEmptyCategories.map((category) => (
                       <div key={category} className="space-y-2">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold text-gray-700 bg-gray-100 px-2 py-0.5 rounded">
+                          <span className="rounded bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-700">
                             {getCategoryLabel(category)}
                           </span>
                         </div>

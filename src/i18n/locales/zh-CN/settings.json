@@ -233,6 +233,8 @@
   "about": {
     "title": "英语小白阅读器",
     "description": "一款为英语入门用户打造的离线优先 AI 阅读器。",
+    "author": "作者",
+    "contact": "联系方式",
     "released": "发布日期 {{date}}",
     "builtWith": "基于 React、TypeScript 和 Tailwind CSS 构建。",
     "changelogHistory": "更新记录",

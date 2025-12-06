@@ -233,6 +233,8 @@
   "about": {
     "title": "Beginner's English Reader",
     "description": "An offline-first reader with AI-powered context for English beginners.",
+    "author": "Author",
+    "contact": "Contact",
     "released": "Released {{date}}",
     "builtWith": "Built with React, TypeScript, and Tailwind CSS.",
     "changelogHistory": "Changelog History",
