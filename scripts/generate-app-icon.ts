@@ -19,9 +19,10 @@ const _COLORS = {
   theme: '#3b82f6', // Matches brand color
 };
 
-const logoSvg = `<svg xmlns="http://www.w3.org/2000/svg" id="shiro-svg" width="300" height="300" viewBox="0 0 400 400" class="z-10 relative transition-all duration-500">
+const logoSvg = `
+<svg xmlns="http://www.w3.org/2000/svg" id="shiro-svg" width="300" height="300" viewBox="0 0 400 400" class="z-10 relative transition-all duration-500">
                 <!-- Group for the whole character -->
-                <g id="shiro-lines" stroke="black" stroke-width="4" fill="none" class="sketch-stroke">
+                <g id="shiro-lines" stroke="black" stroke-width="10" fill="none" class="sketch-stroke">
                     
                     <!-- Left Ear -->
                     <path d="M 70 90 Q 40 70 30 100 Q 25 120 70 125" fill="white" class="fill-area"/>
