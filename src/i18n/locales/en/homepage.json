@@ -41,7 +41,26 @@
     "openBookAria": "Open book: {{name}}",
     "downloading": "Downloading...",
     "downloadFailed": "Download failed",
-    "downloadingCount": "Downloading {{count}} book(s)..."
+    "downloadingCount": "Downloading {{count}} book(s)...",
+    "actions": {
+      "openMenu": "Open book actions",
+      "details": "View details",
+      "delete": "Delete book"
+    },
+    "detailsModal": {
+      "title": "Book details",
+      "name": "Title",
+      "author": "Author",
+      "chapters": "Chapters",
+      "size": "File size",
+      "createdAt": "Created at",
+      "unknown": "Not available"
+    },
+    "deleteModal": {
+      "title": "Delete book",
+      "message": "Remove \"{{name}}\" from your library?",
+      "confirm": "Delete"
+    }
   },
   "uploadZone": {
     "title": "Upload EPUB Book",

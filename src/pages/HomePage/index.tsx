@@ -17,7 +17,6 @@ import { Plus, Settings } from '../../components/icons';
 import { MdInstallDesktop } from 'react-icons/md';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
-import { ProgressBar } from '../../components/BookCard/ProgressBar';
 
 /**
  * Main bookshelf page component
@@ -28,9 +27,8 @@ export const BookshelfPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { t } = useTranslation('homepage');
-  const { books, isLoading, error, downloadingCount } = useAppSelector((state) => state.bookshelf);
+  const { books, isLoading, error } = useAppSelector((state) => state.bookshelf);
   const { isInstalled, installPWA, canInstall } = usePWAInstall();
-  const downloadingBooks = books.filter((book) => book.status === 'downloading');
   const failedDownloads = books.filter((book) => book.status === 'error');
 
   console.log('BookshelfPage: PWA State - isInstalled:', isInstalled, 'canInstall:', canInstall);
@@ -63,13 +61,11 @@ export const BookshelfPage: React.FC = () => {
   };
 
   const handleDeleteBook = async (bookId: string) => {
-    if (window.confirm(t('alerts.deleteConfirm'))) {
-      try {
-        await dispatch(deleteBook(bookId)).unwrap();
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        alert(t('alerts.deleteFailed', { error: message }));
-      }
+    try {
+      await dispatch(deleteBook(bookId)).unwrap();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      alert(t('alerts.deleteFailed', { error: message }));
     }
   };
 
@@ -192,7 +188,7 @@ export const BookshelfPage: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="sm:text-1xl font-bold text-gray-900">{t('appTitle')}</h1>
-              <span className="text-sm text-gray-600">{t('slogan.title')}</span>
+              <p className="text-sm text-gray-600">{t('slogan.title')}</p>
             </div>
             <div className="flex items-center gap-4">
               <LanguageSwitcher />

@@ -58,7 +58,7 @@ export default defineConfig({
       manifest: {
         name: "英语小白阅读器 (Beginner's English Reader)",
         short_name: '英语小白阅读器',
-        description: '让小白也能阅读英文 | Helping beginners read English with ease',
+        description: '因为开发者是英语小白，所以做个小白阅读器😂',
         theme_color: '#3b82f6',
         display_override: ['fullscreen', 'standalone', 'minimal-ui', 'browser'],
         background_color: '#f8fafc',
