@@ -143,28 +143,28 @@ Remove pagination strings once tree lands; keep modal/action keys.
 
 ## Implementation Plan
 
-1) OPFS helper
+1. OPFS helper
    - Add `listDirectoryEntries(path?: string)` for shallow reads only.
    - Ensure robust error handling and path normalization.
 
-2) Tree UI
+2. Tree UI
    - Replace pagination list with a directory tree component.
    - Add expand/collapse controls, loading states, empty-state rows, and retry on child load error.
    - Keep start-ellipsis path display and tooltips.
 
-3) Actions integration
+3. Actions integration
    - Wire detail, preview, download on file nodes.
    - Preserve existing modals and download flow; no actions on directories beyond expand/collapse.
 
-4) Cleanup + i18n
+4. Cleanup + i18n
    - Add tree-related strings; remove pagination strings once unused.
    - Ensure focus and aria attributes on toggles and buttons.
 
-5) OPFS size tracking
+5. OPFS size tracking
    - Add cached size index read + refresh paths; wire incremental updates into write/delete/reset operations.
    - Keep the slow full scan strictly user-triggered and chunked; show status in the UI.
 
-6) Testing
+6. Testing
    - Root load without deep traversal.
    - Expand/collapse directories; verify caching (no repeat OPFS calls).
    - Empty directory rendering; per-directory error/retry.

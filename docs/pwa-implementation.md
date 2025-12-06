@@ -97,8 +97,8 @@ Generated icons will include:
   name: 'EPUB Reader - Immersive AI-Enhanced Reader',
   short_name: 'EPUB Reader',
   description: 'An AI-enhanced EPUB reader with offline support',
-  theme_color: '#3b82f6',
-  background_color: '#f8fafc',
+  theme_color: '#ffffff',
+  background_color: '#ffffff',
   display: 'standalone',
   orientation: 'any',
   scope: '/',
@@ -195,7 +195,7 @@ graph TD
 3. **Generate source SVG file**
 
    - Write styled SVG to `public/icon-source.svg`
-   - Use brand colors (#3b82f6 for theme consistency)
+   - Use white theme colors (#ffffff background with dark strokes)
    - Create clean, minimal design suitable for icons
 
 4. **Generate icon sizes**
@@ -234,7 +234,7 @@ graph TD
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon-180x180.png" />
 
   <!-- PWA Meta -->
-  <meta name="theme-color" content="#3b82f6" />
+  <meta name="theme-color" content="#ffffff" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- PWA Manifest (auto-injected by vite-plugin-pwa) -->
@@ -361,8 +361,8 @@ The **GrBook** icon path represents:
 ```typescript
 const styledSvg = `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="512" height="512">
-  <rect width="24" height="24" fill="#3b82f6"/>
-  <path fill="none" stroke="#ffffff" stroke-width="2" 
+  <rect width="24" height="24" fill="#ffffff"/>
+  <path fill="none" stroke="#222222" stroke-width="2" 
         d="M10,1 L10,11 L13,9 L16,11 L16,1 M5.5,18 C4.11928813,18 3,19.1192881 3,20.5 C3,21.8807119 4.11928813,23 5.5,23 L22,23 M3,20.5 L3,3.5 C3,2.11928813 4.11928813,1 5.5,1 L21,1 L21,18.0073514 L5.49217286,18.0073514 M20.5,18 C19.1192881,18 18,19.1192881 18,20.5 C18,21.8807119 19.1192881,23 20.5,23 L20.5,23"
         transform="translate(0.5, 0.5)"/>
 </svg>
@@ -373,14 +373,14 @@ const styledSvg = `
 
 **Primary Colors:**
 
-- Background: `#3b82f6` (Tailwind blue-500)
-- Foreground: `#ffffff` (white)
-- Theme: `#3b82f6` (matches brand)
+- Background: `#ffffff` (white base)
+- Foreground: `#222222` (dark strokes for contrast)
+- Theme: `#ffffff` (matches PWA chrome)
 
 **Dark Mode Alternative:**
 
-- Background: `#1e3a8a` (Tailwind blue-900)
-- Foreground: `#60a5fa` (Tailwind blue-400)
+- Background: `#f8fafc` (soft light surface)
+- Foreground: `#111827` (Tailwind gray-900)
 
 ### 7.3 Asset Generator Configuration
 

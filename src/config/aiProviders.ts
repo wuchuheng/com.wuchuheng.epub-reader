@@ -60,7 +60,7 @@ export const AI_PROVIDER_CATALOG: AiProviderConfig[] = [
   },
   {
     id: 'deepseek',
-    name: 'DeepSeek',
+    name: 'DeepSeek(深度求索)',
     baseUrl: 'https://api.deepseek.com',
     docsUrl: 'https://api-docs.deepseek.com/',
   },
@@ -78,19 +78,19 @@ export const AI_PROVIDER_CATALOG: AiProviderConfig[] = [
   },
   {
     id: 'zhipu',
-    name: 'Zhipu GLM',
+    name: 'Zhipu GLM(智谱)',
     baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
     docsUrl: 'https://open.bigmodel.cn/dev/api',
   },
   {
     id: 'qwen',
-    name: 'Qwen (DashScope compatible)',
+    name: 'Qwen (千问)',
     baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
     docsUrl: 'https://help.aliyun.com/zh/model-studio/developer-reference/use-qwen-by-calling-api',
   },
   {
     id: 'kimi',
-    name: 'Kimi (Moonshot)',
+    name: 'Kimi (月之暗面)',
     baseUrl: 'https://api.moonshot.cn/v1',
     docsUrl: 'https://platform.moonshot.cn/docs/api/chat-completion',
   },
