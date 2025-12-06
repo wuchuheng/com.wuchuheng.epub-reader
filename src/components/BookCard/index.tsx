@@ -234,17 +234,17 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onOpen, onDelete }) =>
             <h3 className="mb-1 truncate text-lg font-semibold text-gray-900" title={displayName}>
               {displayName}
             </h3>
-            <p className="mb-1 truncate text-sm text-gray-600" title={displayAuthor}>
-              {displayAuthor}
-            </p>
-            <div className="mb-3 flex items-center justify-between text-xs text-gray-500">
+            <p
+              className="mb-1 inline-block flex justify-between truncate text-sm text-gray-600"
+              title={displayAuthor}
+            >
+              <span>{displayAuthor}</span>
               <span>
                 {typeof book.chapterCount === 'number'
                   ? t('bookshelf.chapters', { count: book.chapterCount })
                   : t('bookshelf.detailsModal.unknown')}
               </span>
-              <span>{displaySize}</span>
-            </div>
+            </p>
 
             {isDownloading && (
               <div className="mb-2 text-xs font-semibold text-blue-700">
