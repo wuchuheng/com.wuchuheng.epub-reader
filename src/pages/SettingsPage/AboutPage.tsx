@@ -128,7 +128,9 @@ const ChangelogItem: React.FC<ChangelogItemProps> = ({
                     <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" />
                     <div>
                       <p className="font-medium text-gray-900">{entry.title}</p>
-                      {entry.description ? <p className="text-gray-600">{entry.description}</p> : null}
+                      {entry.description ? (
+                        <p className="text-gray-600">{entry.description}</p>
+                      ) : null}
                     </div>
                   </li>
                 ))}
@@ -163,40 +165,38 @@ export const AboutPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-10 p-8">
-        {/* Header Section with Logo and Title */}
-        <div className="flex flex-col items-center gap-6">
-          <img src={LogoSvg} alt="App Logo" className="h-24 w-24" />
-          <div className="space-y-2 text-center">
-            <h4 className="text-2xl font-semibold text-gray-900">{t('about.title')}</h4>
-            <p className="text-base text-gray-600">{t('about.description')}</p>
-          </div>
-
-          <p className="inline-block flex items-center gap-2 text-sm text-gray-600">
-            <span className="font-medium text-gray-900">{t('about.author')}:</span> wuchuheng
-            <a href="mailto:root@wuchuheng.com" className="text-blue-600 hover:underline">
-              root@wuchuheng.com
-            </a>
-          </p>
+      {/* Header Section with Logo and Title */}
+      <div className="flex flex-col items-center gap-6">
+        <img src={LogoSvg} alt="App Logo" className="h-24 w-24" />
+        <div className="space-y-2 text-center">
+          <h4 className="text-2xl font-semibold text-gray-900">{t('about.title')}</h4>
+          <p className="text-base text-gray-600">{t('about.description')}</p>
         </div>
 
-        <div className="flex justify-center border-t border-gray-200 pt-8"></div>
+        <p className="inline-block flex items-center gap-2 text-sm text-gray-600">
+          <span className="font-medium text-gray-900">{t('about.author')}:</span> wuchuheng
+          <a href="mailto:root@wuchuheng.com" className="text-blue-600 hover:underline">
+            root@wuchuheng.com
+          </a>
+        </p>
+      </div>
 
-        <div className="mt-8 space-y-4">
-          <h5 className="text-lg font-semibold text-gray-900">{t('about.changelogHistory')}</h5>
-          <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-            {CHANGELOG_CONFIG.map((version) => (
-              <ChangelogItem
-                key={version.version}
-                version={version}
-                isOpen={expandedVersions.has(version.version)}
-                onToggle={toggleVersion}
-                getCategoryLabel={getCategoryLabel}
-                expandLabel={t('about.expand')}
-                collapseLabel={t('about.collapse')}
-              />
-            ))}
-          </div>
+      <div className="flex justify-center border-t border-gray-200 pt-8"></div>
+
+      <div className="mt-8 space-y-4">
+        <h5 className="text-lg font-semibold text-gray-900">{t('about.changelogHistory')}</h5>
+        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+          {CHANGELOG_CONFIG.map((version) => (
+            <ChangelogItem
+              key={version.version}
+              version={version}
+              isOpen={expandedVersions.has(version.version)}
+              onToggle={toggleVersion}
+              getCategoryLabel={getCategoryLabel}
+              expandLabel={t('about.expand')}
+              collapseLabel={t('about.collapse')}
+            />
+          ))}
         </div>
       </div>
     </div>
