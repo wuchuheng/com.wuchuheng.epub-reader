@@ -22,7 +22,8 @@ export function useBookDisplayData(book: BookMetadata) {
   // 2. Core processing - format display data with fallbacks
   const displayName = book.name || t('bookshelf.unknownTitle');
   const displayAuthor = book.author || t('bookshelf.unknownAuthor');
-  const displayProgress = book.progress || 0;
+  const displayProgress =
+    book.status === 'downloading' ? book.downloadProgress ?? 0 : book.progress || 0;
   const displaySize = book.size || t('bookshelf.unknownSize');
 
   // 3. Return formatted data

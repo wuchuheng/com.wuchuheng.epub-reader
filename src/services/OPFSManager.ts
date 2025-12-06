@@ -1,5 +1,9 @@
-import { v4 as uuidv4 } from 'uuid';
-import { OPFSConfig, BookMetadata, OPFSDirectoryStructure } from '../types/book';
+import {
+  OPFSConfig,
+  BookMetadata,
+  OPFSDirectoryStructure,
+  PresetBookConfig,
+} from '../types/book';
 import { ContextMenuItem, ContextMenuSettings } from '../types/epub';
 import * as EPUBMetadataService from './EPUBMetadataService';
 import ePub, { Book } from 'epubjs';
@@ -10,7 +14,7 @@ import {
   safeGetFileHandle,
 } from '../utils/fileOperations';
 import { DEFAULT_CONFIG } from '../constants/epub';
-import { menuItemDefaultConfig } from '@/config/config';
+import { DEFAULT_PRESET_BOOKS, menuItemDefaultConfig } from '@/config/config';
 
 let directoryStructure: OPFSDirectoryStructure | null = null;
 
@@ -103,8 +107,32 @@ const buildDefaultConfig = (books: BookMetadata[] = []): OPFSConfig => ({
   settings: {
     contextMenu: buildDefaultContextMenuSettings(),
   },
+  hashMapFilePath: {},
+  presetBooks: DEFAULT_PRESET_BOOKS.map((preset) => ({ ...preset })),
   lastSync: Date.now(),
 });
+
+const applyConfigDefaults = (config: Partial<OPFSConfig>): OPFSConfig => {
+  const defaults = buildDefaultConfig();
+  const contextMenuSettings = config.settings?.contextMenu
+    ? {
+        ...defaults.settings.contextMenu,
+        ...config.settings.contextMenu,
+        items: applyMenuItemDefaults(
+          config.settings.contextMenu.items ?? defaults.settings.contextMenu.items
+        ),
+      }
+    : defaults.settings.contextMenu;
+
+  return {
+    version: DEFAULT_CONFIG.CONFIG_VERSION,
+    books: config.books ?? [],
+    settings: { contextMenu: contextMenuSettings },
+    lastSync: config.lastSync ?? Date.now(),
+    hashMapFilePath: config.hashMapFilePath ?? {},
+    presetBooks: (config.presetBooks ?? DEFAULT_PRESET_BOOKS).map((preset) => ({ ...preset })),
+  };
+};
 
 /**
  * Ensure config.json exists with default structure
@@ -120,82 +148,144 @@ async function ensureConfigExists(): Promise<void> {
   }
 }
 
+const getArrayBufferFromData = (data: ArrayBuffer | Uint8Array): ArrayBuffer =>
+  data instanceof ArrayBuffer ? data : data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
+
+export const calculateFileHash = async (data: ArrayBuffer | Uint8Array): Promise<string> => {
+  const hashBuffer = await crypto.subtle.digest('SHA-256', getArrayBufferFromData(data));
+
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('');
+};
+
+const createBookDirectory = async (
+  structure: OPFSDirectoryStructure,
+  bookDirName: string
+): Promise<FileSystemDirectoryHandle> => {
+  const bookDir = await safeGetDirectoryHandle(
+    () => structure.booksDir.getDirectoryHandle(bookDirName, { create: true }),
+    bookDirName
+  );
+
+  if (!bookDir) {
+    throw new Error('Failed to create book directory');
+  }
+
+  return bookDir;
+};
+
+const saveEpubFile = async (
+  bookDir: FileSystemDirectoryHandle,
+  fileName: string,
+  buffer: ArrayBuffer
+): Promise<void> => {
+  const bookFileHandle = await safeGetFileHandle(
+    () => bookDir.getFileHandle(fileName, { create: true }),
+    fileName
+  );
+
+  if (!bookFileHandle) {
+    throw new Error('Failed to create book file');
+  }
+
+  const writable = await bookFileHandle.createWritable();
+  await writable.write(buffer);
+  await writable.close();
+};
+
+const saveCoverImage = async (
+  bookDir: FileSystemDirectoryHandle,
+  bookDirName: string,
+  bookInstance: Book
+): Promise<string> => {
+  try {
+    const coverBlob = await EPUBMetadataService.extractCoverBlob(bookInstance);
+    const coverFormat = (await EPUBMetadataService.getCoverFormat(bookInstance)) || 'jpg';
+
+    if (!coverBlob) {
+      return '';
+    }
+
+    const coverFileName = `cover.${coverFormat}`;
+    const coverFileHandle = await safeGetFileHandle(
+      () => bookDir.getFileHandle(coverFileName, { create: true }),
+      coverFileName
+    );
+
+    if (!coverFileHandle) {
+      return '';
+    }
+
+    const coverWritable = await coverFileHandle.createWritable();
+    await coverWritable.write(await coverBlob.arrayBuffer());
+    await coverWritable.close();
+
+    return `books/${bookDirName}/${coverFileName}`;
+  } catch (error) {
+    console.warn('Failed to extract cover image:', error);
+    return '';
+  }
+};
+
+const persistBookMetadata = async (bookMetadata: BookMetadata): Promise<void> => {
+  const config = await loadConfig();
+  config.books.push(bookMetadata);
+  config.hashMapFilePath[bookMetadata.id] = bookMetadata.path;
+  config.lastSync = Date.now();
+  await saveConfig(config);
+};
+
 /**
  * Upload and save an EPUB book with metadata extraction and cover image
  */
 export async function uploadBook(file: File): Promise<BookMetadata> {
-  const directoryStructure = await getDirectoryStructure();
-
-  // Validate file using centralized validation
   const validationError = getEpubValidationError(file);
   if (validationError) {
     throw new Error(validationError);
   }
 
-  const bookId = uuidv4();
+  const fileBuffer = await file.arrayBuffer();
+  const fileHash = await calculateFileHash(fileBuffer);
+  const isDuplicate = await checkFileHashExists(fileHash);
+
+  if (isDuplicate) {
+    throw new Error('Book already exists');
+  }
+
+  return uploadBookWithHash(file, fileHash, fileBuffer);
+}
+
+export async function uploadBookWithHash(
+  file: File,
+  fileHash: string,
+  fileBuffer?: ArrayBuffer,
+  options?: { isPreset?: boolean; remoteUrl?: string }
+): Promise<BookMetadata> {
+  const directoryStructure = await getDirectoryStructure();
+  const validationError = getEpubValidationError(file);
+
+  // 1. Input validation
+  if (validationError) {
+    throw new Error(validationError);
+  }
+
+  // 2. Core processing - save file and extract metadata
+  const buffer = fileBuffer ?? (await file.arrayBuffer());
   const bookFileName = file.name;
-  const bookDirName = bookId;
+  const bookDirName = fileHash;
   const bookPath = `books/${bookDirName}/${bookFileName}`;
 
   const result = await performFileOperation<BookMetadata>(async () => {
-    // Create book directory
-    const bookDir = await safeGetDirectoryHandle(
-      () => directoryStructure.booksDir.getDirectoryHandle(bookDirName, { create: true }),
-      bookDirName
-    );
+    const bookDir = await createBookDirectory(directoryStructure, bookDirName);
+    await saveEpubFile(bookDir, bookFileName, buffer);
 
-    if (!bookDir) {
-      throw new Error('Failed to create book directory');
-    }
-
-    // Save the EPUB file
-    const bookFileHandle = await safeGetFileHandle(
-      () => bookDir.getFileHandle(bookFileName, { create: true }),
-      bookFileName
-    );
-
-    if (!bookFileHandle) {
-      throw new Error('Failed to create book file');
-    }
-
-    const writable = await bookFileHandle.createWritable();
-    await writable.write(await file.arrayBuffer());
-    await writable.close();
-
-    // Load EPUB for cover extraction
-    const arrayBuffer = await file.arrayBuffer();
-    const book: Book = ePub(arrayBuffer);
-
-    // Extract EPUB metadata
+    const bookInstance: Book = ePub(buffer);
     const epubMetadata = await EPUBMetadataService.extractMetadata(file);
+    const coverPath = await saveCoverImage(bookDir, bookDirName, bookInstance);
 
-    // Extract and save cover image
-    let coverPath: string = '';
-    try {
-      const coverBlob = await EPUBMetadataService.extractCoverBlob(book);
-      const coverFormat = (await EPUBMetadataService.getCoverFormat(book)) || 'jpg';
-
-      if (coverBlob) {
-        const coverFileName = `cover.${coverFormat}`;
-        const coverFileHandle = await safeGetFileHandle(
-          () => bookDir.getFileHandle(coverFileName, { create: true }),
-          coverFileName
-        );
-
-        if (coverFileHandle) {
-          const coverWritable = await coverFileHandle.createWritable();
-          await coverWritable.write(await coverBlob.arrayBuffer());
-          await coverWritable.close();
-          coverPath = `books/${bookDirName}/${coverFileName}`;
-        }
-      }
-    } catch (error) {
-      console.warn('Failed to extract cover image:', error);
-    }
-
-    // Create enhanced book metadata
     const bookMetadata: BookMetadata = {
-      id: bookId,
+      id: fileHash,
       name: epubMetadata.title || file.name.replace(/\.epub$/i, ''),
       author: epubMetadata.author || 'Unknown Author',
       path: bookPath,
@@ -204,18 +294,43 @@ export async function uploadBook(file: File): Promise<BookMetadata> {
       chapterCount: epubMetadata.chapterCount || 0,
       coverPath,
       metaData: epubMetadata,
+      status: 'local',
+      isPreset: options?.isPreset,
+      remoteUrl: options?.remoteUrl,
     };
 
-    // Update config with new book
-    const config = await loadConfig();
-    config.books.push(bookMetadata);
-    config.lastSync = Date.now();
-    await saveConfig(config);
+    await persistBookMetadata(bookMetadata);
 
     return bookMetadata;
-  }, 'upload book');
+  }, 'upload book with hash');
 
-  return result.data!;
+  // 3. Output handling
+  if (!result.success || !result.data) {
+    throw new Error(result.error ?? 'Failed to upload book');
+  }
+
+  return result.data;
+}
+
+export async function checkFileHashExists(hash: string): Promise<boolean> {
+  const config = await loadConfig();
+  return Boolean(config.hashMapFilePath?.[hash]);
+}
+
+export async function updatePresetBookHash(url: string, fileHash: string): Promise<void> {
+  const config = await loadConfig();
+  const presets: PresetBookConfig[] = config.presetBooks ?? [];
+  const existingIndex = presets.findIndex((preset) => preset.url === url);
+
+  if (existingIndex >= 0) {
+    presets[existingIndex] = { ...presets[existingIndex], fileHash };
+  } else {
+    presets.push({ url, fileHash });
+  }
+
+  config.presetBooks = presets;
+  config.lastSync = Date.now();
+  await saveConfig(config);
 }
 
 /**
@@ -223,13 +338,14 @@ export async function uploadBook(file: File): Promise<BookMetadata> {
  */
 export async function saveConfig(config: OPFSConfig): Promise<void> {
   const directoryStructure = await getDirectoryStructure();
+  const normalizedConfig = applyConfigDefaults(config);
 
   try {
     const fileHandle = await directoryStructure.root.getFileHandle('config.json', {
       create: true,
     });
     const writable = await fileHandle.createWritable();
-    await writable.write(JSON.stringify(config, null, 2));
+    await writable.write(JSON.stringify(normalizedConfig, null, 2));
     await writable.close();
   } catch (error) {
     throw new Error(`Failed to save config: ${error}`);
@@ -253,6 +369,9 @@ export async function deleteBook(bookId: string): Promise<void> {
     // Update config
     const config = await loadConfig();
     config.books = config.books.filter((book) => book.id !== bookId);
+    if (config.hashMapFilePath?.[bookId]) {
+      delete config.hashMapFilePath[bookId];
+    }
     config.lastSync = Date.now();
     await saveConfig(config);
   } catch (error) {
@@ -328,7 +447,12 @@ export const getCoverBase64ByPath = async (coverPath: string): Promise<string | 
  */
 export async function getAllBooks(): Promise<BookMetadata[]> {
   const config = await loadConfig();
-  return config.books;
+  return config.books.map((book) => ({
+    ...book,
+    status: book.status ?? 'local',
+    downloadProgress:
+      book.status === 'downloading' ? book.downloadProgress ?? 0 : book.downloadProgress,
+  }));
 }
 
 const collectEntries = async (
@@ -483,22 +607,32 @@ export async function loadConfig(): Promise<OPFSConfig> {
     const file = await fileHandle.getFile();
     const content = await file.text();
 
-    // Handle empty or corrupted files
     if (!content.trim()) {
-      throw new Error('Config file is empty');
+      const defaultConfig = buildDefaultConfig();
+      await saveConfig(defaultConfig);
+      return defaultConfig;
     }
 
     try {
-      return JSON.parse(content);
-    } catch {
-      // If JSON is corrupted, recreate with default config
-      const defaultConfig = buildDefaultConfig();
+      const parsed = JSON.parse(content) as Partial<OPFSConfig>;
+      const normalized = applyConfigDefaults(parsed);
 
+      if (
+        !parsed.hashMapFilePath ||
+        !parsed.presetBooks ||
+        !parsed.settings?.contextMenu ||
+        parsed.books !== normalized.books
+      ) {
+        await saveConfig(normalized);
+      }
+
+      return normalized;
+    } catch {
+      const defaultConfig = buildDefaultConfig();
       await saveConfig(defaultConfig);
       return defaultConfig;
     }
   } catch (error) {
-    // If file doesn't exist, create it
     if (error instanceof Error && error.message.includes('not found')) {
       const defaultConfig = buildDefaultConfig();
       await saveConfig(defaultConfig);

@@ -38,7 +38,10 @@
     "unknownTitle": "Untitled Book",
     "unknownAuthor": "Unknown Author",
     "unknownSize": "Unknown size",
-    "openBookAria": "Open book: {{name}}"
+    "openBookAria": "Open book: {{name}}",
+    "downloading": "Downloading...",
+    "downloadFailed": "Download failed",
+    "downloadingCount": "Downloading {{count}} book(s)..."
   },
   "uploadZone": {
     "title": "Upload EPUB Book",

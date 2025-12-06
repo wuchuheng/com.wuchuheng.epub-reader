@@ -17,6 +17,7 @@ import { Plus, Settings } from '../../components/icons';
 import { MdInstallDesktop } from 'react-icons/md';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
+import { ProgressBar } from '../../components/BookCard/ProgressBar';
 
 /**
  * Main bookshelf page component
@@ -27,22 +28,12 @@ export const BookshelfPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { t } = useTranslation('homepage');
-  const { books, isLoading, error } = useAppSelector((state) => state.bookshelf);
+  const { books, isLoading, error, downloadingCount } = useAppSelector((state) => state.bookshelf);
   const { isInstalled, installPWA, canInstall } = usePWAInstall();
+  const downloadingBooks = books.filter((book) => book.status === 'downloading');
+  const failedDownloads = books.filter((book) => book.status === 'error');
 
   console.log('BookshelfPage: PWA State - isInstalled:', isInstalled, 'canInstall:', canInstall);
-
-  // Manual PWA install trigger for testing
-  const handleManualInstallTest = () => {
-    console.log('Manual PWA install test triggered');
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-      console.log('Service Worker is active');
-      // Force show install prompt for testing
-      window.dispatchEvent(new Event('beforeinstallprompt'));
-    } else {
-      console.log('Service Worker not active or not found');
-    }
-  };
 
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -50,6 +41,10 @@ export const BookshelfPage: React.FC = () => {
 
   // 1. Input handling - initialize bookshelf on mount
   useEffect(() => {
+    if (books.length > 0) {
+      return;
+    }
+
     const initBookshelf = async () => {
       try {
         await dispatch(initializeBookshelf()).unwrap();
@@ -60,7 +55,7 @@ export const BookshelfPage: React.FC = () => {
     };
 
     initBookshelf();
-  }, [dispatch]);
+  }, [books.length, dispatch]);
 
   // 2. Core processing - handle book actions
   const handleOpenBook = (bookId: string) => {
@@ -195,10 +190,10 @@ export const BookshelfPage: React.FC = () => {
       <header className="border-b bg-white shadow-sm">
         <div className="mx-auto max-w-7xl p-2 sm:px-2 lg:px-4">
           <div className="flex items-center justify-between">
-            <p>
+            <div>
               <h1 className="sm:text-1xl font-bold text-gray-900">{t('appTitle')}</h1>
               <span className="text-sm text-gray-600">{t('slogan.title')}</span>
-            </p>
+            </div>
             <div className="flex items-center gap-4">
               <LanguageSwitcher />
               {!isInstalled && canInstall && (
@@ -280,6 +275,22 @@ export const BookshelfPage: React.FC = () => {
           <div className="py-12 text-center">
             <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
             <p className="text-gray-600">{t('loadingBookshelf')}</p>
+          </div>
+        )}
+
+        {failedDownloads.length > 0 && (
+          <div className="mb-6 rounded-md border border-red-200 bg-red-50 p-4">
+            <h3 className="text-sm font-semibold text-red-800">{t('bookshelf.downloadFailed')}</h3>
+            <ul className="mt-2 space-y-1 text-sm text-red-700">
+              {failedDownloads.map((book) => (
+                <li key={book.id} className="flex items-center justify-between gap-2">
+                  <span className="truncate">{book.name}</span>
+                  {book.downloadError ? (
+                    <span className="text-xs text-red-600">{book.downloadError}</span>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
           </div>
         )}
         {/* Empty state */}

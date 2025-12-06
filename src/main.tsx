@@ -7,6 +7,7 @@ import { registerSW } from 'virtual:pwa-register';
 import { MessageProvider } from './components/Message';
 import './index.css';
 import './i18n/config';
+import { initializeBookshelf, initializePresetBooks } from './store/slices/bookshelfSlice';
 
 // Register service worker
 const updateSW = registerSW({
@@ -21,10 +22,21 @@ const updateSW = registerSW({
   },
 });
 
-createRoot(document.getElementById('root')!).render(
-  <Provider store={store}>
-    <MessageProvider>
-      <RouterProvider router={router} />
-    </MessageProvider>
-  </Provider>
-);
+const startApp = async () => {
+  try {
+    await store.dispatch(initializeBookshelf()).unwrap();
+    store.dispatch(initializePresetBooks());
+  } catch (error) {
+    console.error('Failed to initialize app:', error);
+  } finally {
+    createRoot(document.getElementById('root')!).render(
+      <Provider store={store}>
+        <MessageProvider>
+          <RouterProvider router={router} />
+        </MessageProvider>
+      </Provider>
+    );
+  }
+};
+
+startApp();

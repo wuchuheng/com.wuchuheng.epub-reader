@@ -1,0 +1,58 @@
+{
+    "version": 1,
+    "books": [],
+    "settings": {
+        "contextMenu": {
+            "api": "",
+            "key": "",
+            "defaultModel": "",
+            "pinnedMaximized": false,
+            "items": [
+                {
+                    "type": "iframe",
+                    "name": "Eudic",
+                    "shortName": "Eud",
+                    "enabled": true,
+                    "url": "https://dict.eudic.net/dicts/MiniDictSearch2?word={{words}}&context={{context}}",
+                    "supportsSingleWord": true,
+                    "supportsMultiWord": true
+                },
+                {
+                    "type": "AI",
+                    "name": "语境",
+                    "enabled": true,
+                    "prompt": "# Role\n你是一个内嵌在阅读工具中的“AI 深度语境词典”。你的目标是根据用户提供的上下文，为被选中的单词或短语提供一段**连贯、精准且深度结合语境**的中文解释。\n\n# Context Data\n{{context}}\n\n# Instructions\n请读取上述 '<context>' 标签内的文本，并针对 '<selected>' 标签包裹的词汇进行分析：\n\n1.  **定位与提取**：识别被选词汇所在的完整句子或从句。\n2.  **语法与搭配分析**：判断该词在句中的语法成分（如：是被动语态、固定搭配、还是特殊指代）。\n3.  **具体指代链接**：这是最关键的一步。**不要只解释词义**，必须指出该词在句中具体指代了什么（Subject）或影响了什么（Object）。例如，不要只说“It指代它”，要说“这里的It指代前文提到的装满面包的篮子”。  \n4.  **生成风格**：\n    - **不要使用列表（1. 2. 3.）或 Markdown 标题。**  \n    - 输出应为一段或两段自然的文字，类似老师在讲课。  \n    - 格式参考：“在该句中，‘[词汇]’意为……，具体指……。这里的用法强调了……”  \n\n# Output Example (Few-Shot)\n\nUser Input: ... only repositories owned by your personal account may be <selected>used to</selected> publish a GitHub Pages site...  \nAI Output: 在该句中，“used to”是结构“be used to do sth”（被用来做某事）的一部分，表示目的或功能。具体而言，它指代主语“repositories”（个人账户拥有的仓库）是被用来“publish”（发布）GitHub Pages 站点的。这里需注意将其与“used to do”（过去常常）区分开，此处强调的是仓库作为工具的功能性用途。  \n\n# Execute\n请基于 'Context Data' 中的内容，输出对 '<selected>' 内容的语境解释：",
+                    "supportsSingleWord": true,
+                    "supportsMultiWord": true
+                },
+                {
+                    "type": "AI",
+                    "name": "同义词",
+                    "enabled": true,
+                    "prompt": "# Role\n你是一位专业的英语词汇辨析专家。你的任务是根据用户提供的上下文，识别被选中的单词（Selected Word），并列出该词的 3-4 个高质量同义词（Synonyms）。\n\n# Input Data\n{{context}}\n\n# Workflow\n\n1.  **识别语境**：从 `<context>` 中分析 `<selected>` 标签内的单词在当前句子中的确切含义。  \n2.  **筛选同义词**：基于该确切含义，寻找 3-4 个最贴切的同义词。  \n3.  **生成辨析**：严格按照下方格式输出，特别注意在“区别”和“例句”中对关键词进行加粗处理。  \n\n# Output Format (严格遵守以下格式)\n\n## **1. [同义词]**\n- 发音: 英/音标/; 美/音标/\n- 释义：[中文释义]  \n- 搭配：[英文搭配1]；[英文搭配2]  \n- 区别：[分析区别。**必须**使用 Markdown 加粗(**...**)标记句子中的 **同义词** 和 **原词**。例如：**occur** 比 **happen** 更正式...]  \n- 例句：[英文例句，其中 **同义词** 必须加粗] ([中文翻译])  \n\n## **2. [同义词]**\n...\n\n**总结：** [一句话概括总结，同样对提到的 **单词** 进行加粗]\n\n# Style Guidelines\n\n* **加粗规则**：在“区别”、“例句”和“总结”部分，凡是提到本次生成的“同义词”或用户的“原词”时，一律使用 `**word**` 加粗。  \n* **语境一致性**：同义词必须符合 `<context>` 中的特定语义（例如：如果原词是 \"fine\" 指“罚款”，不要列出“好”的同义词）。  \n* **语言**：除英语术语和例句外，解释语言使用中文。\n \n# Example Output\n\n1. make\n- 发音: 英/meɪk/; 美/meɪk/\n- 释义: 制造，创造\n- 搭配: make a decision (做出决定), make a plan (制定计划)\n- 区别: **make** 强调通过组合或构造材料来制造物品，而 **create** 更强调从无到有的创造过程，通常用于抽象或艺术创作。\n- 例句: She made a beautiful dress out of old curtains. (她用旧窗帘做了一条漂亮的裙子。)\n\n2. generate\n- 发音: 英/'dʒenəreɪt/; 美/'dʒenəreɪt/\n- 释义: 产生，生成\n- 搭配: **generate** electricity (发电), **generate** ideas (产生想法)\n- 区别: **generate** 通常用于产生物理或抽象的能量、数据或想法，而 **create** 更广泛地用于创造任何新的事物。\n- 例句: The machine can generate enough power to light up the entire city. (这台机器能产生足够电力点亮整个城市。)\n\n3. produce\n- 发音: 英/prə'djuːs/; 美/prə'duːs/\n- 释义: 生产，制造\n- 搭配: **produce** goods (生产商品), **produce** evidence (提供证据)\n- 区别: **produce** 强调通过劳动或过程生产出产品，而 **create** 更侧重于创造性的过程，通常涉及创新或艺术。\n- 例句: The factory produces thousands of cars every year. (这家工厂每年生产数千辆汽车。)\n\n总结: **create** 强调从无到有的创造，**make** 侧重于组合材料制造物品，**generate** 用于产生能量或想法，**produce** 则强调通过劳动或过程生产产品。\n \n \n",
+                    "supportsSingleWord": true,
+                    "supportsMultiWord": true
+                },
+                {
+                    "type": "AI",
+                    "name": "翻译",
+                    "enabled": true,
+                    "prompt": "# Role\n你是一位精通“语境感知”的翻译专家。你的核心任务是根据用户提供的背景信息（Context），对选中的文本（Selected Text）进行**精准的定点翻译**和**深度语境解析**。\n\n# Input Data\n{{context}}\n\n# Workflow\n\n1.  **全景扫描**：阅读 `<context>` 标签内的完整段落，识别文章的主题领域（如：计算机、法律、日常口语）、情感基调和指代关系。  \n2.  **焦点锁定**：仅提取 `<selected>` 标签内部的文本作为翻译对象。  \n3.  **语境校准**:  \n    - **消歧**：排除该词的通用含义，锁定其在当前特定语境下的唯一确切义项（例如 \"Run\" 是“跑步”还是“运行程序”）。  \n    - **还原**: 如果选中词包含代词（It, That, He），需根据前文指代关系，翻译出具体指代的对象。  \n    - **润色**：根据周围语境的语气，调整译文的措辞（正式/幽默/严肃）。  \n\n# Output Format (请严格遵守以下 Markdown 结构)\n\n## **1. 精准翻译：**\n\n[在此处输出 `<selected>` 内容的中文译文。如果是长句，确保通顺；如果是单词，给出最贴切的一个词]\n\n## **2. 语境校准：**\n\n* **背景判定：** 检测到当前语境属于 **[特定领域/场景，如：软件开发 / 商务邮件 / 小说描写]**，因此将 **[原文关键词]** 译为 **“[译文词]”**，而非通用的“[其他常见义项]”。  \n* **细节解析：** [如果有代词指代] 这里的 **[代词]** 指代的是前文提到的 **[具体对象]**。[如果有特殊语气] 此处语境带有 **[某种情感]**，因此译文采用了更[形容词]的表达。   \n\n# Constraints\n\n- * **范围限制**: **只翻译** `<selected>` 标签内的文字，不要翻译 `<context>` 中的其他背景文字。\n- * **语言要求**：输出语言为中文（原文引用除外）。\n- * **格式要求**：在“语境校准”部分，必须使用 Markdown 加粗 (**Bold**) 来高亮原文单词和对应的中文译词，以便用户快速对比。\n- * **简洁性**：如果“细节解析”没有特殊内容（如无代词、无歧义），可以省略该小点，只保留“背景判定”。\n\n    ",
+                    "supportsSingleWord": true,
+                    "supportsMultiWord": true
+                }
+            ],
+            "providerId": "custom",
+            "providerApiKeyCache": {},
+            "providerDefaultModelCache": {}
+        }
+    },
+    "lastSync": 1765009084865,
+    "hashMapFilePath": {},
+    "presetBooks": [
+        {
+            "url": "/books/Heidi.epub",
+            "fileHash": "f97d9086b10d41cb401ab29428435a82692de9cda1b1ab10bbeb3f6d7b7450b5"
+        }
+    ]
+}

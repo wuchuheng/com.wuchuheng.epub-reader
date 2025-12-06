@@ -4,7 +4,6 @@ import { BookMetadata } from '../../types/book';
 import { useBookDisplayData } from './hooks/useBookDisplayData';
 import { BookCover } from './BookCover';
 import { ProgressBar } from './ProgressBar';
-import { BookActions } from './BookActions';
 
 interface BookCardProps {
   /** Book metadata to display */
@@ -24,6 +23,10 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onOpen, onDelete }) =>
   // 1. Input validation and core processing
   const { t } = useTranslation('homepage');
   const { displayName, displayAuthor, displayProgress, displaySize } = useBookDisplayData(book);
+  const isDownloading = book.status === 'downloading';
+  const isError = book.status === 'error';
+  const isLocal = !isDownloading && !isError;
+  const progressValue = isDownloading ? (book.downloadProgress ?? 0) : displayProgress;
 
   // 2. Early return for invalid book data
   if (!book || !book.id) {
@@ -32,6 +35,9 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onOpen, onDelete }) =>
 
   // 3. Prepare event handlers
   const handleCardClick = () => {
+    if (!isLocal) {
+      return;
+    }
     onOpen(book.id);
   };
 
@@ -41,13 +47,19 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onOpen, onDelete }) =>
   };
 
   const handleReadClick = () => {
+    if (!isLocal) {
+      return;
+    }
     onOpen(book.id);
   };
 
   // 4. Output handling - render book card with extracted components
   return (
     <div
-      className="cursor-pointer overflow-hidden rounded-lg bg-white shadow-md transition-shadow duration-200 hover:shadow-lg"
+      className={
+        'cursor-pointer overflow-hidden rounded-lg bg-white shadow-md ' +
+        'transition-shadow duration-200 hover:shadow-lg'
+      }
       onClick={handleCardClick}
       role="button"
       tabIndex={0}
@@ -63,27 +75,44 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onOpen, onDelete }) =>
       <BookCover coverPath={book.coverPath} title={displayName} />
 
       {/* Book info */}
-      <div className="p-4">
+      <div className="p-2">
         <h3 className="mb-1 truncate text-lg font-semibold text-gray-900" title={displayName}>
           {displayName}
         </h3>
-        <p className="mb-2 truncate text-sm text-gray-600" title={displayAuthor}>
+        <p className="flex justify-between truncate text-sm text-gray-600" title={displayAuthor}>
           {displayAuthor}
+
+          {/* Book details */}
+          <div className="mb-3 flex items-center justify-between text-xs text-gray-500">
+            {book.chapterCount ? (
+              <span>{t('bookshelf.chapters', { count: book.chapterCount })}</span>
+            ) : null}{' '}
+            /<span>{displaySize}</span>
+          </div>
         </p>
 
-        {/* Progress bar */}
-        <ProgressBar progress={displayProgress} />
+        {isDownloading && (
+          <div className="mb-2 text-xs font-semibold text-blue-700">
+            {t('bookshelf.downloading')}
+          </div>
+        )}
+        {isError && (
+          <div className="mb-2 text-xs font-semibold text-red-700">
+            {book.downloadError || t('bookshelf.downloadFailed')}
+          </div>
+        )}
 
-        {/* Book details */}
-        <div className="mb-3 flex items-center justify-between text-xs text-gray-500">
-          <span>{displaySize}</span>
-          {book.chapterCount ? (
-            <span>{t('bookshelf.chapters', { count: book.chapterCount })}</span>
-          ) : null}
-        </div>
+        {/* Progress bar */}
+        <ProgressBar progress={progressValue} hideWhenZero={!isDownloading} />
 
         {/* Action buttons */}
-        <BookActions onRead={handleReadClick} onDelete={handleDeleteClick} />
+        {/* <BookActions
+          onRead={handleReadClick}
+          onDelete={handleDeleteClick}
+          disabled={isDownloading}
+          disableRead={!isLocal}
+          disableDelete={isDownloading}
+        /> */}
       </div>
     </div>
   );

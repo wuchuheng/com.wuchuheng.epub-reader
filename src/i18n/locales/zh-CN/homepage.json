@@ -38,7 +38,10 @@
     "unknownTitle": "未命名书籍",
     "unknownAuthor": "未知作者",
     "unknownSize": "未知大小",
-    "openBookAria": "打开书籍：{{name}}"
+    "openBookAria": "打开书籍：{{name}}",
+    "downloading": "正在下载...",
+    "downloadFailed": "下载失败",
+    "downloadingCount": "正在下载 {{count}} 本书..."
   },
   "uploadZone": {
     "title": "上传 EPUB 书籍",

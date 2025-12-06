@@ -1,4 +1,7 @@
 import { ContextMenuItem } from '@/types/epub';
+import { PresetBookConfig } from '@/types/book';
+
+export const DEFAULT_PRESET_BOOKS: PresetBookConfig[] = [{ url: '/books/Heidi.epub' }];
 
 export const menuItemDefaultConfig: ContextMenuItem[] = [
   {

@@ -11,6 +11,10 @@ interface BookActionsProps {
   className?: string;
   /** Whether the buttons should be disabled */
   disabled?: boolean;
+  /** Whether only the read action should be disabled */
+  disableRead?: boolean;
+  /** Whether only the delete action should be disabled */
+  disableDelete?: boolean;
 }
 
 /**
@@ -22,6 +26,8 @@ export const BookActions: React.FC<BookActionsProps> = ({
   onDelete,
   className = '',
   disabled = false,
+  disableRead = false,
+  disableDelete = false,
 }) => {
   const { t } = useTranslation();
 
@@ -49,7 +55,7 @@ export const BookActions: React.FC<BookActionsProps> = ({
     <div className={`flex gap-2 ${className}`}>
       <button
         onClick={onRead}
-        disabled={disabled}
+        disabled={disabled || disableRead}
         className={readButtonClasses.trim()}
         aria-label={t('common:read')}
       >
@@ -57,7 +63,7 @@ export const BookActions: React.FC<BookActionsProps> = ({
       </button>
       <button
         onClick={onDelete}
-        disabled={disabled}
+        disabled={disabled || disableDelete}
         className={deleteButtonClasses.trim()}
         aria-label={t('common:delete')}
         title={t('common:delete')}

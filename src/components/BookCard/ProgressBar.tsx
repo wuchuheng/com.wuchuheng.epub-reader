@@ -10,6 +10,8 @@ interface ProgressBarProps {
   showPercentage?: boolean;
   /** Optional custom color for the progress bar */
   color?: string;
+  /** Whether to hide the bar when progress is zero */
+  hideWhenZero?: boolean;
 }
 
 /**
@@ -21,6 +23,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   className = '',
   showPercentage = true,
   color = 'bg-blue-600',
+  hideWhenZero = true,
 }) => {
   const { t } = useTranslation('common');
   // 1. Input validation
@@ -30,7 +33,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   }
 
   // 2. Core processing - determine if progress should be shown
-  const shouldShowProgress = progress > 0;
+  const shouldShowProgress = progress > 0 || !hideWhenZero;
 
   // 3. Output handling - render progress bar
   if (!shouldShowProgress) {
