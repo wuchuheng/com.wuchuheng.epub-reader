@@ -1,12 +1,14 @@
-
-<svg xmlns="http://www.w3.org/2000/svg" id="shiro-svg" width="300" height="300" viewBox="0 0 400 400">
-  <rect width="400" height="400" fill="#ffffff" />
-  <g id="shiro-lines" stroke="black" stroke-width="10" fill="none" class="sketch-stroke">
-    <path
-      d="M 70 90 Q 40 70 30 100 Q 25 120 70 125"
-      fill="white"
-      class="fill-area"
-    />
+<svg xmlns="http://www.w3.org/2000/svg" id="shiro-svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#ffffff" />
+  <g
+    id="shiro-lines"
+    stroke="black"
+    stroke-width="10"
+    fill="none"
+    class="sketch-stroke"
+    transform="translate(56 56)"
+  >
+    <path d="M 70 90 Q 40 70 30 100 Q 25 120 70 125" fill="white" class="fill-area" />
     <path
       d="M 330 110 Q 370 90 390 120 Q 400 150 370 150 Q 350 150 330 130"
       fill="white"
