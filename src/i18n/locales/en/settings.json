@@ -238,6 +238,8 @@
     "released": "Released {{date}}",
     "builtWith": "Built with React, TypeScript, and Tailwind CSS.",
     "changelogHistory": "Changelog History",
+    "expand": "Show changes",
+    "collapse": "Hide changes",
     "categories": {
       "feat": "Features",
       "fix": "Fixes",

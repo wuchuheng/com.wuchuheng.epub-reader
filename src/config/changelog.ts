@@ -1,5 +1,89 @@
 import { type ChangelogVersion } from '../types/changelog';
 
+const changelogV1_1_0: ChangelogVersion = {
+  version: '1.1.0',
+  releasedAt: '2025-12-02',
+  summary:
+    'Multilingual UI, PWA install/fullscreen upgrades, preset books, and revamped storage plus context menu tooling.',
+  changes: {
+    feat: [
+      {
+        title:
+          'Full internationalization with language switcher, translated UI copy, and updated product naming.',
+      },
+      {
+        title:
+          'Preset book downloads with hash-based dedupe, progress tracking, and bundled Heidi sample.',
+      },
+      {
+        title:
+          'Storage page rebuild with lazy directory tree, file detail/preview modals, and shallow OPFS listing.',
+      },
+      {
+        title:
+          'PWA install hook, refreshed icons, fullscreen/portrait handling, and clearer install state feedback.',
+      },
+      {
+        title:
+          'Context menu caching with stacked and parallel routing plus refreshed iframe and AI agent controls.',
+      },
+      {
+        title:
+          'Selection word limit enforcement with message notifications and settings toggles.',
+      },
+      {
+        title:
+          'Reader interaction refactor to separate click vs selection flows and add keyboard navigation hooks.',
+      },
+      {
+        title: 'New logo assets and About page presentation updates.',
+      },
+    ],
+    fix: [
+      {
+        title: 'Fixed PWA orientation defaults and install button state mismatches.',
+      },
+      {
+        title:
+          'Prevented reader click/selection conflicts and improved context menu scroll control placement.',
+      },
+    ],
+    refactor: [
+      {
+        title:
+          'Refined OPFS utilities with public array buffer conversion and preset book hash handling.',
+      },
+      {
+        title:
+          'Updated context menu state management with caching service and URL synchronization hooks.',
+      },
+    ],
+    docs: [
+      {
+        title:
+          'Added specs/wiki coverage for PWA updates, selection limits, storage revamp, and context menu routing.',
+      },
+      {
+        title:
+          'Documented preset books workflow and internationalization implementation.',
+      },
+    ],
+    chore: [
+      {
+        title:
+          'Removed unused files and refreshed lockfiles for new i18n and PWA tooling.',
+      },
+    ],
+    perf: [],
+    style: [
+      {
+        title:
+          'Friendlier book card styling plus improved settings/About visuals with the new logo.',
+      },
+    ],
+  },
+};
+
 const changelogV1_0_1: ChangelogVersion = {
   version: '1.0.1',
   releasedAt: '2025-11-30',
@@ -43,7 +127,7 @@ const changelogV1_0_0: ChangelogVersion = {
     feat: [
       {
         title:
-          'Context menu drilldown with stacked windows, drag-to-move chrome, and simple view switching for nested AI queries.',
+          'Context menu drilldown with stacked windows, draggable chrome, and simple view switching for nested AI.',
       },
       {
         title:
@@ -95,5 +179,9 @@ const changelogV1_0_0: ChangelogVersion = {
   },
 };
 
-export const CHANGELOG_CONFIG: ChangelogVersion[] = [changelogV1_0_1, changelogV1_0_0];
+export const CHANGELOG_CONFIG: ChangelogVersion[] = [
+  changelogV1_1_0,
+  changelogV1_0_1,
+  changelogV1_0_0,
+];
 export const LATEST_CHANGELOG = CHANGELOG_CONFIG[0];

@@ -238,6 +238,8 @@
     "released": "发布日期 {{date}}",
     "builtWith": "基于 React、TypeScript 和 Tailwind CSS 构建。",
     "changelogHistory": "更新记录",
+    "expand": "展开更新",
+    "collapse": "收起更新",
     "categories": {
       "feat": "功能",
       "fix": "修复",
