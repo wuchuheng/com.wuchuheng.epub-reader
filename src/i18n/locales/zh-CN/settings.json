@@ -41,8 +41,48 @@
       "description": "存储在 OPFS 中的文件及其大小。",
       "loading": "正在加载存储详情...",
       "empty": "未找到缓存文件。",
-      "items": "{{count}} 项",
-      "loadingLabel": "加载中..."
+      "loadingLabel": "加载中...",
+      "actions": {
+        "detail": "查看详情",
+        "preview": "预览文件",
+        "download": "下载文件"
+      }
+    },
+    "tree": {
+      "loadingRoot": "正在加载存储…",
+      "loadingChildren": "正在加载…",
+      "emptyDirectory": "文件夹为空",
+      "loadError": "加载该文件夹失败",
+      "retry": "重试",
+      "expand": "展开",
+      "collapse": "折叠"
+    },
+    "usage": {
+      "opfsSize": "OPFS 大小：{{size}}",
+      "calculate": "计算 OPFS 大小",
+      "calculating": "正在计算..."
+    },
+    "modals": {
+      "detail": {
+        "title": "文件详情",
+        "path": "路径",
+        "size": "大小",
+        "type": "类型",
+        "extension": "扩展名",
+        "lastModified": "最近修改",
+        "notAvailable": "暂无数据",
+        "close": "关闭"
+      },
+      "preview": {
+        "title": "预览：{{filename}}",
+        "unsupported": "无法预览此文件类型 (.{{ext}})",
+        "loading": "正在加载文件...",
+        "error": "文件加载失败：{{message}}",
+        "tooLarge": "文件过大，无法预览（大于 {{size}} MB）",
+        "copy": "复制内容",
+        "copied": "已复制！",
+        "close": "关闭"
+      }
     },
     "danger": {
       "title": "危险操作",

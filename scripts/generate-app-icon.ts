@@ -9,40 +9,73 @@ import { join } from 'path';
  */
 
 // GrBook icon SVG path data (from react-icons/gr)
-const GRBOOK_PATH =
+const _GRBOOK_PATH =
   'M10,1 L10,11 L13,9 L16,11 L16,1 M5.5,18 C4.11928813,18 3,19.1192881 3,20.5 C3,21.8807119 4.11928813,23 5.5,23 L22,23 M3,20.5 L3,3.5 C3,2.11928813 4.11928813,1 5.5,1 L21,1 L21,18.0073514 L5.49217286,18.0073514 M20.5,18 C19.1192881,18 18,19.1192881 18,20.5 C18,21.8807119 19.1192881,23 20.5,23 L20.5,23';
 
 // Color scheme matching the app's theme
-const COLORS = {
+const _COLORS = {
   background: '#fff', // Tailwind blue-500
   foreground: '#222', // # gray-900
   theme: '#3b82f6', // Matches brand color
 };
 
+const logoSvg = `<svg xmlns="http://www.w3.org/2000/svg" id="shiro-svg" width="300" height="300" viewBox="0 0 400 400" class="z-10 relative transition-all duration-500">
+                <!-- Group for the whole character -->
+                <g id="shiro-lines" stroke="black" stroke-width="4" fill="none" class="sketch-stroke">
+                    
+                    <!-- Left Ear -->
+                    <path d="M 70 90 Q 40 70 30 100 Q 25 120 70 125" fill="white" class="fill-area"/>
+                    <!-- Right Ear -->
+                    <path d="M 330 110 Q 370 90 390 120 Q 400 150 370 150 Q 350 150 330 130" fill="white" class="fill-area"/>
+                    <!-- Tail -->
+                    <path d="M 280 340 Q 310 320 330 330 Q 350 340 340 360 Q 320 380 300 370 Q 290 360 270 360" fill="white" class="fill-area"/>
+                    <!-- Body -->
+                    <path d="M 140 260 Q 130 300 120 350 Q 110 380 150 380 L 170 380 Q 175 340 200 340 Q 225 340 230 380 L 250 380 Q 290 380 280 340 Q 270 300 260 260" fill="white" stroke-linejoin="round" class="fill-area"/>
+                    <!-- Head -->
+                    <path d="M 80 120 Q 70 80 100 60 Q 130 40 160 50 Q 190 30 220 50 Q 260 40 290 70 Q 330 90 320 140 Q 340 180 310 210 Q 330 250 280 260 Q 240 280 200 270 Q 150 280 110 250 Q 70 230 80 180 Q 60 140 80 120" fill="white" class="fill-area"/>
+                    <!-- Eyebrows -->
+                    <path d="M 100 100 Q 120 70 150 100" fill="none"/>
+                    <path d="M 250 110 Q 280 90 310 120" fill="none"/>
+                    <!-- Eyes -->
+                    <circle cx="130" cy="140" r="7" fill="black" stroke="none" class="eye-fill"/>
+                    <circle cx="270" cy="150" r="7" fill="black" stroke="none" class="eye-fill"/>
+                    <!-- Mouth -->
+                    <path d="M 170 180 Q 190 170 210 180 Q 230 190 220 185 Q 200 195 170 180" fill="black" class="mouth-fill"/>
+                    <!-- Blush -->
+                    <g id="blush-lines" stroke="#ff8888" stroke-width="3">
+                        <line x1="280" y1="190" x2="270" y2="210"/>
+                        <line x1="295" y1="195" x2="285" y2="215"/>
+                        <line x1="310" y1="200" x2="300" y2="220"/>
+                    </g>
+                </g>
+            </svg>`;
+
 /**
  * Create styled SVG with the GrBook icon
  */
 function createStyledSvg(): string {
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="512" height="512">
-  <rect width="24" height="24" fill="${COLORS.background}"/>
-  <path fill="none" stroke="${COLORS.foreground}" stroke-width="2" 
-        d="${GRBOOK_PATH}"
-        transform="translate(0.5, 0.5)"/>
-</svg>`;
+  //   return `<?xml version="1.0" encoding="UTF-8"?>
+  // <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="512" height="512">
+  //   <rect width="24" height="24" fill="${COLORS.background}"/>
+  //   <path fill="none" stroke="${COLORS.foreground}" stroke-width="2"
+  //         d="${GRBOOK_PATH}"
+  //         transform="translate(0.5, 0.5)"/>
+  // </svg>`;
+  return logoSvg;
 }
 
 /**
  * Generate favicon SVG
  */
 function createFaviconSvg(): string {
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32">
-  <rect width="24" height="24" fill="${COLORS.background}"/>
-  <path fill="none" stroke="${COLORS.foreground}" stroke-width="2" 
-        d="${GRBOOK_PATH}"
-        transform="translate(0.5, 0.5)"/>
-</svg>`;
+  //   return `<?xml version="1.0" encoding="UTF-8"?>
+  // <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32">
+  //   <rect width="24" height="24" fill="${COLORS.background}"/>
+  //   <path fill="none" stroke="${COLORS.foreground}" stroke-width="2"
+  //         d="${GRBOOK_PATH}"
+  //         transform="translate(0.5, 0.5)"/>
+  // </svg>`;
+  return logoSvg;
 }
 
 /**
@@ -79,7 +112,7 @@ async function generateIcons(): Promise<void> {
   console.log('✅ Created source SVG:', sourcePath);
 
   // Create favicon SVG
-  const faviconSvg = createFaviconSvg();
+  const faviconSvg = logoSvg;
   const faviconSvgPath = join(iconsDir, 'favicon.svg');
   await fs.writeFile(faviconSvgPath, faviconSvg);
   console.log('✅ Created favicon SVG:', faviconSvgPath);

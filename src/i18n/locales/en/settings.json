@@ -41,8 +41,48 @@
       "description": "Files stored in OPFS with their sizes.",
       "loading": "Loading storage details...",
       "empty": "No cached files found.",
-      "items": "{{count}} items",
-      "loadingLabel": "Loading..."
+      "loadingLabel": "Loading...",
+      "actions": {
+        "detail": "View details",
+        "preview": "Preview file",
+        "download": "Download file"
+      }
+    },
+    "tree": {
+      "loadingRoot": "Loading storage…",
+      "loadingChildren": "Loading…",
+      "emptyDirectory": "Empty directory",
+      "loadError": "Failed to load this folder",
+      "retry": "Retry",
+      "expand": "Expand",
+      "collapse": "Collapse"
+    },
+    "usage": {
+      "opfsSize": "OPFS size: {{size}}",
+      "calculate": "Calculate OPFS size",
+      "calculating": "Calculating..."
+    },
+    "modals": {
+      "detail": {
+        "title": "File Details",
+        "path": "Path",
+        "size": "Size",
+        "type": "Type",
+        "extension": "Extension",
+        "lastModified": "Last modified",
+        "notAvailable": "Not available",
+        "close": "Close"
+      },
+      "preview": {
+        "title": "Preview: {{filename}}",
+        "unsupported": "Preview not available for this file type (.{{ext}})",
+        "loading": "Loading file...",
+        "error": "Failed to load file: {{message}}",
+        "tooLarge": "File is too large to preview (>{{size}} MB)",
+        "copy": "Copy content",
+        "copied": "Copied!",
+        "close": "Close"
+      }
     },
     "danger": {
       "title": "Danger zone",

@@ -24,10 +24,78 @@ export type OPFSStorageEntry = {
   kind: 'file' | 'directory';
 };
 
+export type OPFSDirectoryEntry = {
+  name: string;
+  path: string;
+  kind: 'file' | 'directory';
+  size?: number;
+};
+
 export type OPFSStorageStats = {
   totalBytes: number;
   entries: OPFSStorageEntry[];
 };
+
+/**
+ * Get a file from OPFS by its relative path.
+ */
+export async function getFileByPath(path: string): Promise<File> {
+  const normalizedPath = path.trim();
+
+  if (!normalizedPath) {
+    throw new Error('File path is required');
+  }
+
+  const directoryStructure = await getDirectoryStructure();
+  const pathParts = normalizedPath.split('/').filter(Boolean);
+
+  if (pathParts.length === 0) {
+    throw new Error('Invalid file path');
+  }
+
+  let currentDir = directoryStructure.root;
+  for (let index = 0; index < pathParts.length - 1; index += 1) {
+    currentDir = await currentDir.getDirectoryHandle(pathParts[index]);
+  }
+
+  const fileName = pathParts[pathParts.length - 1];
+  const fileHandle = await currentDir.getFileHandle(fileName);
+  return await fileHandle.getFile();
+}
+
+/**
+ * List entries for a specific directory without recursive traversal.
+ */
+export async function listDirectoryEntries(path: string = ''): Promise<OPFSDirectoryEntry[]> {
+  const normalizedPath = path.trim();
+  const directoryStructure = await getDirectoryStructure();
+  const pathParts = normalizedPath ? normalizedPath.split('/').filter(Boolean) : [];
+
+  let currentDir = directoryStructure.root;
+  for (const part of pathParts) {
+    currentDir = await currentDir.getDirectoryHandle(part);
+  }
+
+  const entries: OPFSDirectoryEntry[] = [];
+  for await (const [name, handle] of currentDir.entries()) {
+    const entryPath = normalizedPath ? `${normalizedPath}/${name}` : name;
+
+    if (handle.kind === 'directory') {
+      entries.push({ name, path: entryPath, kind: 'directory' });
+      continue;
+    }
+
+    try {
+      const fileHandle = handle as FileSystemFileHandle;
+      const file = await fileHandle.getFile();
+      entries.push({ name, path: entryPath, kind: 'file', size: file.size });
+    } catch (error) {
+      console.warn(`Failed to read file ${entryPath}`, error);
+    }
+  }
+
+  return entries;
+}
 
 /**
  * Check if OPFS is supported in the current browser
