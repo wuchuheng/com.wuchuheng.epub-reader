@@ -216,11 +216,24 @@ async function ensureConfigExists(): Promise<void> {
   }
 }
 
-const getArrayBufferFromData = (data: ArrayBuffer | Uint8Array): ArrayBuffer =>
-  data instanceof ArrayBuffer ? data : data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
+export const toArrayBuffer = (data: ArrayBuffer | ArrayBufferView): ArrayBuffer => {
+  if (data instanceof ArrayBuffer) {
+    return data;
+  }
 
-export const calculateFileHash = async (data: ArrayBuffer | Uint8Array): Promise<string> => {
-  const hashBuffer = await crypto.subtle.digest('SHA-256', getArrayBufferFromData(data));
+  if (data.buffer instanceof ArrayBuffer) {
+    return data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
+  }
+
+  const view = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+  const copy = new Uint8Array(view.byteLength);
+  copy.set(view);
+
+  return copy.buffer;
+};
+
+export const calculateFileHash = async (data: ArrayBuffer | ArrayBufferView): Promise<string> => {
+  const hashBuffer = await crypto.subtle.digest('SHA-256', toArrayBuffer(data));
 
   return Array.from(new Uint8Array(hashBuffer))
     .map((byte) => byte.toString(16).padStart(2, '0'))

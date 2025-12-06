@@ -158,10 +158,6 @@ export const StoragePage: React.FC = () => {
       setOpfsSizeStatus('error');
     }
   }, [opfsSupported, t]);
-  useEffect(() => {
-    handleCalculateOpfsSize();
-  }, []);
-
   const handleViewDetails = useCallback((entry: OPFSDirectoryEntry) => {
     if (entry.kind !== 'file') return;
     setModalState({ type: 'detail', file: entry });

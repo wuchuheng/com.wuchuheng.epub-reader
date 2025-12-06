@@ -175,9 +175,10 @@ export const downloadPresetBook = createAsyncThunk(
         return { skipped: true, reason: 'duplicate', hash: fileHash };
       }
 
-      const blob = new Blob([fileData], { type: 'application/epub+zip' });
+      const fileBuffer = OPFSManager.toArrayBuffer(fileData);
+      const blob = new Blob([fileBuffer], { type: 'application/epub+zip' });
       const file = new File([blob], fileName, { type: 'application/epub+zip' });
-      const bookMetadata = await OPFSManager.uploadBookWithHash(file, fileHash, fileData.buffer, {
+      const bookMetadata = await OPFSManager.uploadBookWithHash(file, fileHash, fileBuffer, {
         isPreset: true,
         remoteUrl: preset.url,
       });
