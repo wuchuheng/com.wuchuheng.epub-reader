@@ -1,5 +1,5 @@
 type MessageItemContainerProps = {
-  roleName: string;
+  roleName: 'Me' | 'Agent';
   children: React.ReactNode;
   hideRoleLabel?: boolean;
   onContentClick?: (event: React.MouseEvent<HTMLElement>) => void;
@@ -13,15 +13,11 @@ export const MessageItemContainer: React.FC<MessageItemContainerProps> = ({
   onContentClick,
   contentRef,
 }) => (
-  <div className="py-2">
+  <div className={['p-2', roleName === 'Me' ? 'rounded-md bg-slate-100' : ''].join(' ')}>
     {!hideRoleLabel && (
-      <header className="mb-2 text-sm font-semibold text-gray-600">ROLE: {roleName}</header>
+      <header className="mb-2 text-sm font-semibold text-gray-600">{roleName}: </header>
     )}
-    <main
-      ref={contentRef}
-      onClick={onContentClick}
-      className="prose prose-sm w-full max-w-none"
-    >
+    <main ref={contentRef} onClick={onContentClick} className="prose prose-sm w-full max-w-none">
       {children}
     </main>
   </div>

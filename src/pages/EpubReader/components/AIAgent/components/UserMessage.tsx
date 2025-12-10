@@ -34,7 +34,7 @@ export const UserMessageRender: React.FC<MessageRenderProps> = (props) => {
   }, [onHightWords]);
 
   return (
-    <MessageItemContainer roleName="User">
+    <MessageItemContainer roleName="Me">
       <MarkdownRender content={content} />
     </MessageItemContainer>
   );

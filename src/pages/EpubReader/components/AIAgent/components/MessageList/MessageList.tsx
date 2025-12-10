@@ -26,10 +26,7 @@ export const MessageList: React.FC<MessageListProps> = ({
 
   if (viewMode === 'conversation') {
     return (
-      <div
-        className="flex flex-col gap-2 divide-y divide-gray-300 p-4"
-        ref={conversationContainerRef}
-      >
+      <div className="m-2 flex flex-col gap-2" ref={conversationContainerRef}>
         {messageList.map((msg, index) => {
           if (msg.role === 'user') {
             return (
