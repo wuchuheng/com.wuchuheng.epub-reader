@@ -15,7 +15,6 @@ type UseFetchAIMessageProps = {
   api: string;
   model: string;
   reasoningEnabled?: boolean;
-  messageList: MessageItem[];
   onUpdateAIResponse: (res: AIMessageRenderProps) => void;
   abortControllerRef: React.MutableRefObject<AbortController | null>;
   contextId: number; // Cache context ID
@@ -30,7 +29,6 @@ type UseFetchAIMessageProps = {
  */
 export const useFetchAIMessage = ({
   setMessageList,
-  messageList: _messageList,
   onUpdateAIResponse,
   ...props
 }: UseFetchAIMessageProps) => {
@@ -65,30 +63,30 @@ export const useFetchAIMessage = ({
     });
   };
 
-  const fetchAIMessage = async (
-    newMessageList: MessageItem[],
-    options?: { ignoreCache?: boolean }
-  ) => {
-    let queueTicket: QueueTicket | null = null;
+  const fetchAIMessage = React.useCallback(
+    async (newMessageList: MessageItem[], options?: { ignoreCache?: boolean }) => {
+      let queueTicket: QueueTicket | null = null;
 
-    // 1. Check cache for first request (single user message)
-    if (!options?.ignoreCache && newMessageList.length === 1 && newMessageList[0].role === 'user') {
-      logger.log(
-        `[useFetchAIMessage] Checking cache for tool "${props.toolName}" (context ${props.contextId})`
-      );
-
-      const cachedResponse = await checkAIToolCache(props.contextId, props.toolName);
-
-      if (cachedResponse) {
+      if (
+        !options?.ignoreCache &&
+        newMessageList.length === 1 &&
+        newMessageList[0].role === 'user'
+      ) {
         logger.log(
-          `[useFetchAIMessage] ⚡️ Cache HIT! Using cached response for "${props.toolName}"`
+          `[useFetchAIMessage] Checking cache for tool "${props.toolName}" (context ${props.contextId})`
         );
 
-        // 1.1 Restore conversation from cache
-        const restoredMessages: MessageItem[] = cachedResponse.conversations.map((msg) => {
-          if (msg.role === 'user') {
-            return { role: 'user', content: msg.content };
-          } else {
+        const cachedResponse = await checkAIToolCache(props.contextId, props.toolName);
+
+        if (cachedResponse) {
+          logger.log(
+            `[useFetchAIMessage] ⚡️ Cache HIT! Using cached response for "${props.toolName}"`
+          );
+
+          const restoredMessages: MessageItem[] = cachedResponse.conversations.map((msg) => {
+            if (msg.role === 'user') {
+              return { role: 'user', content: msg.content };
+            }
             return {
               role: 'assistant',
               data: {
@@ -102,148 +100,156 @@ export const useFetchAIMessage = ({
                 },
               },
             };
-          }
-        });
-
-        setMessageList(restoredMessages);
-        logger.log(`[useFetchAIMessage] ✅ Cache restored ${restoredMessages.length} messages`);
-        return;
-      }
-
-      logger.log(`[useFetchAIMessage] Cache MISS - fetching from API`);
-    }
-
-    // 2. Send message to AI
-    // 2.1 Push the AI message to message list.
-    const aiMessage: AIMessageRenderProps = {
-      content: '',
-      reasoningContentCompleted: false,
-      model: props.model,
-    };
-
-    setMessageList([...newMessageList, { role: 'assistant', data: aiMessage }]);
-
-    props.abortControllerRef.current?.abort();
-    const abortController = new AbortController();
-    props.abortControllerRef.current = abortController;
-
-    const client = new OpenAI({
-      apiKey: props.apiKey,
-      baseURL: props.api,
-      dangerouslyAllowBrowser: true,
-    });
-
-    // 1. Prepare request messages using the latest list passed in
-    const messages = newMessageList.map((item) => ({
-      role: item.role,
-      content: item.role === 'user' ? item.content : item.data.content,
-    }));
-
-    // Build request config and include reasoning only when enabled
-    let requestConfig: ChatCompletionCreateParamsStreaming = {
-      model: props.model,
-      messages,
-      stream: true,
-      stream_options: {
-        include_usage: true,
-      },
-    };
-
-    requestConfig = addThinkingArgument(
-      requestConfig,
-      props.model,
-      !!props.reasoningEnabled
-    ) as ChatCompletionCreateParamsStreaming;
-
-    const concurrencyLimit = Math.max(
-      props.maxConcurrentRequests ?? DEFAULT_CONFIG.DEFAULT_MAX_CONCURRENT_REQUESTS,
-      1
-    );
-
-    queueTicket = await waitForQueueSlot(props.api, concurrencyLimit);
-
-    try {
-      const completion = await client.chat.completions.create(requestConfig, {
-        signal: abortController.signal,
-      });
-
-      for await (const part of completion) {
-        if (abortController.signal.aborted) {
-          break;
-        }
-
-        if (part?.choices?.[0]?.delta) {
-          const res = part.choices[0].delta as AIResponse;
-
-          aiMessage.content += res.content || '';
-
-          if (props.reasoningEnabled) {
-            const reasoningContent = res.reasoning_content || res.reasoningContent || '';
-            if (reasoningContent) {
-              if (aiMessage.reasoningContent) {
-                aiMessage.reasoningContent += reasoningContent;
-              } else {
-                aiMessage.reasoningContent = reasoningContent;
-              }
-            }
-          }
-
-          onUpdateAIResponse(aiMessage);
-        }
-
-        if (part?.usage) {
-          aiMessage.usage = {
-            promptTokens: part.usage!.prompt_tokens,
-            completionTokens: part.usage!.completion_tokens,
-            totalTokens: part.usage!.total_tokens,
-          };
-
-          onUpdateAIResponse(aiMessage);
-        }
-      }
-    } catch (error) {
-      if (!abortController.signal.aborted) {
-        const message = error instanceof Error ? error.message : 'Request failed';
-        setFailureMessage(message);
-      }
-    } finally {
-      queueTicket?.done();
-      props.abortControllerRef.current = null;
-
-      // 3. Save to cache if successful (only for first request)
-      if (
-        newMessageList.length === 1 &&
-        newMessageList[0].role === 'user' &&
-        aiMessage.usage &&
-        aiMessage.content
-      ) {
-        logger.log(`[useFetchAIMessage] Saving response to cache for tool "${props.toolName}"`);
-
-        const userMessage = newMessageList[0];
-
-        try {
-          await saveAIToolCache(props.contextId, props.toolName, {
-            toolName: props.toolName,
-            conversations: [
-              { role: 'user', content: userMessage.content },
-              { role: 'assistant', content: aiMessage.content },
-            ],
-            tokenUsage: {
-              prompt: aiMessage.usage.promptTokens,
-              completion: aiMessage.usage.completionTokens,
-              total: aiMessage.usage.totalTokens,
-            },
-            updatedAt: new Date().toISOString(),
-            model: props.model,
           });
 
-          logger.log(`[useFetchAIMessage] ✅ Cache saved successfully`);
-        } catch (cacheError) {
-          logger.error(`[useFetchAIMessage] Failed to save cache:`, cacheError);
+          setMessageList(restoredMessages);
+          logger.log(`[useFetchAIMessage] ✅ Cache restored ${restoredMessages.length} messages`);
+          return;
+        }
+
+        logger.log(`[useFetchAIMessage] Cache MISS - fetching from API`);
+      }
+
+      const aiMessage: AIMessageRenderProps = {
+        content: '',
+        reasoningContentCompleted: false,
+        model: props.model,
+      };
+
+      setMessageList([...newMessageList, { role: 'assistant', data: aiMessage }]);
+
+      props.abortControllerRef.current?.abort();
+      const abortController = new AbortController();
+      props.abortControllerRef.current = abortController;
+
+      const client = new OpenAI({
+        apiKey: props.apiKey,
+        baseURL: props.api,
+        dangerouslyAllowBrowser: true,
+      });
+
+      const messages = newMessageList.map((item) => ({
+        role: item.role,
+        content: item.role === 'user' ? item.content : item.data.content,
+      }));
+
+      let requestConfig: ChatCompletionCreateParamsStreaming = {
+        model: props.model,
+        messages,
+        stream: true,
+        stream_options: {
+          include_usage: true,
+        },
+      };
+
+      requestConfig = addThinkingArgument(
+        requestConfig,
+        props.model,
+        !!props.reasoningEnabled
+      ) as ChatCompletionCreateParamsStreaming;
+
+      const concurrencyLimit = Math.max(
+        props.maxConcurrentRequests ?? DEFAULT_CONFIG.DEFAULT_MAX_CONCURRENT_REQUESTS,
+        1
+      );
+
+      queueTicket = await waitForQueueSlot(props.api, concurrencyLimit);
+
+      try {
+        const completion = await client.chat.completions.create(requestConfig, {
+          signal: abortController.signal,
+        });
+
+        for await (const part of completion) {
+          if (abortController.signal.aborted) {
+            break;
+          }
+
+          if (part?.choices?.[0]?.delta) {
+            const res = part.choices[0].delta as AIResponse;
+
+            aiMessage.content += res.content || '';
+
+            if (props.reasoningEnabled) {
+              const reasoningContent = res.reasoning_content || res.reasoningContent || '';
+              if (reasoningContent) {
+                if (aiMessage.reasoningContent) {
+                  aiMessage.reasoningContent += reasoningContent;
+                } else {
+                  aiMessage.reasoningContent = reasoningContent;
+                }
+              }
+            }
+
+            onUpdateAIResponse(aiMessage);
+          }
+
+          if (part?.usage) {
+            aiMessage.usage = {
+              promptTokens: part.usage!.prompt_tokens,
+              completionTokens: part.usage!.completion_tokens,
+              totalTokens: part.usage!.total_tokens,
+            };
+
+            onUpdateAIResponse(aiMessage);
+          }
+        }
+      } catch (error) {
+        if (!abortController.signal.aborted) {
+          const message = error instanceof Error ? error.message : 'Request failed';
+          setFailureMessage(message);
+        }
+      } finally {
+        queueTicket?.done();
+        props.abortControllerRef.current = null;
+
+        if (
+          newMessageList.length === 1 &&
+          newMessageList[0].role === 'user' &&
+          aiMessage.usage &&
+          aiMessage.content
+        ) {
+          logger.log(`[useFetchAIMessage] Saving response to cache for tool "${props.toolName}"`);
+
+          const userMessage = newMessageList[0];
+
+          try {
+            await saveAIToolCache(props.contextId, props.toolName, {
+              toolName: props.toolName,
+              conversations: [
+                { role: 'user', content: userMessage.content },
+                { role: 'assistant', content: aiMessage.content },
+              ],
+              tokenUsage: {
+                prompt: aiMessage.usage.promptTokens,
+                completion: aiMessage.usage.completionTokens,
+                total: aiMessage.usage.totalTokens,
+              },
+              updatedAt: new Date().toISOString(),
+              model: props.model,
+            });
+
+            logger.log(`[useFetchAIMessage] ✅ Cache saved successfully`);
+          } catch (cacheError) {
+            logger.error(`[useFetchAIMessage] Failed to save cache:`, cacheError);
+          }
         }
       }
-    }
-  };
+    },
+    [
+      onUpdateAIResponse,
+      props.abortControllerRef,
+      props.api,
+      props.apiKey,
+      props.contextId,
+      props.maxConcurrentRequests,
+      props.model,
+      props.reasoningEnabled,
+      props.toolName,
+      setFailureMessage,
+      setMessageList,
+    ]
+  );
 
   return fetchAIMessage;
 };

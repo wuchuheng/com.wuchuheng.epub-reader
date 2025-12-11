@@ -37,12 +37,8 @@ export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
     context: props.context,
   });
 
-  const [messageList, setMessageList] = useState<MessageItem[]>([
-    {
-      role: 'user',
-      content,
-    },
-  ]);
+  const [messageList, setMessageList] = useState<MessageItem[]>([]);
+  const initialContentRef = useRef<string | null>(null);
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -63,7 +59,6 @@ export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
     apiKey: props.apiKey,
     api: props.api,
     model: props.model,
-    messageList,
     onUpdateAIResponse,
     reasoningEnabled: props.reasoningEnabled,
     abortControllerRef,
@@ -74,19 +69,25 @@ export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
 
   const onSend = useCallback(
     (msg: string) => {
-      const msgList: MessageItem[] = [...messageList, { role: 'user', content: msg }];
-      fetchAIMessage(msgList);
+      setMessageList((prev) => {
+        const nextMessages: MessageItem[] = [...prev, { role: 'user', content: msg }];
+        fetchAIMessage(nextMessages);
+        return nextMessages;
+      });
     },
-    [messageList, fetchAIMessage]
+    [fetchAIMessage]
   );
 
-  const hasFetchedInitiallyRef = useRef(false);
   useEffect(() => {
-    if (hasFetchedInitiallyRef.current) return;
-    hasFetchedInitiallyRef.current = true;
-    console.log('Initial fetchAIMessage called');
-    fetchAIMessage(messageList);
-  }, [fetchAIMessage, messageList]);
+    if (initialContentRef.current === content) {
+      return;
+    }
+
+    const initialMessage: MessageItem = { role: 'user', content };
+    initialContentRef.current = content;
+    setMessageList([initialMessage]);
+    fetchAIMessage([initialMessage]);
+  }, [content, fetchAIMessage]);
 
   // Handle refresh
   const lastRefreshIdRef = useRef(props.refreshId);
