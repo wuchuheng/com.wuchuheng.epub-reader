@@ -46,6 +46,7 @@ export const DEFAULT_CONFIG = {
   FONT_SIZE: 'medium' as const,
   CONFIG_VERSION: 1,
   DEFAULT_MAX_SELECTED_WORDS: 10000,
+  DEFAULT_MAX_CONCURRENT_REQUESTS: 2,
 } as const;
 
 /**

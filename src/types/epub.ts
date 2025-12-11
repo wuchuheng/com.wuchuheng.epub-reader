@@ -107,6 +107,9 @@ export type ContextMenuSettings = {
   // Maximum number of words allowed in a selection before blocking context menu
   maxSelectedWords?: number;
 
+  // Maximum concurrent AI requests allowed per API base URL
+  maxConcurrentRequests?: number;
+
   // An array of ContextMenuItem objects representing individual menu items.
   items: ContextMenuItem[];
 };

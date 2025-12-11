@@ -163,6 +163,7 @@ const buildDefaultContextMenuSettings = (): ContextMenuSettings => ({
   key: '',
   defaultModel: '',
   pinnedMaximized: false,
+  maxConcurrentRequests: DEFAULT_CONFIG.DEFAULT_MAX_CONCURRENT_REQUESTS,
   items: applyMenuItemDefaults(menuItemDefaultConfig),
   providerId: 'custom',
   providerApiKeyCache: {},
@@ -645,6 +646,10 @@ export async function updateContextMenuSettings(settings: Partial<ContextMenuSet
       settings.providerDefaultModelCache ??
       config.settings.contextMenu.providerDefaultModelCache ??
       defaults.providerDefaultModelCache,
+    maxConcurrentRequests:
+      settings.maxConcurrentRequests ??
+      config.settings.contextMenu.maxConcurrentRequests ??
+      defaults.maxConcurrentRequests,
   };
 
   config.lastSync = Date.now();
@@ -673,6 +678,7 @@ export async function getContextMenuSettings(): Promise<ContextMenuSettings> {
     providerDefaultModelCache:
       contextMenuSettings?.providerDefaultModelCache ?? defaults.providerDefaultModelCache,
     pinnedMaximized: contextMenuSettings?.pinnedMaximized ?? defaults.pinnedMaximized,
+    maxConcurrentRequests: contextMenuSettings?.maxConcurrentRequests ?? defaults.maxConcurrentRequests,
     items,
   };
 }

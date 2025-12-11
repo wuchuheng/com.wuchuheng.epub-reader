@@ -171,6 +171,7 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
             apiKey={contextMenuSettings.key}
             defaultModel={contextMenuSettings.defaultModel}
             isTopMost={index === menuStack.length - 1}
+            maxConcurrentRequests={contextMenuSettings.maxConcurrentRequests}
             onClose={() => removeMenuAndChildren(menu.id)}
             onDrilldownSelect={(info) => pushDrilldownMenu(menu.id, info)}
             pinnedMaximized={contextMenuSettings.pinnedMaximized ?? false}

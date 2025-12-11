@@ -31,6 +31,7 @@ export const useContextMenuSettings = () => {
     key: '',
     defaultModel: '',
     pinnedMaximized: false,
+    maxConcurrentRequests: DEFAULT_CONFIG.DEFAULT_MAX_CONCURRENT_REQUESTS,
     items: [],
     providerId: undefined,
     providerApiKeyCache: {},
@@ -96,6 +97,9 @@ export const useContextMenuSettings = () => {
         const sanitizedItems = (savedSettings?.items || []).map((item) => sanitizeTool(item));
         const pinnedMaximized = savedSettings.pinnedMaximized ?? false;
         const maxSelectedWords = savedSettings.maxSelectedWords ?? DEFAULT_CONFIG.DEFAULT_MAX_SELECTED_WORDS;
+        const savedMaxConcurrentRequests =
+          savedSettings.maxConcurrentRequests ?? DEFAULT_CONFIG.DEFAULT_MAX_CONCURRENT_REQUESTS;
+        const maxConcurrentRequests = Math.max(1, savedMaxConcurrentRequests);
 
         // Ensure we have valid settings object
         const validSettings: ContextMenuSettings = {
@@ -104,6 +108,7 @@ export const useContextMenuSettings = () => {
           defaultModel,
           pinnedMaximized,
           maxSelectedWords,
+          maxConcurrentRequests,
           items: sanitizedItems,
           providerId,
           providerApiKeyCache,
@@ -121,6 +126,7 @@ export const useContextMenuSettings = () => {
           defaultModel: '',
           pinnedMaximized: false,
           maxSelectedWords: DEFAULT_CONFIG.DEFAULT_MAX_SELECTED_WORDS,
+          maxConcurrentRequests: DEFAULT_CONFIG.DEFAULT_MAX_CONCURRENT_REQUESTS,
           items: [],
           providerId: 'custom',
           providerApiKeyCache: {},
@@ -145,6 +151,13 @@ export const useContextMenuSettings = () => {
   const updateMaxSelectedWords = useCallback(
     (limit: number) => {
       setSettings((prev) => ({ ...prev, maxSelectedWords: limit }));
+    },
+    []
+  );
+
+  const updateMaxConcurrentRequests = useCallback(
+    (limit: number) => {
+      setSettings((prev) => ({ ...prev, maxConcurrentRequests: limit }));
     },
     []
   );
@@ -402,6 +415,10 @@ export const useContextMenuSettings = () => {
       setError(null);
       const sanitizedSettings: ContextMenuSettings = {
         ...settings,
+        maxConcurrentRequests: Math.max(
+          settings.maxConcurrentRequests ?? DEFAULT_CONFIG.DEFAULT_MAX_CONCURRENT_REQUESTS,
+          1
+        ),
         items: settings.items.map((item) => sanitizeTool(item)),
       };
       await updateContextMenuSettings(sanitizedSettings);
@@ -440,6 +457,7 @@ export const useContextMenuSettings = () => {
     toggleToolSupport,
     updatePinnedMaximized,
     updateMaxSelectedWords,
+    updateMaxConcurrentRequests,
   };
 };
 

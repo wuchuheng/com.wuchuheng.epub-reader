@@ -16,6 +16,7 @@ export const useUrlSync = ({ menuStack, setMenuStack, restoreFromMetadata }: Use
   const location = useLocation();
   const hasInitializedCacheRef = useRef(false);
   const prevMenuStackRef = useRef<ContextMenuEntry[]>([]);
+  const pendingUrlIdsRef = useRef<number[] | null>(null);
 
   const updateURLWithContextMenuIds = useCallback(
     (ids: number[], createHistoryEntry: boolean = false) => {
@@ -24,6 +25,7 @@ export const useUrlSync = ({ menuStack, setMenuStack, restoreFromMetadata }: Use
       const newParam = ids.length > 0 ? ids.join(',') : null;
 
       if (currentParam === newParam) {
+        pendingUrlIdsRef.current = null;
         return;
       }
 
@@ -32,6 +34,8 @@ export const useUrlSync = ({ menuStack, setMenuStack, restoreFromMetadata }: Use
       } else {
         newParams.set('contextMenu', ids.join(','));
       }
+
+      pendingUrlIdsRef.current = [...ids];
 
       if (createHistoryEntry) {
         navigate(
@@ -154,6 +158,18 @@ export const useUrlSync = ({ menuStack, setMenuStack, restoreFromMetadata }: Use
           .map((id) => parseInt(id.trim(), 10))
           .filter((id) => !isNaN(id))
       : [];
+
+    if (pendingUrlIdsRef.current) {
+      const isPendingMatch =
+        pendingUrlIdsRef.current.length === urlIds.length &&
+        pendingUrlIdsRef.current.every((id, index) => id === urlIds[index]);
+
+      if (!isPendingMatch) {
+        return;
+      }
+
+      pendingUrlIdsRef.current = null;
+    }
 
     const areIdsEqual =
       currentIds.length === urlIds.length && currentIds.every((id, index) => id === urlIds[index]);

@@ -69,6 +69,7 @@ export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
     abortControllerRef,
     contextId: props.contextId,
     toolName: props.toolName,
+    maxConcurrentRequests: props.maxConcurrentRequests,
   });
 
   const onSend = useCallback(
@@ -83,6 +84,7 @@ export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
   useEffect(() => {
     if (hasFetchedInitiallyRef.current) return;
     hasFetchedInitiallyRef.current = true;
+    console.log('Initial fetchAIMessage called');
     fetchAIMessage(messageList);
   }, [fetchAIMessage, messageList]);
 
@@ -91,7 +93,7 @@ export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
   useEffect(() => {
     if (props.refreshId !== undefined && props.refreshId !== lastRefreshIdRef.current) {
       lastRefreshIdRef.current = props.refreshId;
-      
+
       // Only refresh if we have messages
       if (messageList.length === 0) return;
 
@@ -136,7 +138,7 @@ export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
     } else {
       onScrollTargetMount?.(null);
     }
-    
+
     return () => {
       onScrollTargetMount?.(null);
     };

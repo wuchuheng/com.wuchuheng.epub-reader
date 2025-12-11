@@ -3,6 +3,7 @@ import { AISettingItem, ContextMenuSettings, SelectInfo } from '../../../types/e
 import { AIAgent } from './AIAgent/AIAgent';
 import { IframeRender, resolveIframeUrl } from './IframeRender/IframeRender';
 import { ViewMode } from './AIAgent/components/MessageList/MessageList';
+import { DEFAULT_CONFIG } from '@/constants/epub';
 import { BsPin } from 'react-icons/bs';
 import { HiMiniArrowsPointingIn, HiMiniArrowsPointingOut } from 'react-icons/hi2';
 import { FaExternalLinkAlt, FaQuestionCircle } from 'react-icons/fa';
@@ -41,6 +42,7 @@ export interface ContextMenuProps {
   defaultModel?: string;
   zIndex?: number;
   isTopMost: boolean;
+  maxConcurrentRequests?: number;
   onClose: () => void;
   onChangeIndex: (index: number) => void;
   onDrilldownSelect?: (selection: SelectInfo) => void;
@@ -814,6 +816,10 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
                         model={resolveModel(item as AISettingItem)}
                         prompt={(item as AISettingItem).prompt}
                         reasoningEnabled={(item as AISettingItem).reasoningEnabled}
+                        maxConcurrentRequests={
+                          props.maxConcurrentRequests ??
+                          DEFAULT_CONFIG.DEFAULT_MAX_CONCURRENT_REQUESTS
+                        }
                         onDrilldownSelect={props.onDrilldownSelect}
                         viewMode={
                           viewLayout === 'tabbedConversation' && isActive

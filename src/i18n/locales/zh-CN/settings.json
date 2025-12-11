@@ -103,6 +103,8 @@
     "generalDescription": "上下文菜单的通用配置。",
     "maxSelectedWords": "最大选中文字数",
     "maxSelectedWordsHint": "超过该限制的选择将被阻止。",
+    "maxConcurrentRequests": "最大并发 AI 请求数",
+    "maxConcurrentRequestsHint": "限制同时发送的 LLM 请求，多余的会排队等待空闲。",
     "providerTitle": "AI 提供商",
     "providerDescription": "为 AI 工具连接模型提供商。",
     "defaultModelLabel": "默认模型",

@@ -99,61 +99,61 @@ export const ModelSearchInput: React.FC<ModelSearchInputProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const fetchModels = async () => {
+    if (!apiEndpoint || !apiKey || hasFetchedModels) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Try to fetch models from the API
+      const response = await fetch(`${apiEndpoint}/models`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch models: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Extract model IDs from the response (handle different API formats)
+      let models: string[] = [];
+      if (data.data && Array.isArray(data.data)) {
+        // OpenAI format
+        models = data.data.map((model: { id: string }) => model.id);
+      } else if (Array.isArray(data)) {
+        // Direct array format
+        models = data;
+      } else if (data.models && Array.isArray(data.models)) {
+        // Alternative format
+        models = data.models;
+      }
+
+      if (models.length > 0) {
+        setAvailableModels(models);
+        setFilteredModels(models);
+        setHasFetchedModels(true);
+      }
+    } catch (err) {
+      console.warn('Failed to fetch models from API, using defaults:', err);
+      setError(t('contextMenu.modelSearch.usingDefaults'));
+      // Keep using default models if API fails
+      setAvailableModels(defaultModels);
+      setFilteredModels(defaultModels);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // 2.2 Fetch models when API endpoint and key are available
   useEffect(() => {
-    const fetchModels = async () => {
-      if (!apiEndpoint || !apiKey || hasFetchedModels) return;
-
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        // Try to fetch models from the API
-        const response = await fetch(`${apiEndpoint}/models`, {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch models: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        // Extract model IDs from the response (handle different API formats)
-        let models: string[] = [];
-        if (data.data && Array.isArray(data.data)) {
-          // OpenAI format
-          models = data.data.map((model: { id: string }) => model.id);
-        } else if (Array.isArray(data)) {
-          // Direct array format
-          models = data;
-        } else if (data.models && Array.isArray(data.models)) {
-          // Alternative format
-          models = data.models;
-        }
-
-        if (models.length > 0) {
-          setAvailableModels(models);
-          setFilteredModels(models);
-          setHasFetchedModels(true);
-        }
-      } catch (err) {
-        console.warn('Failed to fetch models from API, using defaults:', err);
-        setError(t('contextMenu.modelSearch.usingDefaults'));
-        // Keep using default models if API fails
-        setAvailableModels(defaultModels);
-        setFilteredModels(defaultModels);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchModels();
-  }, [apiEndpoint, apiKey, hasFetchedModels, defaultModels, t]);
+  }, [apiEndpoint, apiKey]);
 
   // 2.3 Filter models based on input value
   useEffect(() => {

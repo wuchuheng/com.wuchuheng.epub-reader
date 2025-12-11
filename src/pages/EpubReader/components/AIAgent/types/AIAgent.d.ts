@@ -12,6 +12,7 @@ export type AIAgentProps = Pick<AISettingItem, 'prompt' | 'reasoningEnabled'> &
     model: string;
     contextId: number; // Cache context ID for OPFS caching
     toolName: string; // Tool name for cache filename
+    maxConcurrentRequests: number;
     onDrilldownSelect?: (selection: SelectInfo) => void;
   };
 

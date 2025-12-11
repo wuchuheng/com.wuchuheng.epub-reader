@@ -5,7 +5,9 @@ import type { AIMessageRenderProps } from '../AIMessageRender';
 import type { AIResponse, MessageItem } from '../../types/AIAgent';
 import { thinkingConfig } from '@/config/thinkingConfig';
 import { checkAIToolCache, saveAIToolCache } from '@/services/ContextMenuCacheService';
+import { waitForQueueSlot, type QueueTicket } from '@/services/aiRequestQueue';
 import { logger } from '@/utils/logger';
+import { DEFAULT_CONFIG } from '@/constants/epub';
 
 type UseFetchAIMessageProps = {
   setMessageList: React.Dispatch<React.SetStateAction<MessageItem[]>>;
@@ -18,6 +20,7 @@ type UseFetchAIMessageProps = {
   abortControllerRef: React.MutableRefObject<AbortController | null>;
   contextId: number; // Cache context ID
   toolName: string; // Tool name for cache filename
+  maxConcurrentRequests: number;
 };
 
 /**
@@ -66,6 +69,8 @@ export const useFetchAIMessage = ({
     newMessageList: MessageItem[],
     options?: { ignoreCache?: boolean }
   ) => {
+    let queueTicket: QueueTicket | null = null;
+
     // 1. Check cache for first request (single user message)
     if (!options?.ignoreCache && newMessageList.length === 1 && newMessageList[0].role === 'user') {
       logger.log(
@@ -150,6 +155,13 @@ export const useFetchAIMessage = ({
       !!props.reasoningEnabled
     ) as ChatCompletionCreateParamsStreaming;
 
+    const concurrencyLimit = Math.max(
+      props.maxConcurrentRequests ?? DEFAULT_CONFIG.DEFAULT_MAX_CONCURRENT_REQUESTS,
+      1
+    );
+
+    queueTicket = await waitForQueueSlot(props.api, concurrencyLimit);
+
     try {
       const completion = await client.chat.completions.create(requestConfig, {
         signal: abortController.signal,
@@ -195,6 +207,7 @@ export const useFetchAIMessage = ({
         setFailureMessage(message);
       }
     } finally {
+      queueTicket?.done();
       props.abortControllerRef.current = null;
 
       // 3. Save to cache if successful (only for first request)
