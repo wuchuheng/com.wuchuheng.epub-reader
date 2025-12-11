@@ -10,13 +10,27 @@ interface UseUrlSyncProps {
   restoreFromMetadata: (ids: number[]) => Promise<ContextMenuEntry[]>;
 }
 
+const parseContextMenuIds = (param: string | null): number[] => {
+  if (!param) {
+    return [];
+  }
+
+  return param
+    .split(',')
+    .map((id) => parseInt(id.trim(), 10))
+    .filter((id) => !isNaN(id) && id > 0);
+};
+
+const idsAreEqual = (first: number[], second: number[]): boolean =>
+  first.length === second.length && first.every((id, index) => id === second[index]);
+
 export const useUrlSync = ({ menuStack, setMenuStack, restoreFromMetadata }: UseUrlSyncProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
   const hasInitializedCacheRef = useRef(false);
   const prevMenuStackRef = useRef<ContextMenuEntry[]>([]);
-  const pendingUrlIdsRef = useRef<number[] | null>(null);
+  const expectedUrlIdsRef = useRef<number[] | null>(null);
 
   const updateURLWithContextMenuIds = useCallback(
     (ids: number[], createHistoryEntry: boolean = false) => {
@@ -25,7 +39,7 @@ export const useUrlSync = ({ menuStack, setMenuStack, restoreFromMetadata }: Use
       const newParam = ids.length > 0 ? ids.join(',') : null;
 
       if (currentParam === newParam) {
-        pendingUrlIdsRef.current = null;
+        expectedUrlIdsRef.current = null;
         return;
       }
 
@@ -35,7 +49,7 @@ export const useUrlSync = ({ menuStack, setMenuStack, restoreFromMetadata }: Use
         newParams.set('contextMenu', ids.join(','));
       }
 
-      pendingUrlIdsRef.current = [...ids];
+      expectedUrlIdsRef.current = [...ids];
 
       if (createHistoryEntry) {
         navigate(
@@ -53,26 +67,17 @@ export const useUrlSync = ({ menuStack, setMenuStack, restoreFromMetadata }: Use
   );
 
   const rehydrateContextMenusFromURL = useCallback(async () => {
-    const contextMenuParam = searchParams.get('contextMenu');
-    logger.log('[EpubReader] rehydrateContextMenusFromURL called', { contextMenuParam });
+    const ids = parseContextMenuIds(searchParams.get('contextMenu'));
+    logger.log('[EpubReader] rehydrateContextMenusFromURL called', {
+      contextMenuParam: searchParams.get('contextMenu'),
+    });
 
-    if (!contextMenuParam) {
+    if (ids.length === 0) {
       logger.log('[EpubReader] No contextMenu parameter in URL, skipping rehydration');
       if (menuStack.length > 0) {
         setMenuStack([]);
         prevMenuStackRef.current = [];
       }
-      return;
-    }
-
-    const ids = contextMenuParam
-      .split(',')
-      .map((id) => parseInt(id.trim(), 10))
-      .filter((id) => !isNaN(id) && id > 0);
-
-    if (ids.length === 0) {
-      logger.log('[EpubReader] No valid context menu IDs in URL');
-      setMenuStack([]);
       return;
     }
 
@@ -113,22 +118,13 @@ export const useUrlSync = ({ menuStack, setMenuStack, restoreFromMetadata }: Use
 
   useEffect(() => {
     const currentIds = menuStack.map((entry) => entry.id);
-    const urlParam = searchParams.get('contextMenu');
-    const urlIds = urlParam
-      ? urlParam
-          .split(',')
-          .map((id) => parseInt(id.trim(), 10))
-          .filter((id) => !isNaN(id))
-      : [];
-
-    const areIdsEqual =
-      currentIds.length === urlIds.length && currentIds.every((id, index) => id === urlIds[index]);
+    const urlIds = parseContextMenuIds(searchParams.get('contextMenu'));
+    const idsMatch = idsAreEqual(currentIds, urlIds);
 
     const prevIds = prevMenuStackRef.current.map((entry) => entry.id);
-    const stackChanged =
-      currentIds.length !== prevIds.length || !currentIds.every((id, i) => id === prevIds[i]);
+    const stackChanged = !idsAreEqual(currentIds, prevIds);
 
-    if (areIdsEqual) {
+    if (idsMatch) {
       if (stackChanged) {
         prevMenuStackRef.current = menuStack;
       }
@@ -150,31 +146,18 @@ export const useUrlSync = ({ menuStack, setMenuStack, restoreFromMetadata }: Use
   }, [menuStack, searchParams, updateURLWithContextMenuIds]);
 
   useEffect(() => {
-    const contextMenuParam = searchParams.get('contextMenu');
     const currentIds = menuStack.map((entry) => entry.id);
-    const urlIds = contextMenuParam
-      ? contextMenuParam
-          .split(',')
-          .map((id) => parseInt(id.trim(), 10))
-          .filter((id) => !isNaN(id))
-      : [];
+    const urlIds = parseContextMenuIds(searchParams.get('contextMenu'));
+    const expectedIds = expectedUrlIdsRef.current;
 
-    if (pendingUrlIdsRef.current) {
-      const isPendingMatch =
-        pendingUrlIdsRef.current.length === urlIds.length &&
-        pendingUrlIdsRef.current.every((id, index) => id === urlIds[index]);
-
-      if (!isPendingMatch) {
-        return;
+    if (expectedIds !== null) {
+      if (idsAreEqual(urlIds, expectedIds)) {
+        expectedUrlIdsRef.current = null;
       }
-
-      pendingUrlIdsRef.current = null;
+      return;
     }
 
-    const areIdsEqual =
-      currentIds.length === urlIds.length && currentIds.every((id, index) => id === urlIds[index]);
-
-    if (!areIdsEqual && hasInitializedCacheRef.current) {
+    if (!idsAreEqual(currentIds, urlIds) && hasInitializedCacheRef.current) {
       logger.log('[EpubReader] URL changed externally (back/forward), rehydrating...');
       rehydrateContextMenusFromURL();
     }
