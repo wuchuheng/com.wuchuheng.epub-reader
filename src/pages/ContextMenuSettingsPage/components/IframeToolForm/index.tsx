@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { QueryParamsTable } from './QueryParamsTable';
+import { buildUrl, parseUrl } from './urlUtils';
+import { QueryParamRow } from './types';
 
 /**
  * Props for iframe tool form component.
@@ -32,6 +35,38 @@ export const IframeToolForm: React.FC<IframeToolFormProps> = ({
   onSupportChange,
 }) => {
   const { t } = useTranslation('settings');
+  const parsedUrl = useMemo(() => parseUrl(url), [url]);
+  const queryRows = useMemo<QueryParamRow[]>(
+    () => [...parsedUrl.params, { name: '', value: '' }],
+    [parsedUrl.params]
+  );
+
+  const handleQueryChange = useCallback(
+    (index: number, field: 'name' | 'value', value: string) => {
+      const current = parseUrl(url);
+      const params = [...current.params];
+      const target = params[index] ?? { name: '', value: '' };
+      const updated = { ...target, [field]: value };
+
+      params[index] = updated;
+
+      const cleanedParams = params
+        .filter((param) => param.name.trim() !== '')
+        .map((param) => ({
+          ...param,
+          name: param.name.trim(),
+        }));
+
+      const nextUrl = buildUrl({
+        base: current.base,
+        hash: current.hash,
+        params: cleanedParams,
+      });
+
+      onUrlChange(nextUrl);
+    },
+    [onUrlChange, url]
+  );
 
   return (
     <>
@@ -48,8 +83,10 @@ export const IframeToolForm: React.FC<IframeToolFormProps> = ({
             words: '{{words}}',
             context: '{{context}}',
           })}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+          className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500
+          focus:outline-none focus:ring-blue-500"
         />
+
         <div className="mt-2 text-sm">
           <div className="mb-1 font-medium text-gray-700">
             {t('contextMenu.iframeForm.tipsTitle')}
@@ -65,6 +102,8 @@ export const IframeToolForm: React.FC<IframeToolFormProps> = ({
             </li>
           </ul>
         </div>
+
+        <QueryParamsTable rows={queryRows} onRowChange={handleQueryChange} />
       </div>
 
       {/* Selection support */}
@@ -94,9 +133,7 @@ export const IframeToolForm: React.FC<IframeToolFormProps> = ({
             <span>{t('contextMenu.iframeForm.multiWord')}</span>
           </label>
         </div>
-        <p className="mt-1 text-xs text-gray-500">
-          {t('contextMenu.iframeForm.selectionHint')}
-        </p>
+        <p className="mt-1 text-xs text-gray-500">{t('contextMenu.iframeForm.selectionHint')}</p>
       </div>
     </>
   );
