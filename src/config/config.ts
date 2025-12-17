@@ -137,9 +137,6 @@ AI Output:
 3. **多维辨析**：从“语气强弱”、“正式/口语”、“褒贬色彩”等维度进行对比。
 
 # Example (Strictly Follow This Format)
-<Example_Input>
-Context: Despite the overwhelming evidence against him, the suspect continued to <selected>maintain</selected> his innocence during the interrogation.
-</Example_Input>
 
 <Example_Output>
 ### 🎯 原词定位
