@@ -1,5 +1,6 @@
 import { ContextMenuItem } from '@/types/epub';
 import { PresetBookConfig } from '@/types/book';
+import { synonymConfig } from './prompts/synonym.config';
 
 export const DEFAULT_PRESET_BOOKS: PresetBookConfig[] = [{ url: '/books/Heidi.epub' }];
 
@@ -114,69 +115,7 @@ AI Output:
 请基于 Context 输出对 '<selected>' 的解释（保持分段）：
     `,
   },
-
-  {
-    type: 'AI',
-    name: '同义词',
-    enabled: true,
-    prompt: `
-
-    # Role
-你是一位精通英语细微语义差别的“词汇辨析专家”。你的任务是基于 **特定语境**，为用户提供 **2-4 个** 最精准的替换词（Synonyms），并进行深度辨析。
-
-# Input Data
-{{context}}
-
-# Workflow
-1. **短语与词形还原 (关键)**：
-   - **短语优先**：如果选中词属于固定搭配（如 take off），必须按短语含义查询，不可拆分。
-   - **词形还原**：输出的同义词标题（Title）必须是 **Lemma（词典原形）**。例如选中 "went"，同义词标题应为 "Go" 而非 "Going/Went"。
-2. **同义词筛选**：
-   - 寻找 **2 到 4 个** 词性相同、语境可替换的高质量同义词。
-   - **宁缺毋滥**：根据语境匹配度决定数量，严禁凑数。
-3. **多维辨析**：从“语气强弱”、“正式/口语”、“褒贬色彩”等维度进行对比。
-
-# Example (Strictly Follow This Format)
-
-<Example_Output>
-### 原词定位
-> 这里的 **maintain** 指：**坚称 / 断言**
-> *语境潜台词：暗示尽管有相反证据，主语依然固执地坚持自己的说法。*
-
----
-
-## 1. Insist
-🇬🇧 /ɪnˈsɪst/ · 🇺🇸 /ɪnˈsɪst/
-* **释义**：坚持；坚决认为
-* **搭配**：\`insist on his innocence\` (坚持自己清白)
-* **细微差别**：**Insist** 比 **maintain** 的语气更强硬，强调不顾反对意见或阻碍，带有一种“固执”或“强求”的色彩。
-* **例句**：He **insisted** on his innocence even after the verdict.
-    (甚至在裁决后，他仍 **坚称** 自己无罪。)
-
-## 2. Assert
-🇬🇧 /əˈsɜːt/ · 🇺🇸 /əˈsɜːrt/
-* **释义**：断言；坚定地陈述
-* **搭配**：\`assert his rights\` (维护他的权利)
-* **细微差别**：**Assert** 是一个更自信、更正式的词。它侧重于表达“自信地确立立场”，通常不含 **maintain** 可能暗示的“在此语境下的无力辩解感”。
-* **例句**：The lawyer **asserted** that the evidence was flawed.
-    (律师 **断言** 证据存在瑕疵。)
-
-**总结：** 想要强调“面对压力的固执”用 **Insist**；想要表达“自信且正式的陈述”用 **Assert**。
-
-</Example_Output>
-
-# Constraints
-1. **音标必须**：每个同义词下必须提供标准英音 (🇬🇧) 和美音 (🇺🇸)。
-2. **搭配翻译**：搭配必须附带(中文翻译)。
-3. **词形还原**：同义词标题必须还原为原形（Lemma）。
-4. **数量灵活**：输出 2-4 个，严禁凑数。
-5. **加粗规则**：在辨析、例句、总结中，提到 **原词** 或 **同义词** 必须加粗。
-
-# Execute
-基于 Input Data 开始分析：
- 
-`,
-  },
+  synonymConfig,
 
   {
     type: 'AI',
@@ -229,3 +168,26 @@ AI Output:
     `,
   },
 ];
+
+// > **[ 语境定位 ]**：这里的 **recovered** 指 **“康复 / 痊愈”**。
+
+// ---
+
+// ## 1. Recover
+// 🇬🇧 `/rɪˈkʌvər/` · 🇺🇸 `/rɪˈkʌvər/`
+// * **差异**：指从疾病、创伤或情绪打击中逐渐恢复健康或正常状态，强调过程。
+// * **例句**：After the surgery, it took him weeks to **recover** fully. (手术后，他花了几周时间才完全康复。)
+
+// ## 2. Heal
+// 🇬🇧 `/hiːl/` · 🇺🇸 `/hiːl/`
+// * **差异**：侧重于伤口或创伤的完全愈合，更常用于身体损伤或心理创伤的修复。
+// * **例句**：The cut took a month to **heal** completely. (那道伤口花了一个月才完全愈合。)
+
+// ## 3. Restore
+// 🇬🇧 `/rɪˈstɔːr/` · 🇺🇸 `/rɪˈstɔːr/`
+// * **差异**：强调恢复到原来的状态或功能，常用于健康、秩序或事物的复原。
+// * **例句**：The treatment helped **restore** his mobility. (这种治疗帮助恢复了他的活动能力。)
+
+// ---
+// **[ 快速选择 ]**
+// 强调“逐渐恢复过程”用 **Recover**；侧重“伤口愈合”用 **Heal**；注重“恢复原有功能”用 **Restore**。
