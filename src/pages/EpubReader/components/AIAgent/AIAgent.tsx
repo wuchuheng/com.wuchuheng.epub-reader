@@ -8,6 +8,8 @@ import { InputBarRender } from './components/MessageList/components/InputBarRend
 import { replaceWords } from './utils';
 import { AIMessageRenderProps } from './components/AIMessageRender';
 import { useFetchAIMessage } from './components/MessageList/useFetchAIMessage';
+import { useCopy } from './hooks/useCopy';
+import { useMemo } from 'react';
 
 /**
  * AI Agent component that provides a chat interface for AI interactions.
@@ -21,6 +23,8 @@ export type AIAgentComponentProps = AIAgentProps & {
   chatPortalTarget?: HTMLElement | null;
   refreshId?: number;
   onScrollTargetMount?: (el: HTMLElement | null) => void;
+  onChatAvailable?: (canChat: boolean) => void;
+  onCopyAvailable?: (canCopy: boolean, onCopy: () => void, isCopied: boolean) => void;
 };
 
 export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
@@ -28,7 +32,7 @@ export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
   const isAutoScrollRef = useRef(true);
   const isGoToBottomRef = useRef<boolean>(true);
   const viewMode = props.viewMode ?? 'simple';
-  const { onViewModeChange, onScrollTargetMount } = props;
+  const { onViewModeChange, onScrollTargetMount, onChatAvailable, onCopyAvailable } = props;
 
   // --- State & Logic moved from MessageList ---
   const content = replaceWords({
@@ -41,6 +45,8 @@ export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
   const initialContentRef = useRef<string | null>(null);
 
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  const { copied, copy } = useCopy();
 
   const onUpdateAIResponse = useCallback((res: AIMessageRenderProps) => {
     setMessageList((prev) => {
@@ -72,6 +78,41 @@ export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
     maxConcurrentRequests: props.maxConcurrentRequests,
   });
 
+  const handleManualRefresh = useCallback(() => {
+    if (messageList.length === 0) return;
+
+    let newMessageList = [...messageList];
+    const lastMessage = newMessageList[newMessageList.length - 1];
+
+    if (lastMessage.role === 'assistant') {
+      newMessageList = newMessageList.slice(0, -1);
+      setMessageList(newMessageList);
+    }
+
+    fetchAIMessage(newMessageList, { ignoreCache: true });
+  }, [messageList, fetchAIMessage]);
+
+  const latestAssistantMessage = useMemo(
+    () => [...messageList].reverse().find((msg) => msg.role === 'assistant'),
+    [messageList]
+  );
+
+  const handleCopy = useCallback(() => {
+    if (latestAssistantMessage?.role === 'assistant' && latestAssistantMessage.data.content) {
+      copy(latestAssistantMessage.data.content);
+    }
+  }, [latestAssistantMessage, copy]);
+
+  useEffect(() => {
+    const hasAssistantMessage = !!latestAssistantMessage;
+    onChatAvailable?.(hasAssistantMessage);
+  }, [latestAssistantMessage, onChatAvailable]);
+
+  useEffect(() => {
+    const hasContent = !!latestAssistantMessage?.data?.content;
+    onCopyAvailable?.(hasContent, handleCopy, copied);
+  }, [latestAssistantMessage, handleCopy, copied, onCopyAvailable]);
+
   const onSend = useCallback(
     (msg: string) => {
       const userMessage: MessageItem = { role: 'user', content: msg };
@@ -98,23 +139,9 @@ export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
   useEffect(() => {
     if (props.refreshId !== undefined && props.refreshId !== lastRefreshIdRef.current) {
       lastRefreshIdRef.current = props.refreshId;
-
-      // Only refresh if we have messages
-      if (messageList.length === 0) return;
-
-      let newMessageList = [...messageList];
-      const lastMessage = newMessageList[newMessageList.length - 1];
-
-      // If last message is from assistant, remove it to regenerate
-      if (lastMessage.role === 'assistant') {
-        newMessageList = newMessageList.slice(0, -1);
-        setMessageList(newMessageList);
-      }
-
-      // Trigger fetch with ignoreCache
-      fetchAIMessage(newMessageList, { ignoreCache: true });
+      handleManualRefresh();
     }
-  }, [props.refreshId, messageList, fetchAIMessage]);
+  }, [props.refreshId, handleManualRefresh]);
 
   useEffect(
     () => () => {
@@ -192,6 +219,7 @@ export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
           messageList={messageList}
           viewMode="simple"
           onChatClick={() => handleViewModeChange('conversation')}
+          onRefresh={handleManualRefresh}
           fallbackModel={props.model}
           onDrilldownSelect={props.onDrilldownSelect}
           {...props}
@@ -225,6 +253,7 @@ export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
           messageList={messageList}
           viewMode="conversation"
           onChatClick={() => {}}
+          onRefresh={handleManualRefresh}
           onDrilldownSelect={props.onDrilldownSelect}
           {...props}
         />

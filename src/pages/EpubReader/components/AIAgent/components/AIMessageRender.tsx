@@ -1,11 +1,11 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { MarkdownRender } from './MarkdownRender';
 import { MessageItemContainer } from './MessageItemContainer';
-import { logger } from '@/utils/logger';
 import { AIStatusBar } from './AIStatusBar';
 import { ThinkProgressing } from './ThinkingProgressing';
 import { SelectInfo } from '@/types/epub';
 import { resolveDrilldownSelection } from '../utils/drilldownSelection';
+import { useCopy } from '../hooks/useCopy';
 
 export type AIMessageRenderProps = {
   content: string;
@@ -20,6 +20,7 @@ export type AIMessageRenderProps = {
   model: string;
   hideRoleLabel?: boolean;
   onChatClick?: () => void;
+  onRefresh?: () => void;
 };
 export type AIMessageRenderComponentProps = AIMessageRenderProps & {
   onDrilldownSelect?: (selection: SelectInfo) => void;
@@ -35,29 +36,15 @@ export const AIMessageRender: React.FC<AIMessageRenderComponentProps> = ({
   onDrilldownSelect,
   contextContainer,
   onChatClick,
+  onRefresh,
 }) => {
   // 1.1 State for copy feedback
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopy();
   const contentRef = useRef<HTMLDivElement>(null);
 
   // 1.2 Copy token usage data to clipboard
   const handleCopyContent = async () => {
-    if (!usage) return;
-
-    try {
-      await navigator.clipboard.writeText(content);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-      logger.info('Token usage copied to clipboard');
-    } catch (error) {
-      logger.error('Failed to copy token usage', { error });
-    }
-  };
-
-  // 1.3 Handle refresh (placeholder - can be connected to parent component)
-  const handleRefresh = () => {
-    logger.info('Refresh token usage requested');
-    // This can be connected to a parent callback if needed
+    copy(content);
   };
 
   const handleContentClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -89,7 +76,7 @@ export const AIMessageRender: React.FC<AIMessageRenderComponentProps> = ({
         {usage && (
           <AIStatusBar
             usage={usage}
-            onRefresh={handleRefresh}
+            onRefresh={onRefresh || (() => {})}
             onCopy={handleCopyContent}
             onChatClick={onChatClick}
             copied={copied}

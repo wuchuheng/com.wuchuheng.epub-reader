@@ -10,6 +10,7 @@ import { FaExternalLinkAlt, FaQuestionCircle } from 'react-icons/fa';
 import { LuRefreshCcw } from 'react-icons/lu';
 import { IoIosArrowUp, IoIosArrowDown } from 'react-icons/io';
 import { MdClose } from 'react-icons/md';
+import { AIActions } from './AIAgent/components/AIActions';
 
 type WindowState = 'normal' | 'maximized';
 
@@ -215,6 +216,12 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
   const [aiRefreshCounters, setAiRefreshCounters] = useState<Record<number, number>>({});
   const [activeScrollTarget, setActiveScrollTarget] = useState<HTMLElement | null>(null);
   const [scrollState, setScrollState] = useState({ isAtTop: true, isAtBottom: false });
+
+  // AI Actions state
+  const [canChatMap, setCanChatMap] = useState<Record<number, boolean>>({});
+  const [canCopyMap, setCanCopyMap] = useState<Record<number, boolean>>({});
+  const [copyHandlers, setCopyHandlers] = useState<Record<number, () => void>>({});
+  const [isCopiedMap, setIsCopiedMap] = useState<Record<number, boolean>>({});
 
   const [showHelp, setShowHelp] = useState(false);
   const { getCachedUrl, setCachedUrl } = useIframeUrlCache(selectionId);
@@ -772,39 +779,51 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
                     <span className="truncate">{item.shortName || item.name}</span>
                     {isIframe || isAI ? (
                       <div className="flex items-center gap-4">
-                        <button
-                          type="button"
-                          aria-label={isAI ? 'Regenerate response' : 'Refresh iframe'}
-                          className={iframeHeaderButtonClass}
-                          onClick={() => {
-                            if (isIframe) {
-                              setIframeRefreshCounters((prev) => ({
-                                ...prev,
-                                [iframeKey]: (prev[iframeKey] ?? 0) + 1,
-                              }));
-                            } else {
+                        {isAI ? (
+                          <AIActions
+                            onChat={
+                              canChatMap[index]
+                                ? () => handleViewModeChange('conversation', index)
+                                : undefined
+                            }
+                            onCopy={canCopyMap[index] ? () => copyHandlers[index]?.() : undefined}
+                            onRefresh={() => {
                               setAiRefreshCounters((prev) => ({
                                 ...prev,
                                 [aiKey]: (prev[aiKey] ?? 0) + 1,
                               }));
-                            }
-                          }}
-                          disabled={isIframe && !iframeUrl}
-                        >
-                          <LuRefreshCcw className="h-4 w-4" aria-hidden />
-                        </button>
-                        {isIframe && (
-                          <button
-                            type="button"
-                            aria-label="Open iframe in new window"
-                            className={iframeHeaderButtonClass}
-                            onClick={() =>
-                              iframeUrl && window.open(iframeUrl, '_blank', 'noreferrer noopener')
-                            }
-                            disabled={!iframeUrl}
-                          >
-                            <FaExternalLinkAlt className="h-3.5 w-3.5" aria-hidden />
-                          </button>
+                            }}
+                            isCopied={isCopiedMap[index]}
+                            buttonClassName={iframeHeaderButtonClass}
+                          />
+                        ) : (
+                          <>
+                            <button
+                              type="button"
+                              aria-label="Refresh iframe"
+                              className={iframeHeaderButtonClass}
+                              onClick={() => {
+                                setIframeRefreshCounters((prev) => ({
+                                  ...prev,
+                                  [iframeKey]: (prev[iframeKey] ?? 0) + 1,
+                                }));
+                              }}
+                              disabled={!iframeUrl}
+                            >
+                              <LuRefreshCcw className="h-4 w-4" aria-hidden />
+                            </button>
+                            <button
+                              type="button"
+                              aria-label="Open iframe in new window"
+                              className={iframeHeaderButtonClass}
+                              onClick={() =>
+                                iframeUrl && window.open(iframeUrl, '_blank', 'noreferrer noopener')
+                              }
+                              disabled={!iframeUrl}
+                            >
+                              <FaExternalLinkAlt className="h-3.5 w-3.5" aria-hidden />
+                            </button>
+                          </>
                         )}
                       </div>
                     ) : null}
@@ -837,6 +856,14 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
                         chatPortalTarget={chatPortalRef.current}
                         refreshId={aiRefreshKey}
                         onScrollTargetMount={setActiveScrollTarget}
+                        onChatAvailable={(available) => {
+                          setCanChatMap((prev) => ({ ...prev, [index]: available }));
+                        }}
+                        onCopyAvailable={(available, onCopy, isCopied) => {
+                          setCanCopyMap((prev) => ({ ...prev, [index]: available }));
+                          setCopyHandlers((prev) => ({ ...prev, [index]: onCopy }));
+                          setIsCopiedMap((prev) => ({ ...prev, [index]: isCopied }));
+                        }}
                       />
                     </div>
                   ) : (

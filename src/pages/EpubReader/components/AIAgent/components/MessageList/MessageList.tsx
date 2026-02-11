@@ -10,6 +10,7 @@ type MessageListProps = {
   onDrilldownSelect?: (selection: SelectInfo) => void;
   viewMode?: ViewMode;
   onChatClick: () => void;
+  onRefresh?: () => void;
   fallbackModel?: string;
 } & AIAgentProps;
 
@@ -20,6 +21,7 @@ export const MessageList: React.FC<MessageListProps> = ({
   onDrilldownSelect,
   viewMode,
   onChatClick,
+  onRefresh,
   fallbackModel,
 }) => {
   const conversationContainerRef = useRef<HTMLDivElement>(null);
@@ -43,6 +45,7 @@ export const MessageList: React.FC<MessageListProps> = ({
               {...msg.data}
               onDrilldownSelect={onDrilldownSelect}
               contextContainer={conversationContainerRef.current}
+              onRefresh={index === messageList.length - 1 ? onRefresh : undefined}
             />
           );
         })}
@@ -56,6 +59,7 @@ export const MessageList: React.FC<MessageListProps> = ({
       fallbackModel={fallbackModel || ''}
       onDrilldownSelect={onDrilldownSelect}
       onChatClick={onChatClick}
+      onRefresh={onRefresh}
     />
   );
 };

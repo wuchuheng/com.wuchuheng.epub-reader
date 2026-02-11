@@ -8,6 +8,7 @@ type LatestAssistantMessageProps = {
   fallbackModel: string;
   onDrilldownSelect?: (selection: SelectInfo) => void;
   onChatClick?: () => void;
+  onRefresh?: () => void;
 };
 
 export const LatestAssistantMessage: React.FC<LatestAssistantMessageProps> = ({
@@ -15,6 +16,7 @@ export const LatestAssistantMessage: React.FC<LatestAssistantMessageProps> = ({
   fallbackModel,
   onDrilldownSelect,
   onChatClick,
+  onRefresh,
 }) => {
   const latestAssistant = [...messageList].reverse().find((msg) => msg.role === 'assistant');
 
@@ -47,6 +49,7 @@ export const LatestAssistantMessage: React.FC<LatestAssistantMessageProps> = ({
         hideRoleLabel
         onDrilldownSelect={onDrilldownSelect}
         onChatClick={onChatClick}
+        onRefresh={onRefresh}
       />
     </div>
   );
