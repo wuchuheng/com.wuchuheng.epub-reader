@@ -32,6 +32,7 @@ export const useContextMenuSettings = () => {
     defaultModel: '',
     pinnedMaximized: false,
     maxConcurrentRequests: DEFAULT_CONFIG.DEFAULT_MAX_CONCURRENT_REQUESTS,
+    displayMode: DEFAULT_CONFIG.DEFAULT_DISPLAY_MODE,
     items: [],
     providerId: undefined,
     providerApiKeyCache: {},
@@ -100,6 +101,7 @@ export const useContextMenuSettings = () => {
         const savedMaxConcurrentRequests =
           savedSettings.maxConcurrentRequests ?? DEFAULT_CONFIG.DEFAULT_MAX_CONCURRENT_REQUESTS;
         const maxConcurrentRequests = Math.max(1, savedMaxConcurrentRequests);
+        const displayMode = savedSettings.displayMode || DEFAULT_CONFIG.DEFAULT_DISPLAY_MODE;
 
         // Ensure we have valid settings object
         const validSettings: ContextMenuSettings = {
@@ -109,6 +111,7 @@ export const useContextMenuSettings = () => {
           pinnedMaximized,
           maxSelectedWords,
           maxConcurrentRequests,
+          displayMode,
           items: sanitizedItems,
           providerId,
           providerApiKeyCache,
@@ -158,6 +161,13 @@ export const useContextMenuSettings = () => {
   const updateMaxConcurrentRequests = useCallback(
     (limit: number) => {
       setSettings((prev) => ({ ...prev, maxConcurrentRequests: limit }));
+    },
+    []
+  );
+
+  const updateDisplayMode = useCallback(
+    (mode: 'stacked' | 'tabbed') => {
+      setSettings((prev) => ({ ...prev, displayMode: mode }));
     },
     []
   );
@@ -458,6 +468,7 @@ export const useContextMenuSettings = () => {
     updatePinnedMaximized,
     updateMaxSelectedWords,
     updateMaxConcurrentRequests,
+    updateDisplayMode,
   };
 };
 

@@ -222,6 +222,62 @@ export const ContextMenuSettingsPage: React.FC = () => {
                     {t('contextMenu.maxConcurrentRequestsHint')}
                   </p>
                 </div>
+
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700">
+                    {t('contextMenu.displayMode')}
+                  </label>
+                  <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => contextMenuSettings.updateDisplayMode('stacked')}
+                      className={[
+                        'flex flex-col rounded-lg border p-3 text-left transition-all',
+                        contextMenuSettings.settings.displayMode === 'stacked'
+                          ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500'
+                          : 'border-gray-200 bg-white hover:border-gray-300',
+                      ].join(' ')}
+                    >
+                      <span
+                        className={[
+                          'text-sm font-semibold',
+                          contextMenuSettings.settings.displayMode === 'stacked'
+                            ? 'text-blue-700'
+                            : 'text-gray-900',
+                        ].join(' ')}
+                      >
+                        {t('contextMenu.displayModeStacked')}
+                      </span>
+                      <span className="mt-1 text-xs text-gray-500">
+                        {t('contextMenu.displayModeStackedHint')}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => contextMenuSettings.updateDisplayMode('tabbed')}
+                      className={[
+                        'flex flex-col rounded-lg border p-3 text-left transition-all',
+                        contextMenuSettings.settings.displayMode === 'tabbed'
+                          ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500'
+                          : 'border-gray-200 bg-white hover:border-gray-300',
+                      ].join(' ')}
+                    >
+                      <span
+                        className={[
+                          'text-sm font-semibold',
+                          contextMenuSettings.settings.displayMode === 'tabbed'
+                            ? 'text-blue-700'
+                            : 'text-gray-900',
+                        ].join(' ')}
+                      >
+                        {t('contextMenu.displayModeTabbed')}
+                      </span>
+                      <span className="mt-1 text-xs text-gray-500">
+                        {t('contextMenu.displayModeTabbedHint')}
+                      </span>
+                    </button>
+                  </div>
+                </div>
               </SectionCard>
 
               {/* Provider & Authentication */}

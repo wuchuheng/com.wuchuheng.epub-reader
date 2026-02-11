@@ -110,6 +110,13 @@ export type ContextMenuSettings = {
   // Maximum concurrent AI requests allowed per API base URL
   maxConcurrentRequests?: number;
 
+  /**
+   * Display mode for the context menu.
+   * - 'stacked': All tools in one scrollable view (current behavior).
+   * - 'tabbed': Show one tool at a time (new behavior).
+   */
+  displayMode?: 'stacked' | 'tabbed';
+
   // An array of ContextMenuItem objects representing individual menu items.
   items: ContextMenuItem[];
 };

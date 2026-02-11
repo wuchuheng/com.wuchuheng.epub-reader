@@ -177,6 +177,7 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
             pinnedMaximized={contextMenuSettings.pinnedMaximized ?? false}
             onPinnedChange={updatePinnedMaximized}
             zIndex={50 + index}
+            displayMode={contextMenuSettings.displayMode}
           />
         );
       })}

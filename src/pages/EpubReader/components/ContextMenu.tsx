@@ -49,6 +49,7 @@ export interface ContextMenuProps {
   pinnedMaximized: boolean;
   onPinnedChange: (isPinned: boolean) => void | Promise<void>;
   isWindowSizeLocked?: boolean;
+  displayMode?: 'stacked' | 'tabbed';
 }
 
 const defaultSizePx = 40 * 16;
@@ -165,6 +166,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
     isWindowSizeLocked,
     pinnedMaximized,
     onPinnedChange,
+    displayMode = 'stacked',
   } = props;
   const windowSizeLocked = isWindowSizeLocked ?? false;
   const [hasInvalidIndex, setHasInvalidIndex] = useState(false);
@@ -354,7 +356,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
 
   // Scroll Spy Logic
   useEffect(() => {
-    if (viewLayout !== 'stackedSimple') return;
+    if (viewLayout !== 'stackedSimple' || displayMode !== 'stacked') return;
     const container = scrollContainerRef.current;
     if (!container) return;
 
@@ -488,7 +490,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
     onChangeIndex(index);
     // Always return to simple view when switching tabs via footer
     setViewLayout('stackedSimple');
-    if (viewLayout === 'stackedSimple') {
+    if (viewLayout === 'stackedSimple' && displayMode === 'stacked') {
       sectionRefs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     // Clean up any frozen heights
@@ -719,8 +721,12 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
             }`}
           >
             {activeItems.map((item, index) => {
-              const paneKey = `${props.selectionId}-${index}`;
               const isActive = index === tabIndex;
+              if (displayMode === 'tabbed' && !isActive) {
+                return null;
+              }
+
+              const paneKey = `${props.selectionId}-${index}`;
               const wrapperClass = 'relative border-b border-gray-200 last:border-b-0';
               const isIframe = item.type === 'iframe';
               const isAI = item.type === 'AI';
