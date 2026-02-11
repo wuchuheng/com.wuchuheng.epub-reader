@@ -46,7 +46,7 @@ Context: The committee needs to <selected>address</selected> these safety concer
 * **句中成分**：谓语动词 (vt.)
 * **搭配公式**：\`address [issue/problem/concern]\`
 
-### ⚡ 语用指南 (Usage Guide)
+### 语用指南 (Usage Guide)
 * **使用场景**：这是一个**正式 (Formal)** 用词，常用于商务会议、政府报告或邮件中。
 * **微妙差异**：
     * **Address vs. Solve**: \`Address\` 侧重于“开始着手处理”的态度和行动，不一定代表问题已经彻底解决；而 \`Solve\` 强调结果。
@@ -168,26 +168,3 @@ AI Output:
     `,
   },
 ];
-
-// > **[ 语境定位 ]**：这里的 **recovered** 指 **“康复 / 痊愈”**。
-
-// ---
-
-// ## 1. Recover
-// 🇬🇧 `/rɪˈkʌvər/` · 🇺🇸 `/rɪˈkʌvər/`
-// * **差异**：指从疾病、创伤或情绪打击中逐渐恢复健康或正常状态，强调过程。
-// * **例句**：After the surgery, it took him weeks to **recover** fully. (手术后，他花了几周时间才完全康复。)
-
-// ## 2. Heal
-// 🇬🇧 `/hiːl/` · 🇺🇸 `/hiːl/`
-// * **差异**：侧重于伤口或创伤的完全愈合，更常用于身体损伤或心理创伤的修复。
-// * **例句**：The cut took a month to **heal** completely. (那道伤口花了一个月才完全愈合。)
-
-// ## 3. Restore
-// 🇬🇧 `/rɪˈstɔːr/` · 🇺🇸 `/rɪˈstɔːr/`
-// * **差异**：强调恢复到原来的状态或功能，常用于健康、秩序或事物的复原。
-// * **例句**：The treatment helped **restore** his mobility. (这种治疗帮助恢复了他的活动能力。)
-
-// ---
-// **[ 快速选择 ]**
-// 强调“逐渐恢复过程”用 **Recover**；侧重“伤口愈合”用 **Heal**；注重“恢复原有功能”用 **Restore**。

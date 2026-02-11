@@ -1,12 +1,14 @@
 {
   "nav": {
     "general": "General",
+    "typography": "Typography",
     "storage": "Storage",
     "contextMenu": "Context Menu",
     "about": "About"
   },
   "navDescriptions": {
     "general": "General application settings",
+    "typography": "Customize the look and feel of your reading experience",
     "storage": "Local cache overview and reset",
     "contextMenu": "Configure AI providers and custom tools",
     "about": "App information and version"
@@ -14,9 +16,21 @@
   "breadcrumbs": {
     "home": "Home",
     "settings": "Settings",
+    "typography": "Typography",
     "contextMenu": "Context Menu",
     "addTool": "Add New Tool",
     "editTool": "Edit Tool"
+  },
+  "typography": {
+    "title": "Typography",
+    "description": "Customize the font and layout for a better reading experience.",
+    "fontFamily": "Font Family",
+    "fontSize": "Font Size",
+    "previewTitle": "Typography Preview",
+    "previewText1": "In this fast-paced era, find the tranquility of reading. Great typography is not just about words on a page; it is about respect for content and care for the reader.",
+    "previewText2": "Rounded fonts, with their warm touch and approachability, can effectively relieve visual pressure from long reading sessions, letting every paragraph shine with a soft light.",
+    "previewQuote": "Typography is the craft of endowing human language with a durable visual form.",
+    "previewAuthor": "Robert Bringhurst"
   },
   "general": {
     "title": "General Settings",

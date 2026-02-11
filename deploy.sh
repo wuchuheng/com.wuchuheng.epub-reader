@@ -12,18 +12,13 @@ log() {
 log "Build project"
 pnpm run build
 
-# 2.2 Upload the products to remove server through sftp.
-localPath=dist/
+# 2.2 Sync the products to remote server through rsync.
 remotePath=/opt/1panel/apps/openresty/openresty/www/sites/book.wuchuheng.com/index
-
-#2.2.1 Upload it to remote service.
-log "Uploading files to ${remoteHostName}..."
-
 remoteHostName='tc'
+log "Syncing files to ${remoteHostName} (Checksum mode)..."
+rsync -azc --delete --inplace -e "ssh -o Cipher=aes128-gcm@openssh.com -o Compression=no" dist/ ${remoteHostName}:${remotePath}
 
-sftp ${remoteHostName} << EOF
-put -r ${localPath}/* ${remotePath}/
-exit
-EOF
+
+
 
 log "Upload completed successfully! 🎉 🎉 🎉"

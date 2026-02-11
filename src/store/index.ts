@@ -1,11 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { useDispatch, useSelector } from 'react-redux';
 import bookshelfReducer from './slices/bookshelfSlice';
+import settingsReducer from './slices/settingsSlice';
 
 // 2. Define the store using the root reducer
 const store = configureStore({
   reducer: {
     bookshelf: bookshelfReducer,
+    settings: settingsReducer,
   },
 });
 

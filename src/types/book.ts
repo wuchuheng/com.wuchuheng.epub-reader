@@ -65,11 +65,23 @@ export interface BookMetadata {
 }
 
 /**
+ * Typography settings
+ */
+export interface TypographySettings {
+  /** Font family ID */
+  fontFamily: string;
+  /** Font size in percentage (e.g., 100) */
+  fontSize: number;
+}
+
+/**
  * Application settings interface
  */
 export interface AppSettings {
   /** Array of context menu settings */
   contextMenu: ContextMenuSettings;
+  /** Typography settings */
+  typography?: TypographySettings;
 }
 
 /**

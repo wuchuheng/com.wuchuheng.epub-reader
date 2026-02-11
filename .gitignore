@@ -41,3 +41,5 @@ Thumbs.db
 
 dev-dist/
 tsconfig.node.tsbuildinfo
+
+*.tar.gz

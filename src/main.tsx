@@ -1,13 +1,12 @@
 import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import store from './store';
-import { RouterProvider } from 'react-router-dom';
-import router from './config/router';
 import { registerSW } from 'virtual:pwa-register';
 import { MessageProvider } from './components/Message';
 import './index.css';
 import './i18n/config';
 import { initializeBookshelf, initializePresetBooks } from './store/slices/bookshelfSlice';
+import App from './App';
 
 // Register service worker
 const updateSW = registerSW({
@@ -32,7 +31,7 @@ const startApp = async () => {
     createRoot(document.getElementById('root')!).render(
       <Provider store={store}>
         <MessageProvider>
-          <RouterProvider router={router} />
+          <App />
         </MessageProvider>
       </Provider>
     );

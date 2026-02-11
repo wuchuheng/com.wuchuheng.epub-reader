@@ -9,6 +9,8 @@ import { RENDERING_CONFIG } from '../../../constants/epub';
 import { createNavigationFunctions } from '../utils/navigationUtils';
 import { isMobileDevice, setupRenditionEvents } from '../services/renditionEvent.service';
 import { useKeyboardNavigation } from './useKeyboardNavigation';
+import { useAppSelector } from '../../../store';
+import { FONT_OPTIONS } from '../../../config/fonts';
 
 // Types
 export type RenditionLocation = {
@@ -74,6 +76,7 @@ const createRenditionConfig = () => ({
  */
 export const useReader = (props: UseReaderProps): UseReaderReturn => {
   const { bookId } = useParams<{ bookId: string }>();
+  const { typography } = useAppSelector((state) => state.settings);
 
   // Refs
   const containerRef = useRef<HTMLDivElement>(null);
@@ -131,6 +134,20 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
     const rendition = props.book.renderTo(containerRef.current, createRenditionConfig());
     renditionRef.current = rendition;
 
+    // Apply initial typography
+    const selectedFont = FONT_OPTIONS.find((f) => f.id === typography.fontFamily) || FONT_OPTIONS[0];
+    
+    // Inject local font stylesheet into book iframe
+    rendition.hooks.content.register((contents: import('epubjs').Contents) => {
+      contents.addStylesheet('/fonts/base.css');
+      if (selectedFont.url) {
+        contents.addStylesheet(selectedFont.url);
+      }
+    });
+
+    rendition.themes.font(selectedFont.family);
+    rendition.themes.fontSize(`${typography.fontSize}%`);
+
     setupRenditionEvents({
       rendition,
       book: props.book,
@@ -155,7 +172,7 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
 
     const nav = createNavigationFunctions(rendition, currentLocationRef);
     setNavigation(nav);
-  }, [bookId, onSelectionCompleted, props.book, props.isMenuOpenRef]);
+  }, [bookId, onSelectionCompleted, props.book, props.isMenuOpenRef, typography.fontFamily, typography.fontSize]);
 
   // Setup keyboard navigation
   useKeyboardNavigation(navigation.goToNext, navigation.goToPrev, {
@@ -168,6 +185,39 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
       renderBook();
     }
   }, [props.book, renderBook]);
+
+  // Update typography dynamically without full re-render if possible
+  useEffect(() => {
+    if (renditionRef.current) {
+      const selectedFont = FONT_OPTIONS.find((f) => f.id === typography.fontFamily) || FONT_OPTIONS[0];
+      
+      const rendition = renditionRef.current;
+      
+      // Load the CSS if it has a URL
+      if (selectedFont.url) {
+        // Use getContents() to safely access all loaded section contents
+        const contents = (rendition as any).getContents();
+        if (Array.isArray(contents)) {
+          contents.forEach((content: any) => {
+            content.addStylesheet(selectedFont.url);
+          });
+        }
+      }
+
+      // Apply font and size
+      rendition.themes.font(selectedFont.family);
+      rendition.themes.fontSize(`${typography.fontSize}%`);
+      
+      // Force a redraw of the current view to apply font changes
+      // Check if manager exists to avoid TypeError
+      if ((rendition as any).manager) {
+        const location = rendition.currentLocation() as unknown as RenditionLocation;
+        if (location && location.start) {
+          rendition.display(location.start.cfi);
+        }
+      }
+    }
+  }, [typography.fontFamily, typography.fontSize]);
 
   return {
     containerRef,

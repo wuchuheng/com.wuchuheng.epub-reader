@@ -3,6 +3,7 @@ import BookshelfPage from '../pages/HomePage';
 import { EpubReader } from '../pages/EpubReader';
 import SettingsLayout from '../pages/SettingsPage/SettingsLayout';
 import GeneralPage from '../pages/SettingsPage';
+import FontSettingsPage from '../pages/SettingsPage/FontSettingsPage';
 import AboutPage from '../pages/SettingsPage/AboutPage';
 import StoragePage from '../pages/SettingsPage/StoragePage';
 import ContextMenuSettingsPage from '../pages/ContextMenuSettingsPage';
@@ -29,6 +30,10 @@ const router = createBrowserRouter([
       {
         path: 'general',
         element: <GeneralPage />,
+      },
+      {
+        path: 'typography',
+        element: <FontSettingsPage />,
       },
       {
         path: 'storage',

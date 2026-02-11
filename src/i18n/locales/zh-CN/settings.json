@@ -1,12 +1,14 @@
 {
   "nav": {
     "general": "通用",
+    "typography": "排版",
     "storage": "存储",
     "contextMenu": "上下文菜单",
     "about": "关于"
   },
   "navDescriptions": {
     "general": "通用应用程序设置",
+    "typography": "自定义阅读界面的字体与排版",
     "storage": "本地缓存概览与重置",
     "contextMenu": "配置 AI 提供商和自定义工具",
     "about": "应用信息和版本"
@@ -14,9 +16,21 @@
   "breadcrumbs": {
     "home": "首页",
     "settings": "设置",
+    "typography": "排版",
     "contextMenu": "上下文菜单",
     "addTool": "添加新工具",
     "editTool": "编辑工具"
+  },
+  "typography": {
+    "title": "排版设置",
+    "description": "自定义字体和布局，获得更佳的阅读体验。",
+    "fontFamily": "字体族",
+    "fontSize": "字体大小",
+    "previewTitle": "排版预览",
+    "previewText1": "在这个快节奏的时代，找回阅读的宁静。优秀的排版不仅仅是文字的堆砌，更是对内容的尊重和对读者的关怀。",
+    "previewText2": "圆体字体（Rounded Fonts）以其温润的触感和亲和力，能有效缓解长时间阅读带来的视觉压力，让每一段文字都散发出柔和的光芒。",
+    "previewQuote": "排版是将人类语言赋予持久视觉形式的技艺。",
+    "previewAuthor": "罗伯特·布林赫斯特"
   },
   "general": {
     "title": "通用设置",

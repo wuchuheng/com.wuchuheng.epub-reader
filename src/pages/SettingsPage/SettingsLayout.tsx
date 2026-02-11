@@ -15,6 +15,11 @@ export const SettingsLayout: React.FC = () => {
         description: t('navDescriptions.general'),
       },
       {
+        label: t('nav.typography', { defaultValue: 'Typography' }),
+        path: '/settings/typography',
+        description: t('navDescriptions.typography'),
+      },
+      {
         label: t('nav.storage'),
         path: '/settings/storage',
         description: t('navDescriptions.storage'),

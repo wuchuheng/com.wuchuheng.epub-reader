@@ -8,6 +8,7 @@ import { SectionCard } from './components/SectionCard';
 import { useContextMenuSettings } from './hooks/useContextMenuSettings';
 import { PlusSmall } from '../../components/icons';
 import { DEFAULT_CONFIG } from '../../constants/epub';
+import { CommonSettingLayout } from '../../components/CommonSettingLayout';
 
 /**
  * Context Menu Settings page component.
@@ -136,263 +137,202 @@ export const ContextMenuSettingsPage: React.FC = () => {
     'hover:border-blue-300 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-60',
   ].join(' ');
 
-  const saveButtonClass = [
-    'rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700',
-    'disabled:cursor-not-allowed disabled:opacity-60',
-  ].join(' ');
+  const sidebar = (
+    <div className="space-y-6">
+      {/* General Settings */}
+      <SectionCard
+        title={t('contextMenu.generalTitle')}
+        description={t('contextMenu.generalDescription')}
+        tint="gray"
+      >
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            {t('contextMenu.maxSelectedWords')}
+          </label>
+          <div className="mt-1">
+            <input
+              type="number"
+              min="1"
+              className="block w-full rounded-md border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
+              value={
+                contextMenuSettings.settings.maxSelectedWords ??
+                DEFAULT_CONFIG.DEFAULT_MAX_SELECTED_WORDS
+              }
+              onChange={(e) => {
+                const val = parseInt(e.target.value, 10);
+                if (!isNaN(val) && val > 0) {
+                  contextMenuSettings.updateMaxSelectedWords(val);
+                }
+              }}
+            />
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-gray-700">
+            {t('contextMenu.maxConcurrentRequests')}
+          </label>
+          <div className="mt-1">
+            <input
+              type="number"
+              min="1"
+              className="block w-full rounded-md border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
+              value={
+                contextMenuSettings.settings.maxConcurrentRequests ??
+                DEFAULT_CONFIG.DEFAULT_MAX_CONCURRENT_REQUESTS
+              }
+              onChange={(e) => {
+                const val = parseInt(e.target.value, 10);
+                if (!isNaN(val) && val >= 1) {
+                  contextMenuSettings.updateMaxConcurrentRequests(val);
+                }
+              }}
+            />
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-gray-700">
+            {t('contextMenu.displayMode')}
+          </label>
+          <div className="mt-2 flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={() => contextMenuSettings.updateDisplayMode('stacked')}
+              className={[
+                'flex flex-col rounded-lg border p-3 text-left transition-all',
+                contextMenuSettings.settings.displayMode === 'stacked'
+                  ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500'
+                  : 'border-gray-200 bg-white hover:border-gray-300',
+              ].join(' ')}
+            >
+              <span
+                className={[
+                  'text-sm font-semibold',
+                  contextMenuSettings.settings.displayMode === 'stacked'
+                    ? 'text-blue-700'
+                    : 'text-gray-900',
+                ].join(' ')}
+              >
+                {t('contextMenu.displayModeStacked')}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => contextMenuSettings.updateDisplayMode('tabbed')}
+              className={[
+                'flex flex-col rounded-lg border p-3 text-left transition-all',
+                contextMenuSettings.settings.displayMode === 'tabbed'
+                  ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500'
+                  : 'border-gray-200 bg-white hover:border-gray-300',
+              ].join(' ')}
+            >
+              <span
+                className={[
+                  'text-sm font-semibold',
+                  contextMenuSettings.settings.displayMode === 'tabbed'
+                    ? 'text-blue-700'
+                    : 'text-gray-900',
+                ].join(' ')}
+              >
+                {t('contextMenu.displayModeTabbed')}
+              </span>
+            </button>
+          </div>
+        </div>
+      </SectionCard>
+
+      {/* Provider & Authentication */}
+      <SectionCard
+        title={t('contextMenu.providerTitle')}
+        description={t('contextMenu.providerDescription')}
+        statusSlot={renderStatusChip()}
+        tint="sky"
+      >
+        <ApiConfig
+          providerId={contextMenuSettings.settings.providerId}
+          apiEndpoint={contextMenuSettings.settings.api || ''}
+          apiKey={contextMenuSettings.settings.key || ''}
+          onProviderChange={contextMenuSettings.updateProvider}
+          onApiEndpointChange={contextMenuSettings.updateApiEndpoint}
+          onApiKeyChange={contextMenuSettings.updateApiKey}
+          onStatusChange={setApiStatus}
+          testNonce={testNonce}
+        />
+
+        <div className="space-y-1">
+          <label className="block text-sm font-medium text-gray-700">
+            {t('contextMenu.defaultModelLabel')}
+          </label>
+          <ModelSearchInput
+            value={contextMenuSettings.settings.defaultModel || ''}
+            onChange={contextMenuSettings.updateDefaultModel}
+            apiEndpoint={contextMenuSettings.settings.api || ''}
+            apiKey={contextMenuSettings.settings.key || ''}
+            placeholder={t('contextMenu.modelPlaceholder')}
+          />
+        </div>
+
+        <button
+          type="button"
+          onClick={handleTestConnection}
+          disabled={contextMenuSettings.isSaving}
+          className={`w-full ${testConnectionButtonClass}`}
+        >
+          {apiStatus?.isTesting
+            ? t('contextMenu.actions.testConnectionRunning')
+            : t('contextMenu.actions.testConnection')}
+        </button>
+
+        {renderStatusBanner()}
+      </SectionCard>
+    </div>
+  );
 
   // 3. Render
   return (
-    <div className="space-y-6 text-black">
-      {/* Loading State */}
-      {contextMenuSettings.isLoading && (
-        <div className="flex items-center justify-center py-8">
-          <div className="text-gray-500">{t('contextMenu.loading')}</div>
-        </div>
-      )}
-
-      {/* Error State */}
-      {contextMenuSettings.error && (
-        <div className="rounded-md bg-red-50 p-4">
-          <div className="text-red-700">{contextMenuSettings.error}</div>
-        </div>
-      )}
-
-      {/* Main Content */}
-      {!contextMenuSettings.isLoading && (
-        <>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">{t('contextMenu.title')}</h3>
-            <p className="mt-1 text-sm text-gray-500">{t('contextMenu.description')}</p>
-          </div>
-
-          <div className="grid gap-6 lg:grid-cols-[minmax(320px,1fr)_minmax(0,2fr)]">
-            <div className="space-y-6">
-              {/* General Settings */}
-              <SectionCard
-                title={t('contextMenu.generalTitle')}
-                description={t('contextMenu.generalDescription')}
-                tint="gray"
-              >
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    {t('contextMenu.maxSelectedWords')}
-                  </label>
-                  <div className="mt-1">
-                    <input
-                      type="number"
-                      min="1"
-                      className="block w-full rounded-md border-gray-300 py-2 px-3 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
-                      value={contextMenuSettings.settings.maxSelectedWords ?? DEFAULT_CONFIG.DEFAULT_MAX_SELECTED_WORDS}
-                      onChange={(e) => {
-                        const val = parseInt(e.target.value, 10);
-                        if (!isNaN(val) && val > 0) {
-                          contextMenuSettings.updateMaxSelectedWords(val);
-                        }
-                      }}
-                    />
-                  </div>
-                  <p className="mt-1 text-xs text-gray-500">
-                    {t('contextMenu.maxSelectedWordsHint')}
-                  </p>
-                </div>
-
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700">
-                    {t('contextMenu.maxConcurrentRequests')}
-                  </label>
-                  <div className="mt-1">
-                    <input
-                      type="number"
-                      min="1"
-                      className="block w-full rounded-md border-gray-300 py-2 px-3 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
-                      value={
-                        contextMenuSettings.settings.maxConcurrentRequests ??
-                        DEFAULT_CONFIG.DEFAULT_MAX_CONCURRENT_REQUESTS
-                      }
-                      onChange={(e) => {
-                        const val = parseInt(e.target.value, 10);
-                        if (!isNaN(val) && val >= 1) {
-                          contextMenuSettings.updateMaxConcurrentRequests(val);
-                        }
-                      }}
-                    />
-                  </div>
-                  <p className="mt-1 text-xs text-gray-500">
-                    {t('contextMenu.maxConcurrentRequestsHint')}
-                  </p>
-                </div>
-
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700">
-                    {t('contextMenu.displayMode')}
-                  </label>
-                  <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <button
-                      type="button"
-                      onClick={() => contextMenuSettings.updateDisplayMode('stacked')}
-                      className={[
-                        'flex flex-col rounded-lg border p-3 text-left transition-all',
-                        contextMenuSettings.settings.displayMode === 'stacked'
-                          ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500'
-                          : 'border-gray-200 bg-white hover:border-gray-300',
-                      ].join(' ')}
-                    >
-                      <span
-                        className={[
-                          'text-sm font-semibold',
-                          contextMenuSettings.settings.displayMode === 'stacked'
-                            ? 'text-blue-700'
-                            : 'text-gray-900',
-                        ].join(' ')}
-                      >
-                        {t('contextMenu.displayModeStacked')}
-                      </span>
-                      <span className="mt-1 text-xs text-gray-500">
-                        {t('contextMenu.displayModeStackedHint')}
-                      </span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => contextMenuSettings.updateDisplayMode('tabbed')}
-                      className={[
-                        'flex flex-col rounded-lg border p-3 text-left transition-all',
-                        contextMenuSettings.settings.displayMode === 'tabbed'
-                          ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500'
-                          : 'border-gray-200 bg-white hover:border-gray-300',
-                      ].join(' ')}
-                    >
-                      <span
-                        className={[
-                          'text-sm font-semibold',
-                          contextMenuSettings.settings.displayMode === 'tabbed'
-                            ? 'text-blue-700'
-                            : 'text-gray-900',
-                        ].join(' ')}
-                      >
-                        {t('contextMenu.displayModeTabbed')}
-                      </span>
-                      <span className="mt-1 text-xs text-gray-500">
-                        {t('contextMenu.displayModeTabbedHint')}
-                      </span>
-                    </button>
-                  </div>
-                </div>
-              </SectionCard>
-
-              {/* Provider & Authentication */}
-              <SectionCard
-                title={t('contextMenu.providerTitle')}
-                description={t('contextMenu.providerDescription')}
-                statusSlot={renderStatusChip()}
-                tint="sky"
-              >
-                <ApiConfig
-                  providerId={contextMenuSettings.settings.providerId}
-                  apiEndpoint={contextMenuSettings.settings.api || ''}
-                  apiKey={contextMenuSettings.settings.key || ''}
-                  onProviderChange={contextMenuSettings.updateProvider}
-                  onApiEndpointChange={contextMenuSettings.updateApiEndpoint}
-                  onApiKeyChange={contextMenuSettings.updateApiKey}
-                  onStatusChange={setApiStatus}
-                  testNonce={testNonce}
-                />
-
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-sm font-medium text-gray-700">
-                      {t('contextMenu.defaultModelLabel')}
-                    </label>
-                    <span className="text-xs text-gray-500">
-                      {t('contextMenu.defaultModelHint')}
-                    </span>
-                  </div>
-                  <ModelSearchInput
-                    value={contextMenuSettings.settings.defaultModel || ''}
-                    onChange={contextMenuSettings.updateDefaultModel}
-                    apiEndpoint={contextMenuSettings.settings.api || ''}
-                    apiKey={contextMenuSettings.settings.key || ''}
-                    placeholder={t('contextMenu.modelPlaceholder')}
-                  />
-                </div>
-
-                {renderStatusBanner()}
-              </SectionCard>
+    <CommonSettingLayout
+      title={t('contextMenu.title')}
+      description={t('contextMenu.description')}
+      sidebar={sidebar}
+      onSave={handleSaveSettings}
+      isSaving={contextMenuSettings.isSaving}
+      saveStatus={saveStatus}
+      error={contextMenuSettings.error}
+    >
+      <div className="h-full overflow-y-auto p-6">
+        {/* Custom Tools */}
+        <SectionCard
+          title={t('contextMenu.customToolsTitle')}
+          description={t('contextMenu.customToolsDescription')}
+          className="h-full"
+          statusSlot={
+            <div className="hidden text-xs text-gray-500 sm:block">
+              {t('contextMenu.reorderHint')}
             </div>
-
-            {/* Custom Tools */}
-            <SectionCard
-              title={t('contextMenu.customToolsTitle')}
-              description={t('contextMenu.customToolsDescription')}
-              className="h-full"
-              statusSlot={
-                <div className="hidden text-xs text-gray-500 sm:block">
-                  {t('contextMenu.reorderHint')}
-                </div>
-              }
+          }
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-gray-600">{t('contextMenu.customToolsSupport')}</p>
+            <Link
+              to="/settings/contextmenu/add-tool"
+              aria-label={t('contextMenu.addToolAria')}
+              className={addToolButtonClass}
             >
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-sm text-gray-600">{t('contextMenu.customToolsSupport')}</p>
-                <Link
-                  to="/settings/contextmenu/add-tool"
-                  aria-label={t('contextMenu.addToolAria')}
-                  className={addToolButtonClass}
-                >
-                  <PlusSmall />
-                </Link>
-              </div>
-
-              <ToolList
-                tools={contextMenuSettings.settings.items || []}
-                onToolRemove={contextMenuSettings.removeTool}
-                onToolReorder={contextMenuSettings.reorderTools}
-                onToggleEnabled={contextMenuSettings.toggleToolEnabled}
-                onToggleSupport={contextMenuSettings.toggleToolSupport}
-              />
-            </SectionCard>
+              <PlusSmall />
+            </Link>
           </div>
 
-          {/* Sticky Actions */}
-          <div className="sticky bottom-0 z-20 mt-6 border-t border-gray-200 bg-white/95 px-4 py-4 backdrop-blur">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleTestConnection}
-                  disabled={contextMenuSettings.isSaving}
-                  className={testConnectionButtonClass}
-                >
-                  {apiStatus?.isTesting
-                    ? t('contextMenu.actions.testConnectionRunning')
-                    : t('contextMenu.actions.testConnection')}
-                </button>
-                <button
-                  onClick={handleSaveSettings}
-                  disabled={contextMenuSettings.isSaving}
-                  className={saveButtonClass}
-                >
-                  {contextMenuSettings.isSaving
-                    ? t('contextMenu.actions.saving')
-                    : t('contextMenu.actions.save')}
-                </button>
-              </div>
-
-              <div className="text-sm">
-                {saveStatus === 'success' && (
-                  <span className="text-green-600">{t('contextMenu.messages.settingsSaved')}</span>
-                )}
-                {saveStatus === 'error' && (
-                  <span className="text-red-600">{t('contextMenu.messages.settingsSaveError')}</span>
-                )}
-                {contextMenuSettings.isSaving && (
-                  <span className="text-gray-600">{t('contextMenu.messages.saving')}</span>
-                )}
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-    </div>
+          <ToolList
+            tools={contextMenuSettings.settings.items || []}
+            onToolRemove={contextMenuSettings.removeTool}
+            onToolReorder={contextMenuSettings.reorderTools}
+            onToggleEnabled={contextMenuSettings.toggleToolEnabled}
+            onToggleSupport={contextMenuSettings.toggleToolSupport}
+          />
+        </SectionCard>
+      </div>
+    </CommonSettingLayout>
   );
 };
 

@@ -3,6 +3,7 @@ import {
   BookMetadata,
   OPFSDirectoryStructure,
   PresetBookConfig,
+  TypographySettings,
 } from '../types/book';
 import { ContextMenuItem, ContextMenuSettings } from '../types/epub';
 import * as EPUBMetadataService from './EPUBMetadataService';
@@ -170,11 +171,17 @@ const buildDefaultContextMenuSettings = (): ContextMenuSettings => ({
   providerDefaultModelCache: {},
 });
 
+const buildDefaultTypographySettings = (): TypographySettings => ({
+  fontFamily: 'system',
+  fontSize: 100,
+});
+
 const buildDefaultConfig = (books: BookMetadata[] = []): OPFSConfig => ({
   version: DEFAULT_CONFIG.CONFIG_VERSION,
   books,
   settings: {
     contextMenu: buildDefaultContextMenuSettings(),
+    typography: buildDefaultTypographySettings(),
   },
   hashMapFilePath: {},
   presetBooks: DEFAULT_PRESET_BOOKS.map((preset) => ({ ...preset })),
@@ -193,10 +200,17 @@ const applyConfigDefaults = (config: Partial<OPFSConfig>): OPFSConfig => {
       }
     : defaults.settings.contextMenu;
 
+  const typographySettings = config.settings?.typography
+    ? {
+        ...defaults.settings.typography,
+        ...config.settings.typography,
+      }
+    : defaults.settings.typography!;
+
   return {
     version: DEFAULT_CONFIG.CONFIG_VERSION,
     books: config.books ?? [],
-    settings: { contextMenu: contextMenuSettings },
+    settings: { contextMenu: contextMenuSettings, typography: typographySettings },
     lastSync: config.lastSync ?? Date.now(),
     hashMapFilePath: config.hashMapFilePath ?? {},
     presetBooks: (config.presetBooks ?? DEFAULT_PRESET_BOOKS).map((preset) => ({ ...preset })),
@@ -681,6 +695,38 @@ export async function getContextMenuSettings(): Promise<ContextMenuSettings> {
     maxConcurrentRequests: contextMenuSettings?.maxConcurrentRequests ?? defaults.maxConcurrentRequests,
     items,
   };
+}
+
+/**
+ * Get typography settings from config.json
+ */
+export async function getTypographySettings(): Promise<TypographySettings> {
+  const config = await loadConfig();
+  const defaults = buildDefaultTypographySettings();
+  return {
+    ...defaults,
+    ...config.settings?.typography,
+  };
+}
+
+/**
+ * Update typography settings in config.json
+ */
+export async function updateTypographySettings(settings: Partial<TypographySettings>): Promise<void> {
+  const config = await loadConfig();
+  if (!config.settings) {
+    config.settings = {
+      contextMenu: buildDefaultContextMenuSettings(),
+      typography: buildDefaultTypographySettings(),
+    };
+  }
+  config.settings.typography = {
+    ...buildDefaultTypographySettings(),
+    ...config.settings.typography,
+    ...settings,
+  };
+  config.lastSync = Date.now();
+  await saveConfig(config);
 }
 
 /**
