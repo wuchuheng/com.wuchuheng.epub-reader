@@ -27,7 +27,9 @@ export const BookshelfPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { t } = useTranslation('homepage');
-  const { books, isLoading, error } = useAppSelector((state) => state.bookshelf);
+  const { books, isLoading, error, isInitializingPresets } = useAppSelector(
+    (state) => state.bookshelf
+  );
   const { isInstalled, installPWA, canInstall } = usePWAInstall();
   const failedDownloads = books.filter((book) => book.status === 'error');
 
@@ -267,7 +269,7 @@ export const BookshelfPage: React.FC = () => {
         )}
 
         {/* Loading state */}
-        {isLoading && books.length === 0 && (
+        {(isLoading || isInitializingPresets) && books.length === 0 && (
           <div className="py-12 text-center">
             <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
             <p className="text-gray-600">{t('loadingBookshelf')}</p>
@@ -290,7 +292,7 @@ export const BookshelfPage: React.FC = () => {
           </div>
         )}
         {/* Empty state */}
-        {!isLoading && books.length === 0 && (
+        {!isLoading && !isInitializingPresets && books.length === 0 && (
           <div className="py-12 text-center">
             <div className="mb-4 text-6xl">📚</div>
             <h2 className="mb-2 text-xl font-semibold text-gray-900">{t('emptyState.title')}</h2>

@@ -124,11 +124,16 @@ export const loadBooks = createAsyncThunk('bookshelf/loadBooks', async (_, { rej
 
 export const downloadPresetBook = createAsyncThunk(
   'bookshelf/downloadPresetBook',
-  async (preset: PresetBookConfig, { dispatch, rejectWithValue }) => {
-    const tempId = createPresetTempId();
+  async (
+    { preset, existingId }: { preset: PresetBookConfig; existingId?: string },
+    { dispatch, rejectWithValue }
+  ) => {
+    const tempId = existingId || createPresetTempId();
 
     try {
-      dispatch(addPlaceholderBook(buildPresetPlaceholder(preset, tempId)));
+      if (!existingId) {
+        dispatch(addPlaceholderBook(buildPresetPlaceholder(preset, tempId)));
+      }
 
       const response = await fetch(preset.url);
       if (!response.ok) {
@@ -227,7 +232,10 @@ export const initializePresetBooks = createAsyncThunk(
         }
       });
 
-      if (!config.presetBooks || JSON.stringify(config.presetBooks) !== JSON.stringify(syncedPresets)) {
+      if (
+        !config.presetBooks ||
+        JSON.stringify(config.presetBooks) !== JSON.stringify(syncedPresets)
+      ) {
         config.presetBooks = syncedPresets;
         await OPFSManager.saveConfig(config);
       }
@@ -249,8 +257,17 @@ export const initializePresetBooks = createAsyncThunk(
         return { skipped: true, reason: 'download_in_progress' };
       }
 
-      booksToDownload.forEach((preset) => {
-        dispatch(downloadPresetBook(preset));
+      // 1. Batch create placeholders
+      const placeholders = booksToDownload.map((preset) => {
+        const tempId = createPresetTempId();
+        return { preset, tempId, placeholder: buildPresetPlaceholder(preset, tempId) };
+      });
+
+      dispatch(addPlaceholderBooks(placeholders.map((p) => p.placeholder)));
+
+      // 2. Trigger downloads
+      placeholders.forEach(({ preset, tempId }) => {
+        dispatch(downloadPresetBook({ preset, existingId: tempId }));
       });
 
       return { skipped: false, downloadCount: booksToDownload.length };
@@ -269,6 +286,7 @@ const initialState: BookshelfState = {
   error: null,
   uploadProgress: null,
   presetBooksInitialized: false,
+  isInitializingPresets: false,
   downloadingCount: 0,
 };
 
@@ -285,6 +303,15 @@ const bookshelfSlice = createSlice({
       };
       state.books.push(placeholder);
       state.downloadingCount += 1;
+    },
+    addPlaceholderBooks: (state, action: PayloadAction<BookMetadata[]>) => {
+      const placeholders = action.payload.map((book) => ({
+        ...book,
+        status: 'downloading' as const,
+        downloadProgress: book.downloadProgress ?? 0,
+      }));
+      state.books.push(...placeholders);
+      state.downloadingCount += placeholders.length;
     },
     removePlaceholderBook: (state, action: PayloadAction<string>) => {
       state.books = state.books.filter((book) => book.id !== action.payload);
@@ -401,11 +428,16 @@ const bookshelfSlice = createSlice({
       .addCase(downloadPresetBook.rejected, (state, action) => {
         state.error = action.payload as string;
       })
+      .addCase(initializePresetBooks.pending, (state) => {
+        state.isInitializingPresets = true;
+      })
       .addCase(initializePresetBooks.fulfilled, (state) => {
         state.presetBooksInitialized = true;
+        state.isInitializingPresets = false;
       })
       .addCase(initializePresetBooks.rejected, (state, action) => {
         state.presetBooksInitialized = true;
+        state.isInitializingPresets = false;
         state.error = action.payload as string;
       });
   },
@@ -416,6 +448,7 @@ export const {
   setUploadProgress,
   clearError,
   addPlaceholderBook,
+  addPlaceholderBooks,
   removePlaceholderBook,
   replacePlaceholderBook,
   updateDownloadProgress,

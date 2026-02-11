@@ -118,6 +118,8 @@ export interface BookshelfState {
   uploadProgress: UploadProgress | null;
   /** Whether preset books have been initialized this session */
   presetBooksInitialized: boolean;
+  /** Whether preset books are currently being checked/added as placeholders */
+  isInitializingPresets: boolean;
   /** Number of active preset book downloads */
   downloadingCount: number;
 }
