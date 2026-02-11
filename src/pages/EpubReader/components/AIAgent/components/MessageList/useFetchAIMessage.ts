@@ -32,36 +32,39 @@ export const useFetchAIMessage = ({
   onUpdateAIResponse,
   ...props
 }: UseFetchAIMessageProps) => {
-  const setFailureMessage = (message: string) => {
-    setMessageList((prev) => {
-      if (!prev.length || prev[prev.length - 1].role !== 'assistant') {
-        return [
-          ...prev,
-          {
+  const setFailureMessage = React.useCallback(
+    (message: string) => {
+      setMessageList((prev) => {
+        if (!prev.length || prev[prev.length - 1].role !== 'assistant') {
+          return [
+            ...prev,
+            {
+              role: 'assistant',
+              data: {
+                content: message,
+                model: props.model,
+                reasoningContentCompleted: true,
+              },
+            },
+          ];
+        }
+        const clone = [...prev];
+        const latest = clone[clone.length - 1];
+        if (latest.role === 'assistant') {
+          clone[clone.length - 1] = {
             role: 'assistant',
             data: {
+              ...latest.data,
               content: message,
-              model: props.model,
               reasoningContentCompleted: true,
             },
-          },
-        ];
-      }
-      const clone = [...prev];
-      const latest = clone[clone.length - 1];
-      if (latest.role === 'assistant') {
-        clone[clone.length - 1] = {
-          role: 'assistant',
-          data: {
-            ...latest.data,
-            content: message,
-            reasoningContentCompleted: true,
-          },
-        };
-      }
-      return clone;
-    });
-  };
+          };
+        }
+        return clone;
+      });
+    },
+    [props.model, setMessageList]
+  );
 
   const fetchAIMessage = React.useCallback(
     async (newMessageList: MessageItem[], options?: { ignoreCache?: boolean }) => {

@@ -41,7 +41,7 @@ Context: The committee needs to <selected>address</selected> these safety concer
 > **着手处理 / 解决**
 > *To give attention to or deal with a matter or problem*
 
-### 🧩 核心搭配
+### 核心搭配
 * **句中成分**：谓语动词 (vt.)
 * **搭配公式**：\`address [issue/problem/concern]\`
 
@@ -51,17 +51,17 @@ Context: The committee needs to <selected>address</selected> these safety concer
     * **Address vs. Solve**: \`Address\` 侧重于“开始着手处理”的态度和行动，不一定代表问题已经彻底解决；而 \`Solve\` 强调结果。
     * **误区**：在口语中跟朋友聊天解决小麻烦时（如修水管），通常用 *fix* 或 *deal with*，用 *address* 会显得过于严肃。
 
-### 💡 举一反三
+### 举一反三
 * **替换**：**Tackle** (强调努力攻克难题) / **Attend to** (关照/处理事务)
 * **场景**：
     * address the root cause : 解决根本原因
     * address the audience : (注意语境) 向观众发表演讲
 
-### 📚 原句解析
+### 原句解析
 * **En**: The committee needs to **address** these safety concerns immediately.
 * **Cn**: 委员会需要立即 **着手处理** 这些安全隐患。
 
-### 🔍 词源逻辑
+### 词源逻辑
 * **拆解**：\`ad-\` (to) + \`dress\` (direct/arrange)
 * **记忆**：引导某物归位/弄直 → 瞄准目标 → **针对/处理（问题）**。
 </Example_Output>
@@ -139,7 +139,7 @@ AI Output:
 # Example (Strictly Follow This Format)
 
 <Example_Output>
-### 🎯 原词定位
+### 原词定位
 > 这里的 **maintain** 指：**坚称 / 断言**
 > *语境潜台词：暗示尽管有相反证据，主语依然固执地坚持自己的说法。*
 

@@ -44,13 +44,18 @@ export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
 
   const onUpdateAIResponse = useCallback((res: AIMessageRenderProps) => {
     setMessageList((prev) => {
+      if (prev.length === 0) return prev;
       const latest = prev[prev.length - 1];
       if (latest.role !== 'assistant') {
-        throw new Error('Latest message is not AI type');
+        return prev;
       }
-      prev[prev.length - 1] = { ...latest, data: { ...latest.data, ...res } };
+      const updatedMessages = [...prev];
+      updatedMessages[updatedMessages.length - 1] = {
+        ...latest,
+        data: { ...latest.data, ...res },
+      };
 
-      return [...prev];
+      return updatedMessages;
     });
   }, []);
 
@@ -69,13 +74,12 @@ export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
 
   const onSend = useCallback(
     (msg: string) => {
-      setMessageList((prev) => {
-        const nextMessages: MessageItem[] = [...prev, { role: 'user', content: msg }];
-        fetchAIMessage(nextMessages);
-        return nextMessages;
-      });
+      const userMessage: MessageItem = { role: 'user', content: msg };
+      const nextMessages = [...messageList, userMessage];
+      setMessageList(nextMessages);
+      fetchAIMessage(nextMessages);
     },
-    [fetchAIMessage]
+    [fetchAIMessage, messageList]
   );
 
   useEffect(() => {
