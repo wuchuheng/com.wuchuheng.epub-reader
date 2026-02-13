@@ -23,6 +23,7 @@ export const MessageList: React.FC<MessageListProps> = ({
   onChatClick,
   onRefresh,
   fallbackModel,
+  displayMode,
 }) => {
   const conversationContainerRef = useRef<HTMLDivElement>(null);
 
@@ -54,12 +55,14 @@ export const MessageList: React.FC<MessageListProps> = ({
   }
 
   return (
-    <LatestAssistantMessage
-      messageList={messageList}
-      fallbackModel={fallbackModel || ''}
-      onDrilldownSelect={onDrilldownSelect}
-      onChatClick={onChatClick}
-      onRefresh={onRefresh}
-    />
+    <div className={displayMode === 'tabbed' ? 'h-full' : 'h-auto'}>
+      <LatestAssistantMessage
+        messageList={messageList}
+        fallbackModel={fallbackModel || ''}
+        onDrilldownSelect={onDrilldownSelect}
+        onChatClick={onChatClick}
+        onRefresh={onRefresh}
+      />
+    </div>
   );
 };

@@ -214,7 +214,7 @@ export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
 
   if (viewMode === 'simple') {
     return (
-      <div className="h-auto">
+      <div className={props.displayMode === 'tabbed' ? 'h-full' : 'h-auto'}>
         <MessageList
           messageList={messageList}
           viewMode="simple"
@@ -222,6 +222,7 @@ export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
           onRefresh={handleManualRefresh}
           fallbackModel={props.model}
           onDrilldownSelect={props.onDrilldownSelect}
+          displayMode={props.displayMode}
           {...props}
         />
       </div>
@@ -235,7 +236,7 @@ export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
       style={{ height: props.containerHeight ? `${props.containerHeight}px` : '100%' }}
     >
       <div
-        className="flex-1 overflow-y-scroll"
+        className="flex-1 overflow-y-auto"
         ref={scrollContainerRef}
         onTouchStart={handleOnPauseAutoScroll}
         onMouseDown={handleOnPauseAutoScroll}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
 
@@ -99,7 +99,7 @@ export const ModelSearchInput: React.FC<ModelSearchInputProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const fetchModels = async () => {
+  const fetchModels = useCallback(async () => {
     if (!apiEndpoint || !apiKey || hasFetchedModels) return;
 
     setIsLoading(true);
@@ -148,12 +148,12 @@ export const ModelSearchInput: React.FC<ModelSearchInputProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [apiEndpoint, apiKey, hasFetchedModels, t, defaultModels]);
 
   // 2.2 Fetch models when API endpoint and key are available
   useEffect(() => {
     fetchModels();
-  }, [apiEndpoint, apiKey]);
+  }, [fetchModels]);
 
   // 2.3 Filter models based on input value
   useEffect(() => {

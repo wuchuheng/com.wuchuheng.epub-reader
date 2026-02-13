@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Book, Rendition } from 'epubjs';
+import { Book, Rendition, Contents } from 'epubjs';
 import { logger } from '../../../utils/logger';
 import { SelectInfo, TocItem } from '../../../types/epub';
 import { useParams } from 'react-router-dom';
@@ -196,10 +196,10 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
       // Load the CSS if it has a URL
       if (selectedFont.url) {
         // Use getContents() to safely access all loaded section contents
-        const contents = (rendition as any).getContents();
+        const contents = (rendition as unknown as { getContents: () => Contents[] }).getContents();
         if (Array.isArray(contents)) {
-          contents.forEach((content: any) => {
-            content.addStylesheet(selectedFont.url);
+          contents.forEach((content: Contents) => {
+            content.addStylesheet(selectedFont.url!);
           });
         }
       }
@@ -210,7 +210,7 @@ export const useReader = (props: UseReaderProps): UseReaderReturn => {
       
       // Force a redraw of the current view to apply font changes
       // Check if manager exists to avoid TypeError
-      if ((rendition as any).manager) {
+      if ((rendition as unknown as { manager: unknown }).manager) {
         const location = rendition.currentLocation() as unknown as RenditionLocation;
         if (location && location.start) {
           rendition.display(location.start.cfi);

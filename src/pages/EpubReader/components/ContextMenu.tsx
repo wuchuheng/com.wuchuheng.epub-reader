@@ -396,7 +396,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
 
     container.addEventListener('scroll', handleScroll);
     return () => container.removeEventListener('scroll', handleScroll);
-  }, [viewLayout, tabIndex, activeItems, onChangeIndex]);
+  }, [viewLayout, tabIndex, activeItems, onChangeIndex, displayMode]);
 
   // Scroll to tab logic (only when layout switches or initial load)
   useEffect(() => {
@@ -723,9 +723,9 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
 
           <div
             ref={scrollContainerRef}
-            className={`h-full w-full overflow-y-auto scroll-smooth ${
-              viewLayout === 'tabbedConversation' ? 'invisible' : ''
-            }`}
+            className={`h-full w-full scroll-smooth ${
+              displayMode === 'tabbed' ? 'overflow-hidden' : 'overflow-y-auto'
+            } ${viewLayout === 'tabbedConversation' ? 'invisible' : ''}`}
           >
             {activeItems.map((item, index) => {
               const isActive = index === tabIndex;
@@ -734,7 +734,9 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
               }
 
               const paneKey = `${props.selectionId}-${index}`;
-              const wrapperClass = 'relative border-b border-gray-200 last:border-b-0';
+              const wrapperClass = `relative border-b border-gray-200 last:border-b-0 ${
+                displayMode === 'tabbed' ? 'h-full' : ''
+              }`;
               const isIframe = item.type === 'iframe';
               const isAI = item.type === 'AI';
               const iframeKey = `${index}`;
@@ -830,7 +832,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
                   </div>
 
                   {item.type === 'AI' ? (
-                    <div>
+                    <div className={displayMode === 'tabbed' ? 'h-full' : ''}>
                       <AIAgent
                         api={props.api}
                         apiKey={props.apiKey}
@@ -846,6 +848,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
                           DEFAULT_CONFIG.DEFAULT_MAX_CONCURRENT_REQUESTS
                         }
                         onDrilldownSelect={props.onDrilldownSelect}
+                        displayMode={displayMode}
                         viewMode={
                           viewLayout === 'tabbedConversation' && isActive
                             ? 'conversation'
