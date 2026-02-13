@@ -119,6 +119,7 @@
     "maxSelectedWordsHint": "超过该限制的选择将被阻止。",
     "maxConcurrentRequests": "最大并发 AI 请求数",
     "maxConcurrentRequestsHint": "限制同时发送的 LLM 请求，多余的会排队等待空闲。",
+    "globalReasoningEnabled": "全局 AI 推理",
     "displayMode": "显示模式",
     "displayModeHint": "工具在菜单中的呈现方式。",
     "displayModeStacked": "自动滚动（堆叠）",

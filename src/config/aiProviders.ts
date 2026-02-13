@@ -14,11 +14,17 @@ export type AiProviderId =
   | 'minimax'
   | 'custom';
 
+export interface ThinkingConfig {
+  enable: Record<string, unknown>;
+  disable: Record<string, unknown>;
+}
+
 export interface AiProviderConfig {
   id: AiProviderId;
   name: string;
   baseUrl?: string;
   docsUrl?: string;
+  thinkingConfig?: ThinkingConfig;
 }
 
 export const AI_PROVIDER_CATALOG: AiProviderConfig[] = [
@@ -81,6 +87,10 @@ export const AI_PROVIDER_CATALOG: AiProviderConfig[] = [
     name: 'Zhipu GLM(智谱)',
     baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
     docsUrl: 'https://open.bigmodel.cn/dev/api',
+    thinkingConfig: {
+      enable: { thinking: { type: 'enabled' } },
+      disable: { thinking: { type: 'disabled' } },
+    },
   },
   {
     id: 'qwen',

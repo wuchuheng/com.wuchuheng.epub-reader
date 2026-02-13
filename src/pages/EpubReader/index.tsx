@@ -170,6 +170,8 @@ const EpubReaderRender: React.FC<EpubReaderRenderProps> = (props) => {
             api={contextMenuSettings.api}
             apiKey={contextMenuSettings.key}
             defaultModel={contextMenuSettings.defaultModel}
+            providerId={contextMenuSettings.providerId}
+            globalReasoningEnabled={contextMenuSettings.globalReasoningEnabled}
             isTopMost={index === menuStack.length - 1}
             maxConcurrentRequests={contextMenuSettings.maxConcurrentRequests}
             onClose={() => removeMenuAndChildren(menu.id)}

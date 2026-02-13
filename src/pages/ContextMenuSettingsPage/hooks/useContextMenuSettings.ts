@@ -32,6 +32,7 @@ export const useContextMenuSettings = () => {
     defaultModel: '',
     pinnedMaximized: false,
     maxConcurrentRequests: DEFAULT_CONFIG.DEFAULT_MAX_CONCURRENT_REQUESTS,
+    globalReasoningEnabled: false,
     displayMode: DEFAULT_CONFIG.DEFAULT_DISPLAY_MODE,
     items: [],
     providerId: undefined,
@@ -101,6 +102,7 @@ export const useContextMenuSettings = () => {
         const savedMaxConcurrentRequests =
           savedSettings.maxConcurrentRequests ?? DEFAULT_CONFIG.DEFAULT_MAX_CONCURRENT_REQUESTS;
         const maxConcurrentRequests = Math.max(1, savedMaxConcurrentRequests);
+        const globalReasoningEnabled = savedSettings.globalReasoningEnabled ?? false;
         const displayMode = savedSettings.displayMode || DEFAULT_CONFIG.DEFAULT_DISPLAY_MODE;
 
         // Ensure we have valid settings object
@@ -111,6 +113,7 @@ export const useContextMenuSettings = () => {
           pinnedMaximized,
           maxSelectedWords,
           maxConcurrentRequests,
+          globalReasoningEnabled,
           displayMode,
           items: sanitizedItems,
           providerId,
@@ -161,6 +164,13 @@ export const useContextMenuSettings = () => {
   const updateMaxConcurrentRequests = useCallback(
     (limit: number) => {
       setSettings((prev) => ({ ...prev, maxConcurrentRequests: limit }));
+    },
+    []
+  );
+
+  const updateGlobalReasoningEnabled = useCallback(
+    (enabled: boolean) => {
+      setSettings((prev) => ({ ...prev, globalReasoningEnabled: enabled }));
     },
     []
   );
@@ -468,6 +478,7 @@ export const useContextMenuSettings = () => {
     updatePinnedMaximized,
     updateMaxSelectedWords,
     updateMaxConcurrentRequests,
+    updateGlobalReasoningEnabled,
     updateDisplayMode,
   };
 };

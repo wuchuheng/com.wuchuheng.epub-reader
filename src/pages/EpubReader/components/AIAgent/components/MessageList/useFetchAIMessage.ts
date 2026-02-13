@@ -4,6 +4,7 @@ import type { ChatCompletionCreateParamsStreaming } from 'openai/resources/chat/
 import type { AIMessageRenderProps } from '../AIMessageRender';
 import type { AIResponse, MessageItem } from '../../types/AIAgent';
 import { thinkingConfig } from '@/config/thinkingConfig';
+import { AI_PROVIDER_CATALOG, type AiProviderId } from '@/config/aiProviders';
 import { checkAIToolCache, saveAIToolCache } from '@/services/ContextMenuCacheService';
 import { waitForQueueSlot, type QueueTicket } from '@/services/aiRequestQueue';
 import { logger } from '@/utils/logger';
@@ -15,6 +16,7 @@ type UseFetchAIMessageProps = {
   api: string;
   model: string;
   reasoningEnabled?: boolean;
+  providerId?: AiProviderId;
   onUpdateAIResponse: (res: AIMessageRenderProps) => void;
   abortControllerRef: React.MutableRefObject<AbortController | null>;
   contextId: number; // Cache context ID
@@ -148,8 +150,9 @@ export const useFetchAIMessage = ({
       requestConfig = addThinkingArgument(
         requestConfig,
         props.model,
+        props.providerId,
         !!props.reasoningEnabled
-      ) as ChatCompletionCreateParamsStreaming;
+      ) as unknown as ChatCompletionCreateParamsStreaming;
 
       const concurrencyLimit = Math.max(
         props.maxConcurrentRequests ?? DEFAULT_CONFIG.DEFAULT_MAX_CONCURRENT_REQUESTS,
@@ -247,6 +250,7 @@ export const useFetchAIMessage = ({
       props.contextId,
       props.maxConcurrentRequests,
       props.model,
+      props.providerId,
       props.reasoningEnabled,
       props.toolName,
       setFailureMessage,
@@ -257,52 +261,75 @@ export const useFetchAIMessage = ({
   return fetchAIMessage;
 };
 
-const addThinkingArgument = (props: unknown, model: string, enable: boolean) => {
-  if (enable) {
-    // @ts-expect-error Intentionally accessing property on unknown type for dynamic configuration
-    props.reasoning_effort = 'low';
+const addThinkingArgument = (
+  props: unknown,
+  model: string,
+  providerId: AiProviderId | undefined,
+  enable: boolean
+) => {
+  const requestConfig = props as Record<string, unknown>;
+
+  // 1. Provider-specific configuration (New Priority)
+  if (providerId) {
+    const provider = AI_PROVIDER_CATALOG.find((p) => p.id === providerId);
+    if (provider?.thinkingConfig) {
+      const config = enable ? provider.thinkingConfig.enable : provider.thinkingConfig.disable;
+      // Deep merge the config into requestConfig
+      Object.keys(config).forEach((key) => {
+        const value = config[key];
+        if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+          requestConfig[key] = {
+            ...(requestConfig[key] as Record<string, unknown>),
+            ...(value as Record<string, unknown>),
+          };
+        } else {
+          requestConfig[key] = value;
+        }
+      });
+      return requestConfig;
+    }
   }
+
+  // 2. Model-specific fallback (Existing Logic)
   const lowerCaseMapKey: Map<string, string> = new Map();
   const modelSet = new Set(
     Object.keys(thinkingConfig).map((item) => {
       const lowerCaseItem = item.toLowerCase();
-
       lowerCaseMapKey.set(lowerCaseItem, item);
-
       return lowerCaseItem;
     })
   );
   const currentModel = model.toLowerCase();
 
   const hasModel = modelSet.has(currentModel);
-  if (!hasModel) {
-    return props;
-  }
+  if (hasModel) {
+    const keyName = lowerCaseMapKey.get(currentModel);
+    const cfg = thinkingConfig[keyName!];
 
-  // 2.2 Find the model.
-  const keyName = lowerCaseMapKey.get(currentModel);
-  const cfg = thinkingConfig[keyName!];
-
-  if (!cfg) {
-    return props;
-  }
-
-  const queryPath = cfg.query;
-  const parts = queryPath.split('.');
-  let cur: Record<string, unknown> = props as Record<string, unknown>;
-  for (let i = 0; i < parts.length; i++) {
-    const key = parts[i];
-    if (i === parts.length - 1) {
-      const value = enable ? cfg.enable : cfg.disable;
-
-      cur[key] = value;
-    } else {
-      if (typeof cur[key] !== 'object' || cur[key] === null) {
-        cur[key] = {};
+    if (cfg) {
+      const queryPath = cfg.query;
+      const parts = queryPath.split('.');
+      let cur: Record<string, unknown> = requestConfig;
+      for (let i = 0; i < parts.length; i++) {
+        const key = parts[i];
+        if (i === parts.length - 1) {
+          const value = enable ? cfg.enable : cfg.disable;
+          cur[key] = value;
+        } else {
+          if (typeof cur[key] !== 'object' || cur[key] === null) {
+            cur[key] = {};
+          }
+          cur = cur[key] as Record<string, unknown>;
+        }
       }
-      cur = cur[key] as Record<string, unknown>;
+      return requestConfig;
     }
   }
 
-  return props;
+  // 3. OpenAI Standard Fallback
+  if (enable) {
+    requestConfig.reasoning_effort = 'low';
+  }
+
+  return requestConfig;
 };

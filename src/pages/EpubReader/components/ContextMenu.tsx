@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { AISettingItem, ContextMenuSettings, SelectInfo } from '../../../types/epub';
+import { AiProviderId } from '@/config/aiProviders';
 import { AIAgent } from './AIAgent/AIAgent';
 import { IframeRender, resolveIframeUrl } from './IframeRender/IframeRender';
 import { ViewMode } from './AIAgent/components/MessageList/MessageList';
@@ -41,6 +42,8 @@ export interface ContextMenuProps {
   api: string;
   apiKey: string;
   defaultModel?: string;
+  providerId?: AiProviderId;
+  globalReasoningEnabled?: boolean;
   zIndex?: number;
   isTopMost: boolean;
   maxConcurrentRequests?: number;
@@ -168,6 +171,8 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
     pinnedMaximized,
     onPinnedChange,
     displayMode = 'stacked',
+    globalReasoningEnabled = false,
+    providerId,
   } = props;
   const windowSizeLocked = isWindowSizeLocked ?? false;
   const [hasInvalidIndex, setHasInvalidIndex] = useState(false);
@@ -842,7 +847,8 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
                         toolName={item.name}
                         model={resolveModel(item as AISettingItem)}
                         prompt={(item as AISettingItem).prompt}
-                        reasoningEnabled={(item as AISettingItem).reasoningEnabled}
+                        reasoningEnabled={(item as AISettingItem).reasoningEnabled || globalReasoningEnabled}
+                        providerId={providerId}
                         maxConcurrentRequests={
                           props.maxConcurrentRequests ??
                           DEFAULT_CONFIG.DEFAULT_MAX_CONCURRENT_REQUESTS

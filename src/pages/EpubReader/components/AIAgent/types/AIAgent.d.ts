@@ -6,7 +6,7 @@ import { AIMessageRenderProps } from '../components/AIMessageRender';
  * Props for the AIAgent component.
  */
 export type AIAgentProps = Pick<AISettingItem, 'prompt' | 'reasoningEnabled'> &
-  Pick<ContextMenuProps, 'words' | 'context' | 'displayMode'> &
+  Pick<ContextMenuProps, 'words' | 'context' | 'displayMode' | 'providerId'> &
   Pick<ContextMenuSettings, 'api'> & {
     apiKey: string; // Renamed from 'key' to avoid React's reserved prop
     model: string;

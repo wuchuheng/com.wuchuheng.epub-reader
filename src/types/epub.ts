@@ -110,6 +110,9 @@ export type ContextMenuSettings = {
   // Maximum concurrent AI requests allowed per API base URL
   maxConcurrentRequests?: number;
 
+  // Global flag for AI thinking/reasoning
+  globalReasoningEnabled?: boolean;
+
   /**
    * Display mode for the context menu.
    * - 'stacked': All tools in one scrollable view (current behavior).

@@ -119,6 +119,7 @@
     "maxSelectedWordsHint": "Selections over this limit will be blocked.",
     "maxConcurrentRequests": "Max concurrent AI requests",
     "maxConcurrentRequestsHint": "Limits simultaneous LLM calls; extra requests wait until a slot is free.",
+    "globalReasoningEnabled": "Global AI Reasoning",
     "displayMode": "Display mode",
     "displayModeHint": "How tools are presented in the menu.",
     "displayModeStacked": "Auto Scroll (Stacked)",

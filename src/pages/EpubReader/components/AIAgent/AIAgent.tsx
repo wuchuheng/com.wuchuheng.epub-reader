@@ -72,6 +72,7 @@ export const AIAgent: React.FC<AIAgentComponentProps> = (props) => {
     model: props.model,
     onUpdateAIResponse,
     reasoningEnabled: props.reasoningEnabled,
+    providerId: props.providerId,
     abortControllerRef,
     contextId: props.contextId,
     toolName: props.toolName,

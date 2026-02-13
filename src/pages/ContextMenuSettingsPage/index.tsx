@@ -191,6 +191,31 @@ export const ContextMenuSettingsPage: React.FC = () => {
           </div>
         </div>
 
+        <div className="mt-4 flex items-center justify-between">
+          <label className="block text-sm font-medium text-gray-700">
+            {t('contextMenu.globalReasoningEnabled')}
+          </label>
+          <button
+            type="button"
+            onClick={() =>
+              contextMenuSettings.updateGlobalReasoningEnabled(
+                !contextMenuSettings.settings.globalReasoningEnabled
+              )
+            }
+            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+              contextMenuSettings.settings.globalReasoningEnabled ? 'bg-blue-600' : 'bg-gray-200'
+            }`}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+                contextMenuSettings.settings.globalReasoningEnabled
+                  ? 'translate-x-4'
+                  : 'translate-x-1'
+              }`}
+            />
+          </button>
+        </div>
+
         <div className="mt-4">
           <label className="block text-sm font-medium text-gray-700">
             {t('contextMenu.displayMode')}
