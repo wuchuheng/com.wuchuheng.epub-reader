@@ -2,6 +2,7 @@ import React from 'react';
 import { AIMessageRender } from '../../AIMessageRender';
 import { MessageItem } from '../../../types/AIAgent';
 import { SelectInfo } from '@/types/epub';
+import Loading from '@/components/Loading';
 
 type LatestAssistantMessageProps = {
   messageList: MessageItem[];
@@ -21,11 +22,7 @@ export const LatestAssistantMessage: React.FC<LatestAssistantMessageProps> = ({
   const latestAssistant = [...messageList].reverse().find((msg) => msg.role === 'assistant');
 
   if (!latestAssistant) {
-    return (
-      <div className="flex h-full items-center justify-center px-4 text-sm text-gray-500">
-        Awaiting AI response...
-      </div>
-    );
+    return <Loading />;
   }
 
   const hasContent =
@@ -34,11 +31,7 @@ export const LatestAssistantMessage: React.FC<LatestAssistantMessageProps> = ({
       latestAssistant.data.reasoningContent.trim().length > 0);
 
   if (!hasContent) {
-    return (
-      <div className="flex h-full items-center justify-center px-4 text-sm text-gray-500">
-        Awaiting AI response...
-      </div>
-    );
+    return <Loading />;
   }
 
   return (
