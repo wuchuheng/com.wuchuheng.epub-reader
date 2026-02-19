@@ -1,11 +1,5 @@
 import { ContextMenuItem } from '@/types/epub';
-import { PresetBookConfig } from '@/types/book';
 import { synonymConfig } from './prompts/synonym.config';
-
-export const DEFAULT_PRESET_BOOKS: PresetBookConfig[] = [
-  { url: '/books/Heidi.epub' },
-  { url: '/books/The-social-contract-and-discourses.epub' },
-];
 
 export const menuItemDefaultConfig: ContextMenuItem[] = [
   {

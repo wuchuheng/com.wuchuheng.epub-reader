@@ -43,3 +43,9 @@ dev-dist/
 tsconfig.node.tsbuildinfo
 
 *.tar.gz
+
+
+
+# Generated content
+
+public/seed.json

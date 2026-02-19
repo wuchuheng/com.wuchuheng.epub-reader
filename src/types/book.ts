@@ -53,7 +53,7 @@ export interface BookMetadata {
   /** EPUB metadata extracted from the book file */
   metaData?: EPUBMetaData;
   /** Current status of the book in the library */
-  status?: 'local' | 'downloading' | 'error';
+  status?: 'local' | 'downloading' | 'error' | 'not-downloaded';
   /** Download progress percentage for preset books */
   downloadProgress?: number;
   /** Whether the book was provisioned as a preset */
@@ -62,6 +62,10 @@ export interface BookMetadata {
   remoteUrl?: string;
   /** Error message when download fails */
   downloadError?: string;
+  /** The SHA-256 hash of the book file, used as a unique ID for preset books */
+  hash?: string;
+  /** The original filename from the seed manifest */
+  fileName?: string;
 }
 
 /**
@@ -98,8 +102,6 @@ export interface OPFSConfig {
   lastSync: number;
   /** Hash to file path index for O(1) duplicate detection */
   hashMapFilePath: Record<string, string>;
-  /** Preset book tracking information */
-  presetBooks?: PresetBookConfig[];
 }
 
 /**
@@ -128,10 +130,8 @@ export interface BookshelfState {
   error: string | null;
   /** Upload progress */
   uploadProgress: UploadProgress | null;
-  /** Whether preset books have been initialized this session */
-  presetBooksInitialized: boolean;
-  /** Whether preset books are currently being checked/added as placeholders */
-  isInitializingPresets: boolean;
+  /** Whether the bookshelf has been initialized this session */
+  isBookshelfInitialized: boolean;
   /** Number of active preset book downloads */
   downloadingCount: number;
 }
@@ -144,16 +144,4 @@ export interface OPFSDirectoryStructure {
   root: FileSystemDirectoryHandle;
   /** Books directory handle */
   booksDir: FileSystemDirectoryHandle;
-}
-
-/**
- * Preset book configuration
- */
-export interface PresetBookConfig {
-  /** Remote URL of the preset EPUB file */
-  url: string;
-  /** SHA-256 hash once downloaded */
-  fileHash?: string;
-  /** Timestamp for hot-reload deletion */
-  deletedAt?: number;
 }

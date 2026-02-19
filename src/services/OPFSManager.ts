@@ -2,7 +2,6 @@ import {
   OPFSConfig,
   BookMetadata,
   OPFSDirectoryStructure,
-  PresetBookConfig,
   TypographySettings,
 } from '../types/book';
 import { ContextMenuItem, ContextMenuSettings } from '../types/epub';
@@ -15,7 +14,7 @@ import {
   safeGetFileHandle,
 } from '../utils/fileOperations';
 import { DEFAULT_CONFIG } from '../constants/epub';
-import { DEFAULT_PRESET_BOOKS, menuItemDefaultConfig } from '@/config/config';
+import { menuItemDefaultConfig } from '@/config/config';
 
 let directoryStructure: OPFSDirectoryStructure | null = null;
 
@@ -184,7 +183,6 @@ const buildDefaultConfig = (books: BookMetadata[] = []): OPFSConfig => ({
     typography: buildDefaultTypographySettings(),
   },
   hashMapFilePath: {},
-  presetBooks: DEFAULT_PRESET_BOOKS.map((preset) => ({ ...preset })),
   lastSync: Date.now(),
 });
 
@@ -213,7 +211,6 @@ const applyConfigDefaults = (config: Partial<OPFSConfig>): OPFSConfig => {
     settings: { contextMenu: contextMenuSettings, typography: typographySettings },
     lastSync: config.lastSync ?? Date.now(),
     hashMapFilePath: config.hashMapFilePath ?? {},
-    presetBooks: (config.presetBooks ?? DEFAULT_PRESET_BOOKS).map((preset) => ({ ...preset })),
   };
 };
 
@@ -382,6 +379,7 @@ export async function uploadBookWithHash(
 
     const bookMetadata: BookMetadata = {
       id: fileHash,
+      hash: fileHash,
       name: epubMetadata.title || file.name.replace(/\.epub$/i, ''),
       author: epubMetadata.author || 'Unknown Author',
       path: bookPath,
@@ -411,22 +409,6 @@ export async function uploadBookWithHash(
 export async function checkFileHashExists(hash: string): Promise<boolean> {
   const config = await loadConfig();
   return Boolean(config.hashMapFilePath?.[hash]);
-}
-
-export async function updatePresetBookHash(url: string, fileHash: string): Promise<void> {
-  const config = await loadConfig();
-  const presets: PresetBookConfig[] = config.presetBooks ?? [];
-  const existingIndex = presets.findIndex((preset) => preset.url === url);
-
-  if (existingIndex >= 0) {
-    presets[existingIndex] = { ...presets[existingIndex], fileHash };
-  } else {
-    presets.push({ url, fileHash });
-  }
-
-  config.presetBooks = presets;
-  config.lastSync = Date.now();
-  await saveConfig(config);
 }
 
 /**
@@ -752,7 +734,6 @@ export async function loadConfig(): Promise<OPFSConfig> {
 
       if (
         !parsed.hashMapFilePath ||
-        !parsed.presetBooks ||
         !parsed.settings?.contextMenu ||
         parsed.books !== normalized.books
       ) {

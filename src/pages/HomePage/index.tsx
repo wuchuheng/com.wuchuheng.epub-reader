@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '../../store';
 import {
-  initializeBookshelf,
+  loadBookshelf,
   deleteBook,
-  loadBooks,
+  downloadPresetBook,
   clearError,
   uploadBook,
 } from '../../store/slices/bookshelfSlice';
@@ -17,49 +17,39 @@ import { Plus, Settings } from '../../components/icons';
 import { MdInstallDesktop } from 'react-icons/md';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
+import { BookMetadata } from '../../types/book';
 
-/**
- * Main bookshelf page component
- * Displays all books in a responsive grid layout
- * Handles book uploads via drag-and-drop or file picker, deletions, and navigation
- */
 export const BookshelfPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { t } = useTranslation('homepage');
-  const { books, isLoading, error, isInitializingPresets } = useAppSelector(
-    (state) => state.bookshelf
-  );
+  const { books, isLoading, error, isBookshelfInitialized } = useAppSelector((state) => state.bookshelf);
   const { isInstalled, installPWA, canInstall } = usePWAInstall();
   const failedDownloads = books.filter((book) => book.status === 'error');
-
-  console.log('BookshelfPage: PWA State - isInstalled:', isInstalled, 'canInstall:', canInstall);
 
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragCounter = useRef(0);
 
-  // 1. Input handling - initialize bookshelf on mount
   useEffect(() => {
-    if (books.length > 0) {
-      return;
+    if (!isBookshelfInitialized) {
+      dispatch(loadBookshelf());
     }
+  }, [isBookshelfInitialized, dispatch]);
 
-    const initBookshelf = async () => {
+  const handleBookClick = async (book: BookMetadata) => {
+    if (book.status === 'not-downloaded') {
       try {
-        await dispatch(initializeBookshelf()).unwrap();
-      } catch (error) {
-        // Browser doesn't support OPFS, show error
-        console.error('Failed to initialize bookshelf:', error);
+        const result = await dispatch(downloadPresetBook(book)).unwrap();
+        navigate(`/reader/${result.book.id}`);
+      } catch (e) {
+        console.error('Failed to download and open book:', e);
+        alert(t('alerts.downloadFailed'));
       }
-    };
-
-    initBookshelf();
-  }, [books.length, dispatch]);
-
-  // 2. Core processing - handle book actions
-  const handleOpenBook = (bookId: string) => {
-    navigate(`/reader/${bookId}`);
+    } else if (book.status === 'local') {
+      navigate(`/reader/${book.id}`);
+    }
+    // Do nothing for 'downloading' or 'error' status
   };
 
   const handleDeleteBook = async (bookId: string) => {
@@ -73,18 +63,14 @@ export const BookshelfPage: React.FC = () => {
 
   const handleFileUpload = useCallback(
     async (file: File) => {
-      // 1. Input handling
       const validationError = getEpubValidationError(file);
-
       if (validationError) {
         alert(validationError);
         return;
       }
-
-      // 2. Core processing
       try {
         await dispatch(uploadBook(file)).unwrap();
-        dispatch(loadBooks());
+        // The uploadBook reducer now adds the book, no need to reload all
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         alert(t('alerts.uploadFailed', { error: message }));
@@ -94,11 +80,8 @@ export const BookshelfPage: React.FC = () => {
   );
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
-    // 1. Input handling
     e.preventDefault();
     e.stopPropagation();
-
-    // 2. Core processing
     dragCounter.current += 1;
     if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
       setIsDragging(true);
@@ -106,11 +89,8 @@ export const BookshelfPage: React.FC = () => {
   }, []);
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
-    // 1. Input handling
     e.preventDefault();
     e.stopPropagation();
-
-    // 2. Core processing
     dragCounter.current -= 1;
     if (dragCounter.current === 0) {
       setIsDragging(false);
@@ -118,24 +98,18 @@ export const BookshelfPage: React.FC = () => {
   }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
-    // 1. Input handling
     e.preventDefault();
     e.stopPropagation();
   }, []);
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
-      // 1. Input handling
       e.preventDefault();
       e.stopPropagation();
-
-      // 2. Core processing
       setIsDragging(false);
       dragCounter.current = 0;
-
       const files = Array.from(e.dataTransfer.files);
       const epubFile = files.find((file) => isValidEpubFile(file));
-
       if (epubFile) {
         handleFileUpload(epubFile);
       } else if (files.length > 0) {
@@ -146,27 +120,19 @@ export const BookshelfPage: React.FC = () => {
   );
 
   const handleUploadBtnClick = () => {
-    // 2. Core processing
     fileInputRef.current?.click();
   };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // 1. Input handling
     const file = e.target.files?.[0];
-
-    // 2. Core processing
     if (file) {
       handleFileUpload(file);
     }
-
-    // 3. Output handling
-    // Reset input so same file can be selected again if needed
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
-  // 3. Output handling - render bookshelf
   return (
     <div
       className="min-h-screen bg-gray-50"
@@ -176,13 +142,7 @@ export const BookshelfPage: React.FC = () => {
       onDrop={handleDrop}
     >
       <DragOverlay isVisible={isDragging} />
-      <input
-        type="file"
-        accept=".epub,application/epub+zip"
-        className="hidden"
-        ref={fileInputRef}
-        onChange={handleFileInputChange}
-      />
+      <input type="file" accept=".epub,application/epub+zip" className="hidden" ref={fileInputRef} onChange={handleFileInputChange} />
 
       {/* Header */}
       <header className="border-b bg-white shadow-sm">
@@ -195,29 +155,14 @@ export const BookshelfPage: React.FC = () => {
             <div className="flex items-center gap-4">
               <LanguageSwitcher />
               {!isInstalled && canInstall && (
-                <button
-                  onClick={installPWA}
-                  className="text-gray-600 hover:text-gray-900"
-                  aria-label={t('header.installApp')}
-                  title={t('header.installTitle')}
-                >
+                <button onClick={installPWA} className="text-gray-600 hover:text-gray-900" aria-label={t('header.installApp')} title={t('header.installTitle')}>
                   <MdInstallDesktop />
                 </button>
               )}
-              <button
-                onClick={() => navigate('/settings')}
-                className="text-gray-600 hover:text-gray-900"
-                aria-label={t('header.settings')}
-                title={t('header.settings')}
-              >
+              <button onClick={() => navigate('/settings')} className="text-gray-600 hover:text-gray-900" aria-label={t('header.settings')} title={t('header.settings')}>
                 <Settings />
               </button>
-              <button
-                onClick={handleUploadBtnClick}
-                className="text-gray-600 hover:text-gray-900"
-                aria-label={t('header.uploadBook')}
-                title={t('header.uploadBook')}
-              >
+              <button onClick={handleUploadBtnClick} className="text-gray-600 hover:text-gray-900" aria-label={t('header.uploadBook')} title={t('header.uploadBook')}>
                 <Plus />
               </button>
             </div>
@@ -231,45 +176,30 @@ export const BookshelfPage: React.FC = () => {
         {error && (
           <div className="mb-6 rounded-md border border-red-200 bg-red-50 p-4">
             <div className="flex">
-              <div className="flex-shrink-0">
-                <span className="text-red-400">⚠️</span>
-              </div>
+              <div className="flex-shrink-0"><span className="text-red-400">⚠️</span></div>
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-red-800">{t('errorHeading')}</h3>
-                <div className="mt-2 text-sm text-red-700">
-                  <p>{error}</p>
-                </div>
+                <div className="mt-2 text-sm text-red-700"><p>{error}</p></div>
               </div>
             </div>
-            <div className="mt-4">
-              <button
-                onClick={() => dispatch(clearError())}
-                className="text-sm text-red-600 hover:text-red-500"
-              >
-                {t('common:dismiss')}
-              </button>
-            </div>
+            <div className="mt-4"><button onClick={() => dispatch(clearError())} className="text-sm text-red-600 hover:text-red-500">{t('common:dismiss')}</button></div>
           </div>
         )}
         {/* Browser compatibility warning */}
         {!OPFSManager.isSupported() && (
           <div className="mb-6 rounded-md border border-yellow-200 bg-yellow-50 p-4">
             <div className="flex">
-              <div className="flex-shrink-0">
-                <span className="text-yellow-400">⚠️</span>
-              </div>
+              <div className="flex-shrink-0"><span className="text-yellow-400">⚠️</span></div>
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-yellow-800">{t('browserWarning.title')}</h3>
-                <div className="mt-2 text-sm text-yellow-700">
-                  <p>{t('browserWarning.description')}</p>
-                </div>
+                <div className="mt-2 text-sm text-yellow-700"><p>{t('browserWarning.description')}</p></div>
               </div>
             </div>
           </div>
         )}
 
         {/* Loading state */}
-        {(isLoading || isInitializingPresets) && books.length === 0 && (
+        {isLoading && !isBookshelfInitialized && (
           <div className="py-12 text-center">
             <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
             <p className="text-gray-600">{t('loadingBookshelf')}</p>
@@ -283,38 +213,28 @@ export const BookshelfPage: React.FC = () => {
               {failedDownloads.map((book) => (
                 <li key={book.id} className="flex items-center justify-between gap-2">
                   <span className="truncate">{book.name}</span>
-                  {book.downloadError ? (
-                    <span className="text-xs text-red-600">{book.downloadError}</span>
-                  ) : null}
+                  {book.downloadError ? <span className="text-xs text-red-600">{book.downloadError}</span> : null}
                 </li>
               ))}
             </ul>
           </div>
         )}
         {/* Empty state */}
-        {!isLoading && !isInitializingPresets && books.length === 0 && (
+        {isBookshelfInitialized && books.length === 0 && (
           <div className="py-12 text-center">
             <div className="mb-4 text-6xl">📚</div>
             <h2 className="mb-2 text-xl font-semibold text-gray-900">{t('emptyState.title')}</h2>
             <p className="mb-4 text-gray-600">{t('emptyState.description')}</p>
-            <button
-              onClick={handleUploadBtnClick}
-              className="rounded-md bg-blue-600 px-6 py-2 text-white transition-colors duration-200 hover:bg-blue-700"
-            >
+            <button onClick={handleUploadBtnClick} className="rounded-md bg-blue-600 px-6 py-2 text-white transition-colors duration-200 hover:bg-blue-700">
               {t('emptyState.uploadButton')}
             </button>
           </div>
         )}
         {/* Books grid */}
-        {!isLoading && books.length > 0 && (
+        {isBookshelfInitialized && books.length > 0 && (
           <div className="grid grid-cols-2 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {books.map((book) => (
-              <BookCard
-                key={book.id}
-                book={book}
-                onOpen={handleOpenBook}
-                onDelete={handleDeleteBook}
-              />
+              <BookCard key={book.id} book={book} onOpen={handleBookClick} onDelete={handleDeleteBook} />
             ))}
           </div>
         )}
@@ -323,5 +243,4 @@ export const BookshelfPage: React.FC = () => {
   );
 };
 
-// Default export for router
 export default BookshelfPage;

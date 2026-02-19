@@ -5,7 +5,7 @@ import * as OPFSManager from '../../services/OPFSManager';
 import type { OPFSDirectoryEntry } from '../../services/OPFSManager';
 import { formatFileSize } from '../../utils/epubValidation';
 import { useAppDispatch } from '../../store';
-import { loadBooks } from '../../store/slices/bookshelfSlice';
+import { loadBookshelf } from '../../store/slices/bookshelfSlice';
 import { FileDetailsModal } from './components/FileDetailsModal';
 import { FilePreviewModal } from './components/FilePreviewModal';
 
@@ -126,7 +126,7 @@ export const StoragePage: React.FC = () => {
       setResetState('working');
       setError(null);
       await OPFSManager.resetAllData();
-      await dispatch(loadBooks());
+      await dispatch(loadBookshelf());
       setChildrenMap({});
       setExpandedPaths(new Set());
       setPathErrors({});

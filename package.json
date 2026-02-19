@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "lint:fix": "eslint --fix src/**/*.ts",
-    "logo:gen": "tsx scripts/generate-app-icon.ts"
+    "logo:gen": "tsx scripts/generate-app-icon.ts",
+    "bookSeed": "tsx scripts/seed-books.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
