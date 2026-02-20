@@ -9,7 +9,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,json,vue,txt,woff2}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,vue,txt,woff2}'],
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // 10MB
         runtimeCaching: [
           {
@@ -38,6 +38,23 @@ export default defineConfig({
               cacheableResponse: {
                 statuses: [0, 200],
               },
+            },
+          },
+          {
+            // Match the seed.json file specifically
+            urlPattern: /seed\.json$/,
+            // Use NetworkFirst strategy
+            handler: 'NetworkFirst',
+            options: {
+              // Use a dedicated cache for the manifest
+              cacheName: 'seed-manifest-cache',
+              // Keep only one version of the file
+              expiration: {
+                maxEntries: 1,
+                maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
+              },
+              // Fail the network request after 3 seconds, then try cache
+              networkTimeoutSeconds: 3,
             },
           },
           {

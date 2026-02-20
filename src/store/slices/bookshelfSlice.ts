@@ -27,6 +27,13 @@ const combineChunks = (chunks: Uint8Array[], totalLength: number): Uint8Array =>
 
 // --- NEW ASYNC THUNKS ---
 
+// Type for an entry in the seed.json manifest
+interface SeedManifestEntry {
+  title: string;
+  fileName: string;
+  url: string;
+}
+
 export const loadBookshelf = createAsyncThunk('bookshelf/loadBookshelf', async (_, { rejectWithValue }) => {
   try {
     if (!OPFSManager.isSupported()) {
@@ -40,10 +47,15 @@ export const loadBookshelf = createAsyncThunk('bookshelf/loadBookshelf', async (
       fetch('/seed.json'),
     ]);
 
-    if (!seedResponse.ok) {
-      throw new Error('Failed to fetch book seed.');
+    let seedData: Record<string, SeedManifestEntry> = {}; // Default to an empty object
+
+    if (seedResponse.ok) {
+      seedData = await seedResponse.json();
+    } else {
+      // This block runs if network fails AND there's no cache.
+      // It's a graceful failure, not an error.
+      console.warn('Could not fetch seed.json from network or cache. Proceeding with local books only.');
     }
-    const seedData = await seedResponse.json();
 
     // 2. Reconcile and Merge
     const localHashes = new Set(localBooks.map((book) => book.hash).filter(Boolean));
