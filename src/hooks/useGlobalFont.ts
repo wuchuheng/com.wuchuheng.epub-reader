@@ -15,7 +15,7 @@ export const useGlobalFont = () => {
     // 1. Update CSS variable for the entire app, ensuring emoji fallback
     document.documentElement.style.setProperty(
       '--app-font-family', 
-      `${selectedFont.family}, "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji"`
+      `${selectedFont.family}, "Apple Color Emoji", "Segoe UI Emoji"`
     );
 
     // 2. Manage Font Stylesheet
