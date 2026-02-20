@@ -25,7 +25,6 @@ tsconfig.app.tsbuildinfo
 tsconfig.node.tsbuildinfo
 tsconfig.*.tsbuildinfo
 tmp.md
-tmp/
 
 # Build artifacts
 *.tsbuildinfo

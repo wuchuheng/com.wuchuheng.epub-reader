@@ -6,7 +6,7 @@ type IframeRenderProps = {
   url: string;
   context: string;
   words: string;
-  minHeight?: number | string;
+  height?: number | string;
   preResolvedUrl?: string;
 };
 
@@ -31,7 +31,7 @@ export const IframeRender: React.FC<IframeRenderProps> = ({
   url,
   words,
   context,
-  minHeight,
+  height,
   preResolvedUrl,
 }) => {
   // 1. Input validation and preparation
@@ -69,7 +69,7 @@ export const IframeRender: React.FC<IframeRenderProps> = ({
   }
 
   return (
-    <div className="relative w-full overflow-hidden" style={{ height: minHeight || '100%' }}>
+    <div className="relative w-full overflow-hidden" style={{ height: height || '100%' }}>
       {isLoading && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-50">
           <Loading />

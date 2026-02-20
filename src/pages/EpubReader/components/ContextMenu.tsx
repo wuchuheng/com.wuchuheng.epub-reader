@@ -675,10 +675,16 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
   // Peek buffer: 40px (to allow next section to peek and improve scroll chaining)
   // Total offset = 90 + 33 + 40 = 163px.
   const chromeHeight = 90;
-  const contentMinHeight = Math.max(windowSize.height - 163, 200);
+  const STACKED_MODE_IFRAME_VERTICAL_OFFSET = 163;
+  const contentMinHeight = Math.max(windowSize.height - STACKED_MODE_IFRAME_VERTICAL_OFFSET, 200);
   // Fallback if ResizeObserver hasn't fired yet
   const calculatedHeight = windowSize.height - chromeHeight;
   const effectiveHeight = contentHeight > 0 ? contentHeight : calculatedHeight;
+
+  // In 'tabbed' mode, iframe should take up 100% of the container height.
+  // In 'stacked' mode, it should use the calculated min-height to allow peeking.
+  const iframeHeight = displayMode === 'tabbed' ? '100%' : `${contentMinHeight}px`;
+
   const shouldRender = tabIndex !== null && activeItems.length > 0 && hasInvalidIndex === false;
 
   if (!shouldRender) {
@@ -881,7 +887,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
                       url={item.url}
                       words={props.words}
                       context={props.context}
-                      minHeight={`${contentMinHeight}px`}
+                      height={iframeHeight}
                       preResolvedUrl={iframeUrl}
                     />
                   )}
