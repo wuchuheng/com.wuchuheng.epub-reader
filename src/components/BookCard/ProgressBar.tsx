@@ -12,6 +12,8 @@ interface ProgressBarProps {
   color?: string;
   /** Whether to hide the bar when progress is zero */
   hideWhenZero?: boolean;
+  /** Visual variant: 'default' or 'minimal' (slim, no text) */
+  variant?: 'default' | 'minimal';
 }
 
 /**
@@ -24,6 +26,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   showPercentage = true,
   color = 'bg-blue-600',
   hideWhenZero = true,
+  variant = 'default',
 }) => {
   const { t } = useTranslation('common');
   // 1. Input validation
@@ -38,6 +41,21 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   // 3. Output handling - render progress bar
   if (!shouldShowProgress) {
     return null;
+  }
+
+  if (variant === 'minimal') {
+    return (
+      <div className={`absolute bottom-0 left-0 h-[2px] w-full overflow-hidden bg-gray-100 ${className}`}>
+        <div
+          className={`h-full transition-all duration-300 ${color}`}
+          style={{ width: `${progress}%` }}
+          role="progressbar"
+          aria-valuenow={progress}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        />
+      </div>
+    );
   }
 
   return (

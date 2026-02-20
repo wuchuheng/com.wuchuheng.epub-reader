@@ -324,39 +324,41 @@ export const ContextMenuSettingsPage: React.FC = () => {
       isSaving={contextMenuSettings.isSaving}
       saveStatus={saveStatus}
       error={contextMenuSettings.error}
+      childrenStyle={{
+        height: '100%',
+        overflowY: 'auto',
+      }}
     >
-      <div className="h-full overflow-y-auto p-6">
-        {/* Custom Tools */}
-        <SectionCard
-          title={t('contextMenu.customToolsTitle')}
-          description={t('contextMenu.customToolsDescription')}
-          className="h-full"
-          statusSlot={
-            <div className="hidden text-xs text-gray-500 sm:block">
-              {t('contextMenu.reorderHint')}
-            </div>
-          }
-        >
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-gray-600">{t('contextMenu.customToolsSupport')}</p>
-            <Link
-              to="/settings/contextmenu/add-tool"
-              aria-label={t('contextMenu.addToolAria')}
-              className={addToolButtonClass}
-            >
-              <PlusSmall />
-            </Link>
+      {/* Custom Tools */}
+      <SectionCard
+        title={t('contextMenu.customToolsTitle')}
+        description={t('contextMenu.customToolsDescription')}
+        className="h-full"
+        statusSlot={
+          <div className="hidden text-xs text-gray-500 sm:block">
+            {t('contextMenu.reorderHint')}
           </div>
+        }
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-gray-600">{t('contextMenu.customToolsSupport')}</p>
+          <Link
+            to="/settings/contextmenu/add-tool"
+            aria-label={t('contextMenu.addToolAria')}
+            className={addToolButtonClass}
+          >
+            <PlusSmall />
+          </Link>
+        </div>
 
-          <ToolList
-            tools={contextMenuSettings.settings.items || []}
-            onToolRemove={contextMenuSettings.removeTool}
-            onToolReorder={contextMenuSettings.reorderTools}
-            onToggleEnabled={contextMenuSettings.toggleToolEnabled}
-            onToggleSupport={contextMenuSettings.toggleToolSupport}
-          />
-        </SectionCard>
-      </div>
+        <ToolList
+          tools={contextMenuSettings.settings.items || []}
+          onToolRemove={contextMenuSettings.removeTool}
+          onToolReorder={contextMenuSettings.reorderTools}
+          onToggleEnabled={contextMenuSettings.toggleToolEnabled}
+          onToggleSupport={contextMenuSettings.toggleToolSupport}
+        />
+      </SectionCard>
     </CommonSettingLayout>
   );
 };

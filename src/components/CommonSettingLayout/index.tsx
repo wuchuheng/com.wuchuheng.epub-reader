@@ -10,6 +10,7 @@ export interface CommonSettingLayoutProps {
   isSaving: boolean;
   saveStatus: 'idle' | 'success' | 'error';
   error?: string | null;
+  childrenStyle?: React.CSSProperties | undefined;
 }
 
 export const CommonSettingLayout: React.FC<CommonSettingLayoutProps> = ({
@@ -21,6 +22,7 @@ export const CommonSettingLayout: React.FC<CommonSettingLayoutProps> = ({
   isSaving,
   saveStatus,
   error,
+  childrenStyle,
 }) => {
   const { t } = useTranslation('settings');
 
@@ -35,12 +37,13 @@ export const CommonSettingLayout: React.FC<CommonSettingLayoutProps> = ({
       {/* Main Grid: Sidebar + Content/Preview */}
       <div className="grid flex-1 gap-6 overflow-hidden lg:grid-cols-[280px_1fr]">
         {/* Left Sidebar */}
-        <div className="flex flex-col space-y-2 overflow-y-auto pr-2">
-          {sidebar}
-        </div>
+        <div className="flex flex-col space-y-2 overflow-y-auto pr-2">{sidebar}</div>
 
         {/* Right Content / Preview Area */}
-        <div className="relative flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div
+          className="relative flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm"
+          style={childrenStyle}
+        >
           {children}
         </div>
       </div>
@@ -65,10 +68,14 @@ export const CommonSettingLayout: React.FC<CommonSettingLayoutProps> = ({
 
           <div className="absolute right-4 text-sm">
             {saveStatus === 'success' && (
-              <span className="text-green-600 font-medium">{t('contextMenu.messages.settingsSaved')}</span>
+              <span className="font-medium text-green-600">
+                {t('contextMenu.messages.settingsSaved')}
+              </span>
             )}
             {saveStatus === 'error' && (
-              <span className="text-red-600 font-medium">{t('contextMenu.messages.settingsSaveError')}</span>
+              <span className="font-medium text-red-600">
+                {t('contextMenu.messages.settingsSaveError')}
+              </span>
             )}
           </div>
         </div>

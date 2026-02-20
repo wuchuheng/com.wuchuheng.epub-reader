@@ -95,7 +95,7 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onOpen, onDelete }) =>
 
   if (!book.id) return null;
 
-  const cardClasses = `group relative rounded-lg ${isDownloading ? 'cursor-wait' : 'cursor-pointer'}`;
+  const cardClasses = `group relative rounded-lg bg-white shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 ${isDownloading ? 'cursor-wait' : 'cursor-pointer'}`;
   const bookCoverClasses = `overflow-hidden rounded-t-lg ${isNotDownloaded ? 'grayscale' : ''}`;
 
   return (
@@ -108,16 +108,37 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onOpen, onDelete }) =>
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardClick(); } }}
         aria-label={t('bookshelf.openBookAria', { name: displayName })}
       >
-        {!isNotDownloaded && (
-          <button type="button" ref={menuButtonRef} onClick={toggleMenu} className={'absolute right-2 top-2 rounded-full bg-gray-100 p-2 text-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-500'} aria-label={t('bookshelf.actions.openMenu')} style={{ zIndex: 1 }}>
+        {/* Status Badges Overlay (Top Left) - Unified */}
+        <div className="absolute left-2 top-2 z-10 flex flex-col gap-1">
+          {isNotDownloaded && (
+            <div className="flex items-center gap-1.5 rounded-md bg-white/90 px-2 py-1 text-gray-600 shadow-sm backdrop-blur-sm" title={t('bookshelf.notDownloaded')}>
+              <FaCloud className="h-3.5 w-3.5" />
+            </div>
+          )}
+          {isDownloading && (
+            <div className="flex items-center gap-1.5 rounded-md bg-blue-600/90 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm backdrop-blur-sm">
+              <span className="flex h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
+              {t('bookshelf.downloading')}
+            </div>
+          )}
+          {isError && (
+            <div className="rounded-md bg-red-600/90 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm backdrop-blur-sm" title={book.downloadError || t('bookshelf.downloadFailed')}>
+              {t('bookshelf.downloadFailed')}
+            </div>
+          )}
+        </div>
+
+        {/* Action Button (Top Right) - Only for local books, hidden until hover */}
+        {book.status === 'local' && (
+          <button 
+            type="button" 
+            ref={menuButtonRef} 
+            onClick={toggleMenu} 
+            className={'absolute right-2 top-2 z-10 rounded-full bg-white/90 p-2 text-gray-700 shadow-sm transition-all opacity-0 group-hover:opacity-100 hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-500'} 
+            aria-label={t('bookshelf.actions.openMenu')}
+          >
             <FaEllipsisVertical className="h-4 w-4" />
           </button>
-        )}
-
-        {isNotDownloaded && (
-          <div className="absolute right-2 top-2 z-10 rounded-full bg-gray-100 bg-opacity-80 p-2 text-gray-600" title={t('bookshelf.notDownloaded')}>
-            <FaCloud className="h-4 w-4" />
-          </div>
         )}
 
         {isMenuOpen ? (
@@ -134,22 +155,19 @@ export const BookCard: React.FC<BookCardProps> = ({ book, onOpen, onDelete }) =>
           </div>
         ) : null}
 
-        <div className={'overflow-hidden rounded-lg bg-white shadow-md transition-shadow duration-200 group-focus-within:shadow-lg group-hover:shadow-lg'}>
-          <BookCover coverPath={book.coverPath} title={displayName} className={bookCoverClasses} />
-          <div className="p-2">
-            <h3 className="mb-1 truncate text-lg font-semibold text-gray-900" title={displayName}>{displayName}</h3>
-            <p className="mb-1 inline-block flex justify-between truncate text-sm text-gray-600" title={displayAuthor}>
-              <span>{displayAuthor}</span>
-              <span>{typeof book.chapterCount === 'number' ? t('bookshelf.chapters', { count: book.chapterCount }) : t('bookshelf.detailsModal.unknown')}</span>
-            </p>
-            {isDownloading && <div className="mb-2 text-xs font-semibold text-blue-700">{t('bookshelf.downloading')}</div>}
-            {isError && <div className="mb-2 text-xs font-semibold text-red-700">{book.downloadError || t('bookshelf.downloadFailed')}</div>}
-            
-            {(isDownloading || (book.status === 'local' && progressValue > 0)) && (
-              <ProgressBar progress={progressValue} />
-            )}
-          </div>
+        <BookCover coverPath={book.coverPath} title={displayName} className={bookCoverClasses} />
+        <div className="p-3">
+          <h3 className="mb-0.5 truncate text-base font-bold text-gray-900 leading-tight" title={displayName}>{displayName}</h3>
+          <p className="truncate text-xs text-gray-500 font-medium" title={displayAuthor}>
+            {displayAuthor}
+            <span className="mx-1.5 opacity-30">•</span>
+            {typeof book.chapterCount === 'number' ? t('bookshelf.chapters', { count: book.chapterCount }) : t('bookshelf.detailsModal.unknown')}
+          </p>
         </div>
+        
+        {(isDownloading || (book.status === 'local' && progressValue > 0)) && (
+          <ProgressBar progress={progressValue} variant="minimal" />
+        )}
       </div>
 
       <Modal isOpen={isDeleteModalOpen} title={t('bookshelf.deleteModal.title')} onClose={() => setIsDeleteModalOpen(false)} closeLabel={t('common:close')} footer={<>
